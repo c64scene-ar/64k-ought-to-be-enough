@@ -7,6 +7,7 @@ bits    16
 cpu     8086
 
 extern label_model
+extern lz4_decompress, lz4_decompress_small
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
@@ -232,13 +233,14 @@ wait_horiz_retrace:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 intro_init:
 
+        call    gfx_init
         call    music_init
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 main_loop:
-.loop:
         sub     al,al
+.loop:
         cmp     byte [tick],al                  ;in theory, the tick is not needed
         je      .loop                           ; since i'm not doing anything, but
                                                 ; in practice, if not used, the interrupt could be triggered
@@ -397,6 +399,31 @@ END     equ     0b1000_0000
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+gfx_init:
+        push    ds
+        push    es
+
+        mov     ax,0x0009
+        int     0x10                            ;320x200x16
+
+        mov     ax,gfx                          ;ds:si (source)
+        mov     ds,ax
+        mov     si,logo_lz4
+
+        mov     ax,GFX_SEG                      ;es:di (destination)
+        mov     es,ax
+        sub     di,di
+
+        call    lz4_decompress
+
+;        mov     cx,16 * 1024                    ;32k
+;        rep movsw                               ;copy 32k
+
+        pop     es
+        pop     ds
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 inc_d020:
         mov     dx,VGA_ADDRESS                  ;show how many raster barts it consumes
         mov     al,2                            ;select border color
@@ -469,7 +496,11 @@ jr_a_delay_1b:                                  ;h-retrace
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 section .gfx data
-        incbin 'src/logo.raw'                   ;MUST be the first variable in the segment
+logo:
+        incbin 'src/logo.raw'
+
+logo_lz4:
+        incbin 'src/logo.raw.lz4'
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;

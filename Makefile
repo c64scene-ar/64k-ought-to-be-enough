@@ -10,7 +10,7 @@ LDFLAGS = -oEXE -m
 default: $(TARGET)
 all: res default
 
-OBJECTS = main.o intro.o detect_card.o pztimer.o
+OBJECTS = main.o intro.o detect_card.o pztimer.o lz4_8088.o
 
 %.o: src/%.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
