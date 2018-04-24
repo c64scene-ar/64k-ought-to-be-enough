@@ -7,7 +7,7 @@
 ; The source for the conversion was the original "default" Z80 decompression
 ; code provided by Einar.  Further size optimization and unrolling were
 ; independently performed specifically for the 8086.
-; Source is formatted for Borland Turbo Assembler IDEAL mode and NEAR calls,
+; Source is formatted for Nasm,
 ; however it should be very easy to port to other assemblers if necessary.
 ;
 ; Input:
@@ -37,7 +37,8 @@
 ; prior knowledge of the size of the decompressed output, as the ZX7 stream
 ; format does not include that information.
 
-        IDEAL
+bits    16
+cpu     8086
 
 ;USER-CHANGEABLE SECTION BEGINS===
 
@@ -64,49 +65,43 @@ DISABLE_INTERRUPTS EQU 1
 ;interrupt-heavy (like digitized audio through the speaker) and don't want
 ;this routine disabling interrupts, turn off DISABLE_INTERRUPTS.
 
-;USER-CHANGEABLE SECTION ENDS=====
 
-SEGMENT DATA word public
-ENDS    DATA
-
-SEGMENT CODE byte public
-ASSUME  cs:CODE, ds:DATA
-
-PUBLIC  dzx7_size, dzx7_speed, dzx7_original
-
-
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; CODE
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+section .text
 
 ;==========================================================================
 ;dzx7_size assembles to 71 bytes.  It is the smallest routine and, for most
 ;material, the same speed as the original dzx7_standard conversion.
 ;==========================================================================
-PROC    dzx7_size       NEAR
+dzx7_size:
         mov     al, 80h
         xor     cx, cx
-        mov     bp, offset @@dzx7s_next_bit
+        mov     bp, .dzx7s_next_bit
         cld
-@@dzx7s_copy_byte_loop:
+.dzx7s_copy_byte_loop:
         movsb                           ; copy literal byte
-@@dzx7s_main_loop:
+.dzx7s_main_loop:
         call    bp
-        jnc     @@dzx7s_copy_byte_loop    ; next bit indicates either
+        jnc     .dzx7s_copy_byte_loop    ; next bit indicates either
                                         ; literal or sequence
 
 ; determine number of bits used for length (Elias gamma coding)
         xor     bx, bx
-@@dzx7s_len_size_loop:
+.dzx7s_len_size_loop:
         inc     bx
         call    bp
-        jnc     @@dzx7s_len_size_loop
+        jnc     .dzx7s_len_size_loop
         db      80h                     ; mask call
 ; determine length
-@@dzx7s_len_value_loop:
+.dzx7s_len_value_loop:
         call    bp
-@@dzx7s_len_value_skip:
+.dzx7s_len_value_skip:
         adc     cx, cx
-        jb      @@dzx7s_next_bit_ret      ; check end marker
+        jb      .dzx7s_next_bit_ret      ; check end marker
         dec     bx
-        jnz     @@dzx7s_len_value_loop
+        jnz     .dzx7s_len_value_loop
         inc     cx                      ; adjust length
 
 ; determine offset
@@ -115,44 +110,41 @@ PROC    dzx7_size       NEAR
         inc     si
         stc
         adc     bl, bl
-        jnc     @@dzx7s_offset_end        ; if offset flag is set, load
+        jnc     .dzx7s_offset_end       ; if offset flag is set, load
                                         ; 4 extra bits
         mov     bh, 10h                 ; bit marker to load 4 bits
-@@dzx7s_rld_next_bit:
+.dzx7s_rld_next_bit:
         call    bp
         adc     bh, bh                  ; insert next bit into D
-        jnc     @@dzx7s_rld_next_bit      ; repeat 4 times, until bit
+        jnc     .dzx7s_rld_next_bit     ; repeat 4 times, until bit
                                         ; marker is out
         inc     bh                      ; add 128 to DE
-@@dzx7s_offset_end:
+.dzx7s_offset_end:
         shr     bx, 1                   ; insert fourth bit into E
 
 ; copy previous sequence
         push    si
         mov     si, di
         sbb     si, bx                  ; destination = destination - offset - 1
-IF CPU_BUG_WORKAROUND
+%IF CPU_BUG_WORKAROUND
 ; CPUs < 386 can't handle two prefixes properly with interrupts on,
 ; so we can't use "es: rep movsb" and must fall back to something compatible
-@@again:
-        seges   movsb
-        loop    @@again
-ELSE
-        seges   rep movsb
-ENDIF
+.again:
+        es movsb
+        loop    .again
+%ELSE
+        es rep movsb
+%ENDIF
         pop     si                      ; restore source address
                                         ; (compressed data)
-        jmp     @@dzx7s_main_loop
-@@dzx7s_next_bit:
+        jmp     .dzx7s_main_loop
+.dzx7s_next_bit:
         add     al, al                  ; check next bit
-        jnz     @@dzx7s_next_bit_ret      ; no more bits left?
+        jnz     .dzx7s_next_bit_ret     ; no more bits left?
         lodsb                           ; load another group of 8 bits
         adc     al, al
-@@dzx7s_next_bit_ret:
+.dzx7s_next_bit_ret:
         ret
-
-ENDP    dzx7_size
-
 
 
 ;===========================================================================
@@ -160,61 +152,59 @@ ENDP    dzx7_size
 ;(worst case) and 100% (best case) over the others at the expense of size.
 ;Default configuration assembles to 269 bytes; other combinations will vary.
 ;===========================================================================
+dzx7_speed:
 
-PROC    dzx7_speed      NEAR
-
-MACRO next_bit
-LOCAL bitsremain
+%MACRO next_bit 0
         shl     al,1                    ;check next bit
-        jnz     bitsremain              ;no more bits left?
+        jnz     %%bitsremain            ;no more bits left?
         lodsb                           ;load another group of 8 bits
         rcl     al,1                    ;...and put first bit into carry
-bitsremain:
-ENDM
+%%bitsremain:
+%ENDM
 
         mov     al,80h                  ;init mask
         xor     cx,cx                   ;init counter
         cld                             ;ensure we are always moving forward
-@@dzx7s_copy_byte_loop:
+.dzx7s_copy_byte_loop:
         movsb                           ;copy literal byte
-@@dzx7s_main_loop:
+.dzx7s_main_loop:
         next_bit                        ;get next bit
-        jnc     @@dzx7s_copy_byte_loop  ;bit clear = literal; bit set = match
+        jnc     .dzx7s_copy_byte_loop   ;bit clear = literal; bit set = match
 
 ;determine number of bits used for length (Elias gamma coding)
         xor     dx,dx
-@@dzx7s_len_size_loop:
-        REPT    7
+.dzx7s_len_size_loop:
+%REP    7
         inc     dx
         next_bit                        ;get next bit
-        jc      @@dzx7s_len_value_skip
-        ENDM
+        jc      .dzx7s_len_value_skip
+%ENDREP
         inc     dx
         next_bit                        ;get next bit
-        jnc     @@dzx7s_len_size_loop
-        jmp     @@dzx7s_len_value_skip
+        jnc     .dzx7s_len_size_loop
+        jmp     .dzx7s_len_value_skip
 
 ;determine length
-@@dzx7s_len_value_loop:
+.dzx7s_len_value_loop:
         next_bit                        ;get next bit
 
-@@dzx7s_len_value_skip:
+.dzx7s_len_value_skip:
         rcl     cx,1
-        jc      @@decompdone            ;check end marker
-        REPT    7
+        jc      .decompdone             ;check end marker
+%REP    7
         dec     dx
-        jz      @@dzx7s_len_value_adjust
+        jz      .dzx7s_len_value_adjust
         next_bit                        ;get next bit
         rcl     cx,1
-        ENDM
+%ENDREP
         dec     dx
-        jnz     @@dzx7s_len_value_loop
+        jnz     .dzx7s_len_value_loop
 
         db      0b2h                    ;mask ret to retain relative branch distance
-@@decompdone:
+.decompdone:
         ret
 
-@@dzx7s_len_value_adjust:
+.dzx7s_len_value_adjust:
         inc     cx                      ;adjust length
 
 ;determine offset
@@ -223,31 +213,31 @@ ENDM
         inc     si
         stc
         rcl     dl,1
-        jnc     @@dzx7s_offset_end      ;if offset flag set, load 4 more bits
-@@dzx7s_rld_next_bit:
-        REPT    4
+        jnc     .dzx7s_offset_end       ;if offset flag set, load 4 more bits
+.dzx7s_rld_next_bit:
+%REP    4
         next_bit                        ;get next bit
         rcl     dh,1                    ;insert next bit
-        ENDM
+%ENDREP
                                         ;marker is out
         inc     dh                      ;add 128
-@@dzx7s_offset_end:
+.dzx7s_offset_end:
         shr     dx,1                    ;insert fourth bit
-IF OPTIMIZE_RLE
-        jz      @@run                   ;dx=0=run, which we can do faster
-ENDIF
+%IF OPTIMIZE_RLE
+        jz      .run                    ;dx=0=run, which we can do faster
+%ENDIF
 
 ;copy previous sequence
-IF CPU_BUG_WORKAROUND
-  IF DISABLE_INTERRUPTS
+%IF CPU_BUG_WORKAROUND
+  %IF DISABLE_INTERRUPTS
         mov     bx,si                   ;preserve source address
         mov     si,di
         sbb     si,dx                   ;destination = dest. - offset - 1
         cli
-        seges   rep movsb
+        es rep movsb
         sti
         mov     si,bx                   ;restore source address (comp. data)
-  ELSE
+  %ELSE
         ;CPUs < 386 can't handle two prefixes properly with interrupts on,
         ;so we can't use "es: rep movsb" and must fall back to "rep movsb"
         mov     bp,ds                   ;preserve ds
@@ -256,32 +246,29 @@ IF CPU_BUG_WORKAROUND
         mov     bx,si                   ;preserve source address
         mov     si,di
         sbb     si,dx                   ;destination = dest. - offset - 1
-        rep     movsb
+        rep movsb
         mov     si,bx                   ;restore source address (comp. data)
         mov     ds,bp                   ;restore ds
-  ENDIF
-ELSE
+  %ENDIF
+%ELSE
         mov     bx,si                   ;preserve source address
         mov     si,di
         sbb     si,dx                   ;destination = dest. - offset - 1
-        seges   rep movsb
+        es rep movsb
         mov     si,bx                   ;restore source address (comp. data)
-ENDIF
-        jmp     @@dzx7s_main_loop
+%ENDIF
+        jmp     .dzx7s_main_loop
 
-IF OPTIMIZE_RLE
-@@run:
+%IF OPTIMIZE_RLE
+.run:
         xchg    bp,ax                   ;preserve bitmask
         mov     bx,di
         sbb     bx,dx                   ;destination = dest. - offset - 1
         mov     al,[es:bx]
-        rep     stosb
+        rep stosb
         xchg    bp,ax                   ;restore bitmask
-        jmp     @@dzx7s_main_loop
-ENDIF
-
-ENDP    dzx7_speed
-
+        jmp     .dzx7s_main_loop
+%ENDIF
 
 
 ;=========================================================================
@@ -289,33 +276,33 @@ ENDP    dzx7_speed
 ;It is provided for reference and comparison only, and is probably not what
 ;you want to use.  Assembles to 78 bytes.
 ;=========================================================================
-PROC    dzx7_original   NEAR
+dzx7_original:
         mov     al, 80h
         xor     cx, cx
         cld
-@@dzx7s_copy_byte_loop:
+.dzx7s_copy_byte_loop:
         movsb                           ; copy literal byte
-@@dzx7s_main_loop:
-        call    @@dzx7s_next_bit
-        jnc     @@dzx7s_copy_byte_loop  ; next bit indicates either
+.dzx7s_main_loop:
+        call    .dzx7s_next_bit
+        jnc     .dzx7s_copy_byte_loop   ; next bit indicates either
                                         ; literal or sequence
 
 ; determine number of bits used for length (Elias gamma coding)
         xor     dx, dx
-@@dzx7s_len_size_loop:
+.dzx7s_len_size_loop:
         inc     dx
-        call    @@dzx7s_next_bit
-        jnc     @@dzx7s_len_size_loop
-        jmp     @@dzx7s_len_value_skip
+        call    .dzx7s_next_bit
+        jnc     .dzx7s_len_size_loop
+        jmp     .dzx7s_len_value_skip
 
 ; determine length
-@@dzx7s_len_value_loop:
-        call    @@dzx7s_next_bit
-@@dzx7s_len_value_skip:
+.dzx7s_len_value_loop:
+        call    .dzx7s_next_bit
+.dzx7s_len_value_skip:
         adc     cx, cx
-        jb      @@dzx7s_next_bit_ret    ; check end marker
+        jb      .dzx7s_next_bit_ret     ; check end marker
         dec     dx
-        jnz     @@dzx7s_len_value_loop
+        jnz     .dzx7s_len_value_loop
         inc     cx                      ; adjust length
 
 ; determine offset
@@ -324,42 +311,36 @@ PROC    dzx7_original   NEAR
         inc     si
         stc
         adc     dl, dl
-        jnc     @@dzx7s_offset_end      ; if offset flag is set, load
+        jnc     .dzx7s_offset_end       ; if offset flag is set, load
                                         ; 4 extra bits
         mov     dh, 10h                 ; bit marker to load 4 bits
-@@dzx7s_rld_next_bit:
-        call    @@dzx7s_next_bit
+.dzx7s_rld_next_bit:
+        call    .dzx7s_next_bit
         adc     dh, dh                  ; insert next bit into D
-        jnc     @@dzx7s_rld_next_bit    ; repeat 4 times, until bit
+        jnc     .dzx7s_rld_next_bit     ; repeat 4 times, until bit
                                         ; marker is out
         inc     dh                      ; add 128 to DE
-@@dzx7s_offset_end:
+.dzx7s_offset_end:
         shr     dx, 1                   ; insert fourth bit into E
 
 ; copy previous sequence
         push    si
         mov     si, di
         sbb     si, dx                  ; destination = destination - offset - 1
-;       rep     movs byte ptr [di], byte ptr es:[si] ; this is buggy on < 386
+;       rep movs byte ptr [di], byte ptr es:[si] ; this is buggy on < 386
         push    ds
         mov     bx,es
         mov     ds,bx
-        rep     movsb
+        rep movsb
         pop     ds
         pop     si                      ; restore source address
                                         ; (compressed data)
-        jmp     @@dzx7s_main_loop
-@@dzx7s_next_bit:
+        jmp     .dzx7s_main_loop
+.dzx7s_next_bit:
         add     al, al                  ; check next bit
-        jnz     @@dzx7s_next_bit_ret    ; no more bits left?
+        jnz     .dzx7s_next_bit_ret     ; no more bits left?
         lodsb                           ; load another group of 8 bits
         adc     al, al
-@@dzx7s_next_bit_ret:
+.dzx7s_next_bit_ret:
         ret
 
-ENDP    dzx7_original
-
-
-ENDS    CODE
-
-        END
