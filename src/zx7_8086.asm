@@ -42,21 +42,21 @@ cpu     8086
 
 ;USER-CHANGEABLE SECTION BEGINS===
 
-OPTIMIZE_RLE EQU 0
+%define OPTIMIZE_RLE 0
 ;When using the speed-optimized routine, setting OPTIMIZE_RLE to 1 speeds
 ;up decompressing very sparse data (ie. data where there are large runs of
 ;the same value) about 3%, but hurts decompression speed of most normal
 ;data types by 3%.  Turn this on if you are compressing a lot of sparse
 ;data, otherwise leave it off.
 
-CPU_BUG_WORKAROUND EQU 1
+%define CPU_BUG_WORKAROUND 1
 ;There is a bug in the 8086 to 80286 CPUs where more than one instruction
 ;prefix is not honored after an interrupt occurs.  This code avoids the bug,
 ;but there is an ~8% speed penalty for doing so.  If you are certain you
 ;will ALWAYS run this code on a 386 or higher, you can turn it off.
 ;We recommend you leave this alone.
 
-DISABLE_INTERRUPTS EQU 1
+%define DISABLE_INTERRUPTS 1
 ;If CPU_BUG_WORKAROUND is enabled, there is a faster way to work around the
 ;bug by disabling interrupts during match copies.  While this is ~4% faster,
 ;it can disable interrupts for as long as 524 cycles on an 8086, which can
@@ -75,8 +75,9 @@ section .text
 ;dzx7_size assembles to 71 bytes.  It is the smallest routine and, for most
 ;material, the same speed as the original dzx7_standard conversion.
 ;==========================================================================
+global dzx7_size
 dzx7_size:
-        mov     al, 80h
+        mov     al, 0x80
         xor     cx, cx
         mov     bp, .dzx7s_next_bit
         cld
@@ -84,7 +85,7 @@ dzx7_size:
         movsb                           ; copy literal byte
 .dzx7s_main_loop:
         call    bp
-        jnc     .dzx7s_copy_byte_loop    ; next bit indicates either
+        jnc     .dzx7s_copy_byte_loop   ; next bit indicates either
                                         ; literal or sequence
 
 ; determine number of bits used for length (Elias gamma coding)
@@ -93,13 +94,13 @@ dzx7_size:
         inc     bx
         call    bp
         jnc     .dzx7s_len_size_loop
-        db      80h                     ; mask call
+        db      0x80                    ; mask call
 ; determine length
 .dzx7s_len_value_loop:
         call    bp
 .dzx7s_len_value_skip:
         adc     cx, cx
-        jb      .dzx7s_next_bit_ret      ; check end marker
+        jb      .dzx7s_next_bit_ret     ; check end marker
         dec     bx
         jnz     .dzx7s_len_value_loop
         inc     cx                      ; adjust length
@@ -112,7 +113,7 @@ dzx7_size:
         adc     bl, bl
         jnc     .dzx7s_offset_end       ; if offset flag is set, load
                                         ; 4 extra bits
-        mov     bh, 10h                 ; bit marker to load 4 bits
+        mov     bh, 0x10                ; bit marker to load 4 bits
 .dzx7s_rld_next_bit:
         call    bp
         adc     bh, bh                  ; insert next bit into D
@@ -152,6 +153,7 @@ dzx7_size:
 ;(worst case) and 100% (best case) over the others at the expense of size.
 ;Default configuration assembles to 269 bytes; other combinations will vary.
 ;===========================================================================
+global dzx7_speed
 dzx7_speed:
 
 %MACRO next_bit 0
@@ -162,7 +164,7 @@ dzx7_speed:
 %%bitsremain:
 %ENDM
 
-        mov     al,80h                  ;init mask
+        mov     al,0x80                 ;init mask
         xor     cx,cx                   ;init counter
         cld                             ;ensure we are always moving forward
 .dzx7s_copy_byte_loop:
@@ -200,7 +202,7 @@ dzx7_speed:
         dec     dx
         jnz     .dzx7s_len_value_loop
 
-        db      0b2h                    ;mask ret to retain relative branch distance
+        db      0xb2                    ;mask ret to retain relative branch distance
 .decompdone:
         ret
 
@@ -276,8 +278,9 @@ dzx7_speed:
 ;It is provided for reference and comparison only, and is probably not what
 ;you want to use.  Assembles to 78 bytes.
 ;=========================================================================
+global dzx7_original
 dzx7_original:
-        mov     al, 80h
+        mov     al, 0x80
         xor     cx, cx
         cld
 .dzx7s_copy_byte_loop:
@@ -313,7 +316,7 @@ dzx7_original:
         adc     dl, dl
         jnc     .dzx7s_offset_end       ; if offset flag is set, load
                                         ; 4 extra bits
-        mov     dh, 10h                 ; bit marker to load 4 bits
+        mov     dh, 0x10                ; bit marker to load 4 bits
 .dzx7s_rld_next_bit:
         call    .dzx7s_next_bit
         adc     dh, dh                  ; insert next bit into D

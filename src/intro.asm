@@ -8,6 +8,7 @@ cpu     8086
 
 extern label_model
 extern lz4_decompress, lz4_decompress_small
+extern dzx7_speed, dzx7_size, dzx7_original
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
@@ -40,25 +41,25 @@ VGA_DATA        equ     0x03da                  ;Tandy = 0x03de. PCJr. 0x03da
         WAIT_HORIZONTAL_RETRACE                 ;reset to register again
         call    cx                              ;sync: jr A = 45 nop
                                                 ;      jr B = 41 nop + 1 aaa
-        %rep %1
-                sub     di,di                   ;zero it. needed for later
-                mov     al,bl                   ;color to update
-                out     dx,al                   ;dx=0x03da (register)
+  %rep %1
+        sub     di,di                           ;zero it. needed for later
+        mov     al,bl                           ;color to update
+        out     dx,al                           ;dx=0x03da (register)
 
-                lodsb                           ;load one color value in al
-                out     dx,al                   ;update color (data)
+        lodsb                                   ;load one color value in al
+        out     dx,al                           ;update color (data)
 
-                xchg    ax,di                   ;fatest way to set al to 0
-                out     dx,al                   ;(register)
+        xchg    ax,di                           ;fatest way to set al to 0
+        out     dx,al                           ;(register)
 
-                in      al,dx                   ;reset to register again
-                inc     bl                      ;next color
+        in      al,dx                           ;reset to register again
+        inc     bl                              ;next color
 
-                %if %2
-                        call    cx              ;sync: jr A = 55 nops
+    %if %2
+        call    cx                              ;sync: jr A = 55 nops
                                                 ;      jr B = 53 nops
-                %endif
-        %endrep
+    %endif
+  %endrep
 %endmacro
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -408,16 +409,18 @@ gfx_init:
 
         mov     ax,gfx                          ;ds:si (source)
         mov     ds,ax
-        mov     si,logo_lz4
+;        mov     si,logo
+;        mov     si,logo_lz4
+        mov     si,logo_zx7
 
         mov     ax,GFX_SEG                      ;es:di (destination)
         mov     es,ax
         sub     di,di
 
-        call    lz4_decompress
-
 ;        mov     cx,16 * 1024                    ;32k
 ;        rep movsw                               ;copy 32k
+;        call    lz4_decompress
+        call    dzx7_speed
 
         pop     es
         pop     ds
@@ -501,6 +504,9 @@ logo:
 
 logo_lz4:
         incbin 'src/logo.raw.lz4'
+
+logo_zx7:
+        incbin 'src/logo.raw.zx7'
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
