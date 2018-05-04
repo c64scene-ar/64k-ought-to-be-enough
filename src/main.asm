@@ -6,7 +6,7 @@
 bits    16
 cpu     8086
 
-extern intro_start
+extern intro_start, banner_start
 extern detect_card
 extern ZTimerOn, ZTimerOff, ZTimerReport, ZTimerGetTime
 
@@ -37,6 +37,7 @@ section .text
 
         call    detect_jr_a_or_b
 
+        call    banner_start
         call    intro_start
 
         jmp     cleanup
