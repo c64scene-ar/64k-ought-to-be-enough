@@ -1,4 +1,4 @@
-; Invitro for Flashparty 2018
+; Invite intro for Flashparty 2018
 ; Pungas de Villa Martelli - http://pungas.space
 ;
 ; code: riq (http://retro.moe)
@@ -9,6 +9,7 @@ cpu     8086
 extern label_model
 extern lz4_decompress, lz4_decompress_small
 extern dzx7_speed, dzx7_size, dzx7_original
+extern irq_8_init, irq_8_cleanup
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
@@ -21,6 +22,37 @@ GFX_SEG         equ     0x1800                  ;0x1800 for PCJr with 32k video 
 VGA_ADDRESS     equ     0x03da                  ;Tandy == PCJr.
 VGA_DATA        equ     0x03da                  ;Tandy = 0x03de. PCJr. 0x03da
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; inline vertical retrace
+; IN:
+;       dx      -> VGA_ADDRESS
+%macro WAIT_VERTICAL_RETRACE 0
+%%wait:
+        in      al,dx                           ;wait for vertical retrace
+        test    al,8                            ; to finish
+        jnz     %%wait
+
+%%retrace:
+        in      al,dx                           ;wait for vertical retrace
+        test    al,8                            ; to start
+        jz      %%retrace
+%endmacro
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; inline horizontal retrace
+; IN:
+;       dx      -> VGA_ADDRESS
+%macro WAIT_HORIZONTAL_RETRACE 0
+%%wait:
+        in      al,dx                           ;wait for horizontal retrace
+        ror     al,1
+        jc      %%wait
+
+%%retrace:
+        in      al,dx                           ;wait for horizontal retrace
+        ror     al,1
+        jnc     %%retrace
+%endmacro
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; refreshes the palette. used as a macro, and not function, since it is being
@@ -62,37 +94,6 @@ VGA_DATA        equ     0x03da                  ;Tandy = 0x03de. PCJr. 0x03da
   %endrep
 %endmacro
 
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; inline vertical retrace
-; IN:
-;       dx      -> VGA_ADDRESS
-%macro WAIT_VERTICAL_RETRACE 0
-%%wait:
-        in      al,dx                           ;wait for vertical retrace
-        test    al,8                            ; to finish
-        jnz     %%wait
-
-%%retrace:
-        in      al,dx                           ;wait for vertical retrace
-        test    al,8                            ; to start
-        jz      %%retrace
-%endmacro
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; inline horizontal retrace
-; IN:
-;       dx      -> VGA_ADDRESS
-%macro WAIT_HORIZONTAL_RETRACE 0
-%%wait:
-        in      al,dx                           ;wait for horizontal retrace
-        ror     al,1
-        jc      %%wait
-
-%%retrace:
-        in      al,dx                           ;wait for horizontal retrace
-        ror     al,1
-        jnc     %%retrace
-%endmacro
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -104,6 +105,7 @@ section .text
 
 global intro_start
 intro_start:
+        int 3
         cld
 
         mov     ax,data                         ;init segments
@@ -112,123 +114,15 @@ intro_start:
         mov     es,ax                           ; push/pop otherwise
 
         call    intro_init
-        call    irq_init
+
+        mov     ax,intro_irq_8
+        call    irq_8_init
 
         call    main_loop
 
         call    music_cleanup
-        call    irq_cleanup
+        call    irq_8_cleanup
 
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; installs a timer IRQ that triggers at the correct horizontal scan line
-; for the scroll
-irq_init:
-
-PIT_DIVIDER equ (262*76)                        ;262 lines * 76 PIT cycles each
-                                                ; make it sync with vertical retrace
-
-        cli                                     ;disable interrupts
-
-        mov     bp,es                           ;save es
-        sub     ax,ax
-        mov     es,ax                           ;es = page 0
-
-        ;PIC
-        mov     ax,new_i08_simple
-        mov     dx,cs
-        xchg    ax,[es:8*4]                     ;new/old IRQ 8: offset
-        xchg    dx,[es:8*4+2]                   ;new/old IRQ 8: segment
-        mov     [old_i08],ax
-        mov     [old_i08+2],dx
-
-        mov     es,bp                           ;restore es
-
-        mov     dx,VGA_ADDRESS
-        WAIT_VERTICAL_RETRACE
-
-        mov     cx,194                          ;and wait for scanlines
-.repeat:
-        WAIT_HORIZONTAL_RETRACE                 ;inlining, so timing in real machine
-        loop    .repeat                         ; is closer to emulators
-
-        mov     bx,PIT_DIVIDER                  ;Configure the PIT to
-        call    setup_pit                       ;setup PIT
-
-        in      al,0x21                         ;Read primary PIC Interrupt Mask Register
-        mov     [old_pic_imr],al                ;Store it for later
-        mov     al,0b1111_1110                  ;Mask off everything except IRQ0 (timer)
-        out     0x21,al
-
-        in      al,0xa0                         ;clear nmi latch
-        sub     al,al
-        out     0xa0,al
-        sti                                     ;enable interrupts
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-irq_cleanup:
-        cli                                     ;disable interrupts
-
-        in      al,0xa0                         ;clear nmi latch
-        mov     al,0b1000_0000                  ;enable nmi
-        out     0xa0,al
-
-        mov     al,[old_pic_imr]                ;Get old PIC settings
-        out     0x21,al                         ;Set primary PIC Interrupt Mask Register
-
-        mov     bx,0                            ;Reset PIT to defaults (~18.2 Hz)
-        call    setup_pit                       ; actually means 0x10000
-
-        push    ds
-        push    es
-
-        xor     ax,ax
-        mov     ds,ax                           ;ds = page 0
-
-        mov     cx,data
-        mov     es,cx
-
-        les     si,[es:old_i08]
-        mov     [8*4],si
-        mov     [8*4+2],es                      ;Restore the old INT 08 vector (timer)
-
-        pop     es
-        pop     ds
-
-        sti                                     ;enable interrupts
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-setup_pit:
-        ; IN    bx = PIT clock period
-        ;          (Divider to 1193180 Hz)
-        mov     al,0b0011_0100                  ;0x34: channel 0, access mode lo/hi, rate generator, 16-bit binary
-        out     0x43,al                         ;command port
-        mov     ax,bx
-        out     0x40,al                         ;data port for IRQ0: freq LSB
-        mov     al,ah
-        nop                                     ;some pause
-        nop
-        out     0x40,al                         ;data port for IRQ0: freq MSB
-
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-;waits until the beam is about to return to the top-left
-;should be the one to call for the effects
-global wait_vertical_retrace
-wait_vertical_retrace:
-        mov     dx,VGA_ADDRESS
-        WAIT_VERTICAL_RETRACE
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-global wait_horiz_retrace
-wait_horiz_retrace:
-        mov     dx,VGA_ADDRESS
-        WAIT_HORIZONTAL_RETRACE
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -273,7 +167,7 @@ main_loop:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; IRQ
-new_i08_simple:
+intro_irq_8:
         ;not saving any variable, since the code at main loop
         ;happens after the tick
 
@@ -499,9 +393,6 @@ jr_a_delay_1b:                                  ;h-retrace
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 section .gfx data
-logo:
-        incbin 'src/logo.raw'
-
 logo_lz4:
         incbin 'src/logo.raw.lz4'
 

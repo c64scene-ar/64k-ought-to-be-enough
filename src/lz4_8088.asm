@@ -54,7 +54,6 @@ lz4_decompress:
         db 0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F
 
 .decompinit:
-        int 3
         push    ds              ;preserve compiler assumptions
         push    bp              ;preserve compiler assumptions
         ;les     di,outb         ;load target buffer
@@ -200,7 +199,6 @@ lz4_decompress:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global lz4_decompress_small
 lz4_decompress_small:
-        int 3
         push    ds              ;preserve compiler assumptions
         ;les     di,outb         ;load target buffer
         push    di              ;save original starting offset (in case != 0)

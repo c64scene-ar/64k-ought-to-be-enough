@@ -1,4 +1,4 @@
-; Invite-intro for the Flashparty 2018
+; Invite intro for Flashparty 2018
 ; Pungas de Villa Martelli - http://pungas.space
 ;
 ; code: riq (http://retro.moe)
