@@ -70,8 +70,8 @@ banner_cleanup:
 banner_main_loop:
 
 .main_loop:
-        cmp     byte [should_decompress],0      ;should decompress image?
-        je      .decompress_letter
+        cmp     byte [should_decompress],1      ;should decompress image?
+        jz      .decompress_letter
 
         call    key_pressed                     ;key pressed?
         jz      .main_loop
@@ -80,7 +80,6 @@ banner_main_loop:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 .decompress_letter:
-        inc     byte [should_decompress]        ;flag that decompress is in progress
         mov     ax,[letter_to_decompress]
         shl     ax,1                            ;each address takes 2 bytes
         mov     bx,ax                           ;uses bx for index
