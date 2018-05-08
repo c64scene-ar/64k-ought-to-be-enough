@@ -49,6 +49,9 @@ banner_start:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 banner_init:
+
+        call    command_next                    ;initialize next command
+
         mov     ax,banner_irq_8
         call    irq_8_init
 
@@ -66,11 +69,31 @@ banner_cleanup:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 banner_main_loop:
 
-.loop:
-        call    key_pressed
-        jz      .loop
+.main_loop:
+        cmp     byte [should_decompress],0      ;should decompress image?
+        je      .decompress_letter
 
-        ret
+        call    key_pressed                     ;key pressed?
+        jz      .main_loop
+
+        ret                                     ;exit main loop.
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+.decompress_letter:
+        inc     byte [should_decompress]        ;flag that decompress is in progress
+        mov     ax,[letter_to_decompress]
+        shl     ax,1                            ;each address takes 2 bytes
+        mov     bx,ax                           ;uses bx for index
+        mov     si,[letter_idx + bx]            ;ds:si: compressed data
+
+        mov     ax,0x1800                       ;es:di (destination)
+        mov     es,ax
+        mov     di,0x4000
+
+        call    lz4_decompress
+
+        dec     byte [should_decompress]        ;flag that decompress finished
+        jmp     .main_loop                      ;return to main loop
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 key_pressed:
@@ -97,12 +120,36 @@ key_pressed:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 banner_irq_8:
+        push    es                              ;since we might be interrupting
+        push    ds                              ; the decompressor routine, we need to
+        push    si                              ; save all registers
+        push    di
+        push    dx
+        push    cx
+        push    bx
+        push    ax
+        pushf
+
+        mov     ax,banner_data                  ;update segments
+        mov     ds,ax
+        mov     ax,0x1800
+        mov     es,ax
 
         call    play_music
         call    update_state_machine
 
         mov     al,0x20                         ;send the EOI signal
         out     0x20,al                         ; to the IRQ controller
+
+        popf
+        pop     ax
+        pop     bx
+        pop     cx
+        pop     dx
+        pop     di
+        pop     si
+        pop     ds
+        pop     es
 
         iret
 
@@ -113,25 +160,92 @@ play_music:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 update_state_machine:
+        cmp     byte [should_decompress],0      ;is decompressing?
+        jnz     .exit                           ; if so, exit
+
+        call    [command_current_fn]            ;call current command
+
+.exit:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; uncompress letter to 1800:4000
-; input: ax=letter to uncompress
-uncompress_letter:
+command_next:
+        mov     bx,[command_idx]
+        mov     al,[commands + bx]              ;command to initialize
 
-        ;assert (ds=banner_data)
-        shl     ax,1                            ;each address takes 2 bytes
-        mov     bx,ax                           ;uses bx for index
-        mov     si,[letter_idx + bx]            ;ds:si: compressed data
+        sub     ax,ax                           ;ax = 0
+        shl     al,1                            ;each address takes 2 bytes
+        xchg    bx,ax                           ;bx = ax
 
-        mov     ax,0x1800                       ;es:di (destination)
-        mov     es,ax
-        mov     di,0x4000
+        inc     word [command_idx]
 
-        call    lz4_decompress
+        mov     ax,[command_updates + bx]       ;cache current update function
+        mov     [command_current_fn],ax         ; for future use
 
+        jmp     [command_inits + bx]            ;call correct init function
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_init_display:
+        mov     bx,[command_idx]
+        mov     al,[commands + bx]
+
+        inc     word [command_idx]
+
+        mov     [letter_to_decompress],al
+        mov     byte [should_decompress],1
         ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; do nothing. wait until decompress finishes (from main loop) and
+; execute next command when that happens
+command_update_display:
+        cmp     byte [should_decompress],0
+        jnz     .exit
+
+        jmp     command_next
+
+.exit:
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_init_flash:
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_update_flash:
+        call    command_next
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_init_delay:
+        inc     word [command_idx]
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_update_delay:
+        call    command_next
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_init_black:
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_update_black:
+        call    command_next
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_init_end:
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_update_end:
+        call    command_next
+        ret
+
+
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
@@ -160,6 +274,17 @@ letter_2018_lz4:
         incbin 'src/2018.raw.lz4'
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; vars
+should_decompress:      db 0                    ;0 when no decompress is needed, nor in progress
+                                                ; 1 when decompress is requested or in progress
+letter_to_decompress:   db 0                    ;idx of the image to decompress
+
+command_idx:            dw 0                    ;index of current command. index in the
+                                                ; 'command' variable. [command + command_idx] gives
+                                                ; you the current command
+command_current_fn:     dw 0                    ; current command function. address of the function to call
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; pointers to the data. each one has its own index
 letter_idx:
         dw letter_p_lz4                         ;0
@@ -180,6 +305,21 @@ FLASH           equ 1
 DELAY           equ 2
 BLACK           equ 3
 END             equ 4
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_inits:
+        dw      command_init_display
+        dw      command_init_flash
+        dw      command_init_delay
+        dw      command_init_black
+        dw      command_init_end
+
+command_updates:
+        dw      command_update_display
+        dw      command_update_flash
+        dw      command_update_delay
+        dw      command_update_black
+        dw      command_update_end
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; available tokens
