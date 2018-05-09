@@ -80,7 +80,9 @@ banner_main_loop:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 .decompress_letter:
-        mov     ax,[letter_to_decompress]
+        int 3
+        sub     ax,ax
+        mov     al,[letter_to_decompress]
         shl     ax,1                            ;each address takes 2 bytes
         mov     bx,ax                           ;uses bx for index
         mov     si,[letter_idx + bx]            ;ds:si: compressed data
@@ -186,6 +188,7 @@ command_next:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 command_init_display:
+        int 3
         mov     bx,[command_idx]
         mov     al,[commands + bx]
 
@@ -323,11 +326,8 @@ command_updates:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; available tokens
 commands:
-        db DELAY,5
         db DISPLAY,0                            ;p
-        db DELAY,100
         db DISPLAY,1                            ;v
-        db DELAY,100
         db DISPLAY,2                            ;m
         db BLACK
         db DELAY,100
