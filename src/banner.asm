@@ -71,16 +71,19 @@ banner_main_loop:
 
 .main_loop:
         cmp     byte [should_decompress],1      ;should decompress image?
-        jz      .decompress_letter
+        jz      .decompress_letter              ; yes, decompress it
+
+        cmp     byte [end_condition],0          ;animation finished?
+        jnz     .exit                           ; yes, end
 
         call    key_pressed                     ;key pressed?
-        jz      .main_loop
+        jz      .main_loop                      ; no, keep looping
 
+.exit:
         ret                                     ;exit main loop.
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 .decompress_letter:
-        int 3
         sub     ax,ax
         mov     al,[letter_to_decompress]
         shl     ax,1                            ;each address takes 2 bytes
@@ -171,10 +174,9 @@ update_state_machine:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 command_next:
+        sub     ax,ax                           ;ax = 0
         mov     bx,[command_idx]
         mov     al,[commands + bx]              ;command to initialize
-
-        sub     ax,ax                           ;ax = 0
         shl     al,1                            ;each address takes 2 bytes
         xchg    bx,ax                           ;bx = ax
 
@@ -188,7 +190,6 @@ command_next:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 command_init_display:
-        int 3
         mov     bx,[command_idx]
         mov     al,[commands + bx]
 
@@ -221,13 +222,19 @@ command_update_flash:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 command_init_delay:
+        mov     bx,[command_idx]
+        mov     al,[commands + bx]
+        mov     [delay_cnt],al
         inc     word [command_idx]
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 command_update_delay:
-        call    command_next
+        dec     byte [delay_cnt]
+        jz      .exit
         ret
+.exit:
+        jmp     command_next
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 command_init_black:
@@ -240,11 +247,11 @@ command_update_black:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 command_init_end:
+        mov     byte [end_condition],1
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 command_update_end:
-        call    command_next
         ret
 
 
@@ -286,6 +293,10 @@ command_idx:            dw 0                    ;index of current command. index
                                                 ; you the current command
 command_current_fn:     dw 0                    ; current command function. address of the function to call
 
+delay_cnt:              db 0                    ;when 0, delay is over. tick once per frame
+
+end_condition:          db 0                    ;when 1, banner animation sequence finishes
+
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; pointers to the data. each one has its own index
 letter_idx:
@@ -294,10 +305,9 @@ letter_idx:
         dw letter_m_lz4                         ;2
         dw letter_invites_lz4                   ;3
         dw letter_you_lz4                       ;4
-        dw letter_you_lz4                       ;5
-        dw letter_to_lz4                        ;6
-        dw letter_flashparty_lz4                ;7
-        dw letter_2018_lz4                      ;8
+        dw letter_to_lz4                        ;5
+        dw letter_flashparty_lz4                ;6
+        dw letter_2018_lz4                      ;7
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -327,8 +337,11 @@ command_updates:
 ; available tokens
 commands:
         db DISPLAY,0                            ;p
+        db DELAY,75
         db DISPLAY,1                            ;v
+        db DELAY,75
         db DISPLAY,2                            ;m
+        db DELAY,75
         db BLACK
         db DELAY,100
 
@@ -372,29 +385,29 @@ commands:
         db BLACK
         db DELAY,5
 
-        db DISPLAY,4                            ;invites
+        db DISPLAY,3                            ;invites
         db DELAY,30
-        db DISPLAY,5                            ;you
+        db DISPLAY,4                            ;you
         db DELAY,30
-        db DISPLAY,6                            ;to
-        db DELAY,30
-
-        db DISPLAY,7                            ;flash party
-        db DELAY,30
-        db FLASH
-        db DELAY,5
-        db FLASH
-        db DELAY,5
-        db FLASH
-        db DELAY,5
-        db FLASH
-        db DELAY,5
-        db FLASH
-        db DELAY,5
-        db FLASH
+        db DISPLAY,5                            ;to
         db DELAY,30
 
-        db DISPLAY,8                            ;2018
+        db DISPLAY,6                            ;flash party
+        db DELAY,30
+        db FLASH
+        db DELAY,5
+        db FLASH
+        db DELAY,5
+        db FLASH
+        db DELAY,5
+        db FLASH
+        db DELAY,5
+        db FLASH
+        db DELAY,5
+        db FLASH
+        db DELAY,30
+
+        db DISPLAY,7                            ;2018
         db DELAY,150
 
         db END

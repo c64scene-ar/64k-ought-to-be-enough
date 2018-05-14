@@ -105,7 +105,6 @@ section .text
 
 global intro_start
 intro_start:
-        int 3
         cld
 
         mov     ax,data                         ;init segments
@@ -288,9 +287,10 @@ END     equ     0b1000_0000
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 .is_end:
-        mov     byte [pvm_wait],5               ;wait 5 cycles before starting again
-        mov     word [pvm_offset],pvm_song+0x10 ; beginning of song
-
+        int 3
+        mov     ax,[pvm_song + 0xc]             ;offset loop relative to start of data
+        add     ax,pvm_song + 0x10              ;add header size
+        mov     word [pvm_offset],ax            ;update new offset with loop data
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
