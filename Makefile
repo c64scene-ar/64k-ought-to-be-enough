@@ -10,7 +10,7 @@ LDFLAGS = -oEXE -m
 default: $(TARGET)
 all: res default
 
-OBJECTS = main.o intro.o detect_card.o pztimer.o lz4_8088.o zx7_8086.o banner.o utils.o
+OBJECTS = main.o detect_card.o pztimer.o lz4_8088.o zx7_8086.o intro.o utils.o
 
 %.o: src/%.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
@@ -51,7 +51,7 @@ res:
 	python3 ~/progs/pc-8088-misc/pvmplay/convert_vgm_to_pvm.py res/cumparchiptune.vgm
 	mv res/cumparchiptune.pvm src/
 	echo "Converting graphics..."
-	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 10 -o src/flashparty.bin res/flashparty.data
+	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 10 -o src/flashparty.bin res/flashparty.data
 	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/p.raw res/p.data
 	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/v.raw res/v.data
 	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/m.raw res/m.data
@@ -60,6 +60,8 @@ res:
 	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/to.raw res/to.data
 	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/fp.raw res/fp.data
 	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/2018.raw res/2018.data
+	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/satelite.raw res/satelite.data
+	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/tango_silueta.raw res/tango_silueta.data
 	echo "Compressing graphics..."
 	lz4 -9 -f res/p.raw src/p.raw.lz4
 	lz4 -9 -f res/v.raw src/v.raw.lz4
@@ -69,4 +71,6 @@ res:
 	lz4 -9 -f res/to.raw src/to.raw.lz4
 	lz4 -9 -f res/fp.raw src/fp.raw.lz4
 	lz4 -9 -f res/2018.raw src/2018.raw.lz4
+	lz4 -9 -f res/tango_silueta.raw src/tango_silueta.raw.lz4
+	lz4 -9 -f res/satelite.raw src/satelite.raw.lz4
 	echo "Done"

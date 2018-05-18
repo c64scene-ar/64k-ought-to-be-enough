@@ -9,7 +9,7 @@ cpu     8086
 extern label_model
 extern lz4_decompress, lz4_decompress_small
 extern dzx7_speed, dzx7_size, dzx7_original
-extern irq_8_init, irq_8_cleanup
+extern irq_8_cleanup, irq_8_init
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
@@ -22,79 +22,6 @@ GFX_SEG         equ     0x1800                  ;0x1800 for PCJr with 32k video 
 VGA_ADDRESS     equ     0x03da                  ;Tandy == PCJr.
 VGA_DATA        equ     0x03da                  ;Tandy = 0x03de. PCJr. 0x03da
 
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; inline vertical retrace
-; IN:
-;       dx      -> VGA_ADDRESS
-%macro WAIT_VERTICAL_RETRACE 0
-%%wait:
-        in      al,dx                           ;wait for vertical retrace
-        test    al,8                            ; to finish
-        jnz     %%wait
-
-%%retrace:
-        in      al,dx                           ;wait for vertical retrace
-        test    al,8                            ; to start
-        jz      %%retrace
-%endmacro
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; inline horizontal retrace
-; IN:
-;       dx      -> VGA_ADDRESS
-%macro WAIT_HORIZONTAL_RETRACE 0
-%%wait:
-        in      al,dx                           ;wait for horizontal retrace
-        ror     al,1
-        jc      %%wait
-
-%%retrace:
-        in      al,dx                           ;wait for horizontal retrace
-        ror     al,1
-        jnc     %%retrace
-%endmacro
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; refreshes the palette. used as a macro, and not function, since it is being
-; called from time-critical sections
-;
-; IN:
-;       ds:si   -> table with the palette to update
-;       bl      -> starting color + 0x10. example: use 0x1f for white: 0x10 + 0xf
-;       cx      -> jump address for delay
-;       dx      -> VGA_ADDRESS
-;
-; Args:
-;       #1:     -> number of colors to update times 2, since it does 2 colors per h-line
-;       #2:  0  -> don't wait for horizontal retrace
-;            1  -> wait fro horizontal retrace
-%macro REFRESH_PALETTE 2
-
-        WAIT_HORIZONTAL_RETRACE                 ;reset to register again
-        call    cx                              ;sync: jr A = 45 nop
-                                                ;      jr B = 41 nop + 1 aaa
-  %rep %1
-        sub     di,di                           ;zero it. needed for later
-        mov     al,bl                           ;color to update
-        out     dx,al                           ;dx=0x03da (register)
-
-        lodsb                                   ;load one color value in al
-        out     dx,al                           ;update color (data)
-
-        xchg    ax,di                           ;fatest way to set al to 0
-        out     dx,al                           ;(register)
-
-        in      al,dx                           ;reset to register again
-        inc     bl                              ;next color
-
-    %if %2
-        call    cx                              ;sync: jr A = 55 nops
-                                                ;      jr B = 53 nops
-    %endif
-  %endrep
-%endmacro
-
-
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
@@ -103,104 +30,135 @@ VGA_DATA        equ     0x03da                  ;Tandy = 0x03de. PCJr. 0x03da
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 section .text
 
-global intro_start
-intro_start:
+global banner_start
+banner_start:
         cld
 
-        mov     ax,data                         ;init segments
+        mov     ax,banner_data                  ;init segments
         mov     ds,ax                           ;these values must always be true
         mov     ax,GFX_SEG                      ; through the whole intro.
         mov     es,ax                           ; push/pop otherwise
 
-        call    intro_init
+        call    banner_init
 
-        mov     ax,intro_irq_8
+        call    banner_main_loop
+
+        call    banner_cleanup
+
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+banner_init:
+
+        call    command_next                    ;initialize next command
+
+        mov     ax,banner_irq_8
         call    irq_8_init
-
-        call    main_loop
-
-        call    music_cleanup
-        call    irq_8_cleanup
-
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-intro_init:
-
-        call    gfx_init
         call    music_init
+
+        mov     ax,0x0004                       ;320x200 4 colors
+        int     0x10
+
+        ret
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+banner_cleanup:
+        call    irq_8_cleanup
+        call    music_cleanup
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-main_loop:
-        sub     al,al
-.loop:
-        cmp     byte [tick],al                  ;in theory, the tick is not needed
-        je      .loop                           ; since i'm not doing anything, but
-                                                ; in practice, if not used, the interrupt could be triggered
-                                                ; in the middle of the BIOS call, some intructions are longer than others,
-                                                ; and it could generate some flicker in the raster bar routine
+banner_main_loop:
 
-        mov     byte [tick],al                  ;mov ,0, instead of dec. since two inc could happen together
-                                                ; if running on a slow machine. not a big issue, but ctrl+alt+del won't work
-                                                ; and a switch on/off will be required (arggh.)
+.main_loop:
+        cmp     byte [should_decompress],1      ;should decompress image?
+        jz      .decompress_letter              ; yes, decompress it
 
+        cmp     byte [end_condition],0          ;animation finished?
+        jnz     .exit                           ; yes, end
+
+        call    key_pressed                     ;key pressed?
+        jz      .main_loop                      ; no, keep looping
+
+.exit:
+        ret                                     ;exit main loop.
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+.decompress_letter:
+        sub     ax,ax
+        mov     al,[letter_to_decompress]
+        shl     ax,1                            ;each address takes 2 bytes
+        mov     bx,ax                           ;uses bx for index
+        mov     si,[letter_idx + bx]            ;ds:si: compressed data
+
+        mov     ax,0x1800                       ;es:di (destination)
+        mov     es,ax
+        mov     di,0x4000
+
+        call    lz4_decompress
+
+        dec     byte [should_decompress]        ;flag that decompress finished
+        jmp     .main_loop                      ;return to main loop
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+key_pressed:
 %if EMULATOR
         cli                                     ;on emulator, test for keyboard buffer
-        mov     cx,ds
+
+        push    ds
+        push    ax
 
         sub     ax,ax
         mov     ds,ax                           ;ds = zero page
-        mov     ax, [0x41a]                     ;keyboard buffer head
-        cmp     ax, [0x41c]                     ;keyboard buffer tail
+        mov     ax,[0x041a]                     ;keyboard buffer head
+        cmp     ax,[0x041c]                     ;keyboard buffer tail
 
-        mov     ds,cx
+        pop     ax
+        pop     ds
         sti
 %else
         in      al,0x62                         ;on real hardware, test keystroke missed?
         and     al,1                            ; so that we can disable IRQ9
 %endif
-        jz      .loop
-
         ret
 
+
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; IRQ
-intro_irq_8:
-        ;not saving any variable, since the code at main loop
-        ;happens after the tick
+banner_irq_8:
+        push    es                              ;since we might be interrupting
+        push    ds                              ; the decompressor routine, we need to
+        push    si                              ; save all registers
+        push    di
+        push    dx
+        push    cx
+        push    bx
+        push    ax
+        pushf
 
-        mov     ax,data
+        mov     ax,banner_data                  ;update segments
         mov     ds,ax
+        mov     ax,0x1800
+        mov     es,ax
 
-%if DEBUG
-        call    inc_d020
-%endif
-
-        call    music_anim                      ;play music
-
-%if DEBUG
-        call    dec_d020
-%endif
-
-        inc     byte [tick]                     ;tell main_loop that it could process
-                                                ; whatever he wants
+        call    music_play
+        call    update_state_machine
 
         mov     al,0x20                         ;send the EOI signal
         out     0x20,al                         ; to the IRQ controller
 
-        iret                                    ;exit interrupt
+        popf
+        pop     ax
+        pop     bx
+        pop     cx
+        pop     dx
+        pop     di
+        pop     si
+        pop     ds
+        pop     es
 
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-music_cleanup:
-        mov     si,volume_0                     ;volume to 0 data
-        mov     cx,VOLUME_0_MAX
-.repeat:
-        lodsb
-        out     0xc0,al                         ;set volume to 0
-        loop    .repeat
+        iret
 
-        ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 music_init:
@@ -214,13 +172,24 @@ music_init:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-music_anim:
+music_cleanup:
+        mov     si,volume_0                     ;volume to 0 data
+        mov     cx,VOLUME_0_MAX
+.repeat:
+        lodsb
+        out     0xc0,al                         ;set volume to 0
+        loop    .repeat
 
-DATA    equ     0b0000_0000
-DATA_EXTRA equ  0b0010_0000
-DELAY   equ     0b0100_0000
-DELAY_EXTRA equ 0b0110_0000
-END     equ     0b1000_0000
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+music_play:
+
+MUSIC_DATA              equ 0b0000_0000
+MUSIC_DATA_EXTRA        equ 0b0010_0000
+MUSIC_DELAY             equ 0b0100_0000
+MUSIC_DELAY_EXTRA       equ 0b0110_0000
+MUSIC_END               equ 0b1000_0000
 
         sub     cx,cx                           ;cx=0... needed later
         mov     si,[pvm_offset]
@@ -237,15 +206,15 @@ END     equ     0b1000_0000
         and     al,0b1110_0000                  ;al=command only
         and     ah,0b0001_1111                  ;ah=command args only
 
-        cmp     al,DATA                         ;data?
+        cmp     al,MUSIC_DATA                   ;data?
         je      .is_data
-        cmp     al,DATA_EXTRA                   ;data extra?
+        cmp     al,MUSIC_DATA_EXTRA             ;data extra?
         je      .is_data_extra
-        cmp     al,DELAY                        ;delay?
+        cmp     al,MUSIC_DELAY                  ;delay?
         je      .is_delay
-        cmp     al,DELAY_EXTRA                  ;delay extra?
+        cmp     al,MUSIC_DELAY_EXTRA            ;delay extra?
         je      .is_delay_extra
-        cmp     al,END                          ;end?
+        cmp     al,MUSIC_END                    ;end?
         je      .is_end
 
 .unsupported:
@@ -293,98 +262,102 @@ END     equ     0b1000_0000
         mov     word [pvm_offset],ax            ;update new offset with loop data
         ret
 
+
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-gfx_init:
-        push    ds
-        push    es
+update_state_machine:
+        cmp     byte [should_decompress],0      ;is decompressing?
+        jnz     .exit                           ; if so, exit
 
-        mov     ax,0x0009
-        int     0x10                            ;320x200x16
+        call    [command_current_fn]            ;call current command
 
-        mov     ax,gfx                          ;ds:si (source)
-        mov     ds,ax
-;        mov     si,logo
-;        mov     si,logo_lz4
-        mov     si,logo_zx7
-
-        mov     ax,GFX_SEG                      ;es:di (destination)
-        mov     es,ax
-        sub     di,di
-
-;        mov     cx,16 * 1024                    ;32k
-;        rep movsw                               ;copy 32k
-;        call    lz4_decompress
-        call    dzx7_speed
-
-        pop     es
-        pop     ds
+.exit:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-inc_d020:
-        mov     dx,VGA_ADDRESS                  ;show how many raster barts it consumes
-        mov     al,2                            ;select border color
-        out     dx,al                           ;(register)
+command_next:
+        sub     ax,ax                           ;ax = 0
+        mov     bx,[command_idx]
+        mov     al,[commands + bx]              ;command to initialize
+        shl     al,1                            ;each address takes 2 bytes
+        xchg    bx,ax                           ;bx = ax
 
-        mov     al,0x0f
-        out     dx,al                           ;change border to white (data)
+        inc     word [command_idx]
+
+        mov     ax,[command_updates + bx]       ;cache current update function
+        mov     [command_current_fn],ax         ; for future use
+
+        jmp     [command_inits + bx]            ;call correct init function
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_init_display:
+        mov     bx,[command_idx]
+        mov     al,[commands + bx]
+
+        inc     word [command_idx]
+
+        mov     [letter_to_decompress],al
+        mov     byte [should_decompress],1
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-dec_d020:
-        mov     dx,VGA_ADDRESS                  ;show how many raster barts it consumes
-        mov     al,2                            ;select border color
-        out     dx,al                           ;(register)
+; do nothing. wait until decompress finishes (from main loop) and
+; execute next command when that happens
+command_update_display:
+        cmp     byte [should_decompress],0
+        jnz     .exit
 
-        sub     al,al
-        out     dx,al                           ;change border back to black (data)
+        jmp     command_next
+
+.exit:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; IBM PCjr B delays used in REFRESH_PALETTE
-jr_b_delay_0a:                                  ;sync
-        times 30 nop
-        mov     cx,jr_b_delay_0b                ;delay function to be used after this one
-        ret
-
-jr_b_delay_0b:                                  ;h-retrace
-        times 41 nop
+command_init_flash:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; IBM PCjr B delays used in REFRESH_PALETTE
-; delays used in new_i08_bottom_full_color
-jr_b_delay_1a:                                  ;sync function
-        times 30 nop
-        mov     cx,jr_b_delay_1b                ;delay function to be used after this one
-        ret
-
-jr_b_delay_1b:                                  ;h-retrace
-        times 43 nop
+command_update_flash:
+        call    command_next
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; IBM PCjr A delays used in REFRESH_PALETTE
-jr_a_delay_0a:                                  ;sync
-        times 31 nop
-        mov     cx,jr_a_delay_0b                ;delay function to be used after this one
-        ret
-
-jr_a_delay_0b:                                  ;h-retrace
-        times 43 nop
+command_init_delay:
+        mov     bx,[command_idx]
+        mov     al,[commands + bx]
+        mov     [delay_cnt],al
+        inc     word [command_idx]
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; IBM PCjr A delays used in REFRESH_PALETTE
-; delays used in new_i08_bottom_full_color
-jr_a_delay_1a:                                  ;sync
-        times 31 nop
-        mov     cx,jr_a_delay_1b                ;delay function to be used after this one
+command_update_delay:
+        dec     byte [delay_cnt]
+        jz      .exit
+        ret
+.exit:
+        jmp     command_next
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_init_black:
         ret
 
-jr_a_delay_1b:                                  ;h-retrace
-        times 45 nop
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_update_black:
+        call    command_next
         ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_init_end:
+        ;mov     byte [end_condition],1
+
+        ;repeat forever
+        mov     word [command_idx],0
+        jmp     command_next
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_update_end:
+        ret
+
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -392,28 +365,39 @@ jr_a_delay_1b:                                  ;h-retrace
 ; DATA GFX
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-section .gfx data
-logo_lz4:
-        incbin 'src/logo.raw.lz4'
-
-logo_zx7:
-        incbin 'src/logo.raw.zx7'
+section .banner_data data
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-;
-; DATA MUSIC + CHARSET + MISC
-;
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-section .data data
+; compress data
+letter_p_lz4:
+        incbin 'src/p.raw.lz4'
+letter_v_lz4:
+        incbin 'src/v.raw.lz4'
+letter_m_lz4:
+        incbin 'src/m.raw.lz4'
+letter_invites_lz4:
+        incbin 'src/invites.raw.lz4'
+letter_you_lz4:
+        incbin 'src/you.raw.lz4'
+letter_to_lz4:
+        incbin 'src/to.raw.lz4'
+letter_flashparty_lz4:
+        incbin 'src/fp.raw.lz4'
+letter_2018_lz4:
+        incbin 'src/2018.raw.lz4'
+letter_tango_lz4:
+        incbin 'src/tango_silueta.raw.lz4'
+letter_satelite_lz4:
+        incbin 'src/satelite.raw.lz4'
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; song related
 pvm_song:
         incbin 'src/uctumi-song.pvm'
-
 pvm_wait:                                       ;cycles to read divided 0x2df
         db 0
 pvm_offset:                                     ;pointer to next byte to read
         dw 0
-
 volume_0:
         db      0b1001_1111                     ;vol 0 channel 0
         db      0b1011_1111                     ;vol 0 channel 1
@@ -421,11 +405,140 @@ volume_0:
         db      0b1111_1111                     ;vol 0 channel 3
 VOLUME_0_MAX equ $ - volume_0
 
-tick:                                           ;to trigger once the irq was called
-        db      0
-old_i08:                                        ;segment + offset to old int 8 (timer)
-        dd      0
-old_i09:                                        ;segment + offset to old int 9 (keyboard)
-        dd      0
-old_pic_imr:                                    ;PIC IMR original value
-        db      0
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; vars
+should_decompress:      db 0                    ;0 when no decompress is needed, nor in progress
+                                                ; 1 when decompress is requested or in progress
+letter_to_decompress:   db 0                    ;idx of the image to decompress
+
+command_idx:            dw 0                    ;index of current command. index in the
+                                                ; 'command' variable. [command + command_idx] gives
+                                                ; you the current command
+command_current_fn:     dw 0                    ; current command function. address of the function to call
+
+delay_cnt:              db 0                    ;when 0, delay is over. tick once per frame
+
+end_condition:          db 0                    ;when 1, banner animation sequence finishes
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; pointers to the data. each one has its own index
+letter_idx:
+        dw letter_p_lz4                         ;0
+        dw letter_v_lz4                         ;1
+        dw letter_m_lz4                         ;2
+        dw letter_invites_lz4                   ;3
+        dw letter_you_lz4                       ;4
+        dw letter_to_lz4                        ;5
+        dw letter_flashparty_lz4                ;6
+        dw letter_2018_lz4                      ;7
+        dw letter_tango_lz4                     ;8
+        dw letter_satelite_lz4                  ;9
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; available tokens
+TOKEN_DISPLAY   equ 0                             ;letter to display
+TOKEN_FLASH     equ 1
+TOKEN_DELAY     equ 2
+TOKEN_BLACK     equ 3
+TOKEN_END       equ 4
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_inits:
+        dw      command_init_display
+        dw      command_init_flash
+        dw      command_init_delay
+        dw      command_init_black
+        dw      command_init_end
+
+command_updates:
+        dw      command_update_display
+        dw      command_update_flash
+        dw      command_update_delay
+        dw      command_update_black
+        dw      command_update_end
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; available tokens
+commands:
+        db TOKEN_DISPLAY,0                            ;p
+        db TOKEN_DELAY,75
+        db TOKEN_DISPLAY,1                            ;v
+        db TOKEN_DELAY,75
+        db TOKEN_DISPLAY,2                            ;m
+        db TOKEN_DELAY,75
+        db TOKEN_BLACK
+        db TOKEN_DELAY,100
+
+        db TOKEN_DISPLAY,0                            ;p
+        db TOKEN_DELAY,75
+        db TOKEN_DISPLAY,1                            ;v
+        db TOKEN_DELAY,75
+        db TOKEN_DISPLAY,2                            ;m
+        db TOKEN_BLACK
+        db TOKEN_DELAY,75
+
+        db TOKEN_DISPLAY,0                            ;p
+        db TOKEN_DELAY,50
+        db TOKEN_DISPLAY,1                            ;v
+        db TOKEN_DELAY,50
+        db TOKEN_DISPLAY,2                            ;m
+        db TOKEN_BLACK
+        db TOKEN_DELAY,50
+
+        db TOKEN_DISPLAY,0                            ;p
+        db TOKEN_DELAY,25
+        db TOKEN_DISPLAY,1                            ;v
+        db TOKEN_DELAY,25
+        db TOKEN_DISPLAY,2                            ;m
+        db TOKEN_BLACK
+        db TOKEN_DELAY,25
+
+        db TOKEN_DISPLAY,0                            ;p
+        db TOKEN_DELAY,5
+        db TOKEN_DISPLAY,1                            ;v
+        db TOKEN_DELAY,5
+        db TOKEN_DISPLAY,2                            ;m
+        db TOKEN_BLACK
+        db TOKEN_DELAY,5
+
+        db TOKEN_DISPLAY,0                            ;p
+        db TOKEN_DELAY,5
+        db TOKEN_DISPLAY,1                            ;v
+        db TOKEN_DELAY,5
+        db TOKEN_DISPLAY,2                            ;m
+        db TOKEN_BLACK
+        db TOKEN_DELAY,5
+
+        db TOKEN_DISPLAY,3                            ;invites
+        db TOKEN_DELAY,30
+        db TOKEN_DISPLAY,4                            ;you
+        db TOKEN_DELAY,30
+        db TOKEN_DISPLAY,5                            ;to
+        db TOKEN_DELAY,30
+
+        db TOKEN_DISPLAY,6                            ;flash party
+        db TOKEN_DELAY,30
+        db TOKEN_FLASH
+        db TOKEN_DELAY,5
+        db TOKEN_FLASH
+        db TOKEN_DELAY,5
+        db TOKEN_FLASH
+        db TOKEN_DELAY,5
+        db TOKEN_FLASH
+        db TOKEN_DELAY,5
+        db TOKEN_FLASH
+        db TOKEN_DELAY,5
+        db TOKEN_FLASH
+        db TOKEN_DELAY,30
+
+        db TOKEN_DISPLAY,7                            ;2018
+        db TOKEN_DELAY,150
+
+        db TOKEN_DISPLAY,8                            ;tango
+        db TOKEN_DELAY,150
+
+        db TOKEN_DISPLAY,9                            ;satelite
+        db TOKEN_DELAY,150
+
+        db TOKEN_END
