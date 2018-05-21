@@ -49,7 +49,7 @@ res:
 	echo "Generating resources..."
 	echo "Compressing music..."
 	python3 ~/progs/pc-8088-misc/pvmplay/convert_vgm_to_pvm.py res/cumparchiptune.vgm
-	mv res/cumparchiptune.pvm src/
+	mv res/cumparchiptune.pvm src/uctumi-song.pvm
 	echo "Converting graphics..."
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 10 -o src/flashparty.bin res/flashparty.data
 	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/p.raw res/p.data
