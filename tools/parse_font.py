@@ -15,6 +15,8 @@ __docformat__ = 'restructuredtext'
 
 
 class Parser:
+    PIXELS_PER_BYTE = 4
+
     def __init__(self, image_file, output_fd):
         self._visited = {}
         self._image_file = image_file
@@ -42,6 +44,8 @@ class Parser:
 
         print('Total segments: %d' % segment)
         self.process_segments()
+
+        self.generate_output()
 
     def is_visited(self, x, y):
         key = '%d,%d' % (x, y)
@@ -109,10 +113,90 @@ class Parser:
                 values.sort()
                 # non contiguos regions not supported yet (not needed for 55-segment)
                 assert(len(values)-1 == values[-1] - values[0])
-                # replace strings with range
-                self._segments[segment_k][col] = (values[0], values[-1])
+                # replace strings with range: coordinate, lenght
+                self._segments[segment_k][col] = (values[0],
+                        values[-1] - values[0])
 
-        print(self._segments[1])
+    def generate_output(self):
+        # 8086 segment:offset addressing
+        dest_seg = 0x1800
+        dest_off = 0x0000
+
+        # Graphics mode 4: 320 x 200 x 4 colors: 2 bits per pixel
+        # TODO: support 640 x 200 x 2 colors: 1 bit per pixel
+
+        # offset used in X since the graphics might not be 320x200
+        x_offset = (320 - self._width) // 2
+
+
+        for seg_key, seg_data in self._segments.items():
+            self.generate_on(seg_key, row, values)
+            self.generate_off(seg_key, row, values)
+
+    def generate_on(self, seg_key, seg_data):
+        """segment_%d_on:
+            mov     ax,0b01010101_01010101
+            """ % seg_key
+
+        for row, values in seg_data.items():
+            x_start, x_len = values
+            x_start += x_offset
+
+            # x_len uses 0 to indicate 1 pixel, and so on
+            while x_len >= 0:
+
+                consumed_pixels = 0
+                offset = self.calculate_offset(row, x_start)
+
+                # use full byte ?
+                if x_start % 4 == 0:
+                    # words available: pixels_left / pixels_per_word
+                    times = x_len // PIXELS_PER_BYTE
+                    # at least one word ?
+                    if times // 2 > 0:
+                        self.do_rep_stosw(offset, times // 2)
+                    # one byte
+                    elif times > 0:
+                        assert(times == 1)
+                        self.do_stosb(offset)
+                    consumed_pixels = times * PIXELS_PER_BYTE
+                else:
+                    mask = self.calculate_mask(offset)
+                    self.do_on(offset, mask)
+
+                x_len -= consumed_pixels
+                x_start += consumed_pixels
+
+    def generate_off(self, seg_key, seg_data):
+        pass
+
+    def do_rep_stosw(self, offset, times):
+        """
+        mov     di,0x%04x
+        mov     cx,%d
+        rep stosw
+        """ % (offset, times)
+
+        """
+        mov     di,0x%04x
+        stosw
+        """ % (offset, times)
+
+    def do_stosb(self, offset):
+        """
+        mov     di,0x%04x
+        stosb
+        """ % (offset)
+
+    def do_and(self, offset, mask):
+        """
+        and     [0x%04x], %s
+        """ % (offset, bin(mask))
+
+    def do_or(self, offset, mask):
+        """
+        or      [0x%04x], %s
+        """ % (offset, bin(mask))
 
 
 def parse_args():
