@@ -165,17 +165,17 @@ segment_%d_on:
                         consumed_pixels = bytes_used * PIXELS_PER_BYTE
                     else:
                         # remaining part, less than one byte
-                        mask = self.calculate_mask(x_start)
+                        mask = self.calculate_mask(x_start, x_len)
                         self.do_or(offset, mask)
 
                         # consumes all the remaining pixels
                         consumed_pixels = x_len
 
                 else:
-                    mask = self.calculate_mask(x_start)
-                    self.do_or(offset, mask)
                     remaining = PIXELS_PER_BYTE - x_start % PIXELS_PER_BYTE
                     consumed_pixels = min(remaining, x_len)
+                    mask = self.calculate_mask(x_start, consumed_pixels)
+                    self.do_or(offset, mask)
 
                 x_len -= consumed_pixels
                 x_start += consumed_pixels
@@ -192,14 +192,16 @@ segment_%d_on:
         offset = page * 8192
 
         # each line is 320 pixels wide
-        offset += y * 320 // PIXELS_PER_BYTE
+        offset += (y // GFX_PAGES) * 320 // PIXELS_PER_BYTE
 
         # add x pixels, in bytes
         offset += x // PIXELS_PER_BYTE
 
         return offset
 
-    def calculate_mask(self, x):
+    def calculate_mask(self, x, pixels):
+        # starting pixel from the left (msb bit)
+        msb = PIXELS_PER_BYTE - x % PIXELS_PER_BYTE
         return 0xff
 
     def do_rep_stosw(self, offset, times):
