@@ -97,6 +97,21 @@ banner_init:
         call    segment_31_on
         call    segment_32_on
         call    segment_33_on
+        call    segment_34_on
+        call    segment_35_on
+        call    segment_36_on
+        call    segment_37_on
+        call    segment_38_on
+        call    segment_39_on
+        call    segment_40_on
+        call    segment_41_on
+
+        call    segment_43_on
+        call    segment_42_on
+        call    segment_49_on
+        call    segment_47_on
+        call    segment_48_on
+        call    segment_50_on
 
         pop     es
         pop     ds
