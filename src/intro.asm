@@ -11,7 +11,9 @@ extern lz4_decompress, lz4_decompress_small
 extern dzx7_speed, dzx7_size, dzx7_original
 extern irq_8_cleanup, irq_8_init
 
-extern segment_0_on, segment_1_on, segment_2_on
+extern segment_0_on, segment_1_on, segment_2_on, segment_3_on, segment_4_on
+extern segment_5_on, segment_6_on, segment_7_on, segment_8_on, segment_9_on
+extern segment_10_on
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
@@ -71,6 +73,10 @@ banner_init:
 
         call    segment_0_on
         call    segment_2_on
+        call    segment_4_on
+        call    segment_6_on
+        call    segment_8_on
+        call    segment_10_on
 
         pop     es
         pop     ds

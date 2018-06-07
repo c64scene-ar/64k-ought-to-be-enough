@@ -170,7 +170,7 @@ segment_%d_on:
                     if bytes_used // 2 > 0:
                         # at least one word
                         self.do_rep_stosw(offset, bytes_used // 2)
-                        consumed_pixels = bytes_used * PIXELS_PER_BYTE
+                        consumed_pixels = (bytes_used // 2) * 2 * PIXELS_PER_BYTE
                     elif bytes_used > 0:
                         # one byte
                         assert(bytes_used == 1)
@@ -178,6 +178,8 @@ segment_%d_on:
                         consumed_pixels = bytes_used * PIXELS_PER_BYTE
                     else:
                         # remaining part, less than one byte
+                        assert(bytes_used == 0)
+                        assert(x_len < PIXELS_PER_BYTE)
                         mask = self.calculate_mask(x_start, x_len)
                         self.do_or(offset, mask)
 
@@ -214,9 +216,15 @@ segment_%d_on:
         return offset
 
     def calculate_mask(self, x, pixels):
+        x = x % PIXELS_PER_BYTE
+        assert(pixels <= 3)
+        assert(x + pixels <= 4)
+        vals = [0b01000000, 0b00010000, 0b00000100, 0b0000000001]
         # starting pixel from the left (msb bit)
-        msb = PIXELS_PER_BYTE - x % PIXELS_PER_BYTE
-        return 0xff
+        ret = 0
+        for i in range(x, x+pixels):
+            ret |= vals[i]
+        return ret
 
     def do_rep_stosw(self, offset, times):
         out = '        mov     di,0x%04x\n' % offset
