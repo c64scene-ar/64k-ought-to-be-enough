@@ -11,6 +11,8 @@ extern lz4_decompress, lz4_decompress_small
 extern dzx7_speed, dzx7_size, dzx7_original
 extern irq_8_cleanup, irq_8_init
 
+extern segment_0_on, segment_1_on, segment_2_on
+
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -52,12 +54,29 @@ banner_init:
 
         call    command_next                    ;initialize next command
 
-        mov     ax,banner_irq_8
-        call    irq_8_init
-        call    music_init
+        ;mov     ax,banner_irq_8
+        ;call    irq_8_init
+        ;call    music_init
 
         mov     ax,0x0004                       ;320x200 4 colors
         int     0x10
+
+        int 3
+
+        push    ds
+        push    es
+        mov     ax,0x1c00
+        mov     ds,ax
+        mov     es,ax
+
+        call    segment_0_on
+        call    segment_2_on
+
+        pop     es
+        pop     ds
+
+        mov     ax,1
+        int     0x16
 
         ret
 
