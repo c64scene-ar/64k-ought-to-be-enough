@@ -11,9 +11,7 @@ extern lz4_decompress, lz4_decompress_small
 extern dzx7_speed, dzx7_size, dzx7_original
 extern irq_8_cleanup, irq_8_init
 
-extern segment_0_on, segment_1_on, segment_2_on, segment_3_on, segment_4_on
-extern segment_5_on, segment_6_on, segment_7_on, segment_8_on, segment_9_on
-extern segment_10_on
+%include 'src/externs.inc'
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
@@ -71,12 +69,34 @@ banner_init:
         mov     ds,ax
         mov     es,ax
 
-        call    segment_0_on
+        ;                          1                   2                   3                   4                   5
+        ;      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4
+        ;'a': [O,o,O,O,O,O,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,O,O,O,o,o,o,o,O,O,o,o,o,o,o,o,o,o,o,O,O,O,O,O,O,O,O,O,O],
+
+        call    segment_1_on
         call    segment_2_on
-        call    segment_4_on
+        call    segment_3_on
+        call    segment_5_on
         call    segment_6_on
-        call    segment_8_on
+
+        call    segment_7_on
         call    segment_10_on
+        call    segment_13_on
+        call    segment_14_on
+        call    segment_15_on
+        call    segment_16_on
+        call    segment_18_on
+        call    segment_22_on
+        call    segment_24_on
+        call    segment_25_on
+        call    segment_26_on
+        call    segment_27_on
+        call    segment_28_on
+        call    segment_29_on
+        call    segment_30_on
+        call    segment_31_on
+        call    segment_32_on
+        call    segment_33_on
 
         pop     es
         pop     ds
