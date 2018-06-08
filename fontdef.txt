@@ -1,0 +1,137 @@
+ FONT['fifty-five'] = {
+    ' ': [o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o],
+;                             1                   2                   3                   4                   5
+;         0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4
+    'a': [O,o,O,O,O,O,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,O,O,O,o,o,o,o,O,O,o,o,o,o,o,o,o,o,o,O,O,O,O,O,O,O,O,O,O],
+    'b': [O,O,O,O,O,O,o,O,o,O,o,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,O,O,O,O,o,o,o,o,o,O,o,o,o,O,O,O,O,O,O],
+    'c': [O,o,O,O,O,O,o,o,o,o,o,o,o,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,O,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,o],
+    'd': [O,O,O,O,O,O,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,o],
+    'e': [O,o,O,O,O,O,O,o,o,o,o,o,o,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,O,O,O,O,O,O,O,O,O,O,o,o,o,o,o,O,o,o,o,O,O,O,O,O,O],
+    'f': [O,o,O,O,O,O,O,o,o,o,o,o,o,o,o,O,O,O,O,O,O,O,O,O,o,o,o,O,O,O,o,o,o,o,o,o,O,O,O,O,o,o,o,o,o,O,o,o,o,O,O,O,O,o,O],
+    'g': [O,o,O,O,O,O,o,o,o,O,O,O,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,O,O,O,O,O,o,o,o,O,O,o,o,o,o,o,O,o,o,o,o,o,O,O,O,O],
+    'h': [O,O,o,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,O,O,O,o,o,o,o,O,O,O,O,O,O,o,o,o,o,o,O,o,o,o,O,O,O,O,O,O],
+    'i': [O,O,O,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,O,O],
+    'j': [o,o,o,o,o,O,O,O,O,O,O,O,O,O,O,o,o,o,o,o,o,O,O,O,O,O,O,O,O,o,O,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,o],
+
+    'k': [O,O,o,o,o,O,O,O,o,O,o,o,o,O,O,O,O,O,O,O,O,O,O,O,o,o,o,O,O,O,o,o,o,o,O,O,o,O,O,O,o,o,O,o,O,O,O,o,o,o,O,O,O,O,O],
+    'l': [O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,O,O,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,o],
+    'm': [O,O,O,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,O,O,O,o,o,o,o,O,O,O,O,O,O,O,O,O,O,O,o,o,o,o,o,O,O,O,O,O],
+    'n': [O,O,O,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,O,O,O,o,o,o,o,O,O,O,O,O,O,O,O,O,o,o,O,O,o,o,o,O,O,O,O,O],
+    'o': [O,o,O,O,O,O,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,O,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,o],
+    'p': [O,O,O,O,O,O,o,O,O,O,O,o,o,O,o,O,O,O,O,O,O,O,O,O,o,o,o,O,O,O,o,o,o,o,o,o,O,O,O,O,o,o,o,o,o,O,o,o,o,O,O,O,O,o,O],
+    'q': [O,o,O,O,O,O,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,O,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,O,o,o,o,o,O,O,O,o],
+    'r': [O,O,O,O,O,O,o,O,o,O,o,o,o,O,O,O,O,O,O,O,O,O,O,O,o,o,o,O,O,O,o,o,o,o,O,O,O,O,O,O,o,o,o,o,o,O,O,o,o,O,O,O,O,O,O],
+
+
+    's': [O,o,O,O,O,O,o,o,o,O,O,O,o,O,O,O,O,O,O,o,o,o,o,o,O,O,O,O,O,o,O,O,O,O,O,o,O,O,O,O,o,o,o,o,o,O,o,o,o,O,O,O,o,O,O],
+    't': [O,O,O,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,o,o,o,O,O,O,O,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,O],
+    'u': [O,O,o,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,O,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,o],
+    'v': [O,O,o,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,O,O,o,O,O,O,o],
+    'w': [O,O,o,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,O,O,O,O,O,o,o,O,O,O,o,O,O,o,o,o,o,o,o,O,O,O,O,O,O,O,O,O,O],
+    'x': [O,O,o,o,o,O,O,O,O,O,O,O,o,O,O,O,O,O,o,O,o,o,O,O,o,o,o,O,O,O,o,o,o,o,O,O,O,O,O,O,O,o,O,o,O,O,O,o,O,O,O,O,O,O,O],
+    'y': [O,O,o,o,o,O,O,O,O,O,O,o,o,O,o,O,O,O,O,o,o,o,o,o,O,O,O,o,o,o,O,O,O,O,o,o,O,O,O,O,o,o,o,o,o,O,O,O,O,O,O,O,o,o,O],
+    'z': [O,O,O,O,O,O,O,O,O,O,O,o,o,O,o,o,O,O,o,O,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,o,o,O,o,o,o,O,O,O,O,O,O],
+
+;                             1                   2                   3                   4                   5
+;         0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4
+    '0': [O,o,O,O,O,O,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,O,O,O,O,O,o,o,O,O,O,o,o,O,o,O,o,o,o,O,O,O,O,O,O,O],
+    '1': [O,o,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,O,O],
+    '2': [O,o,O,O,O,O,o,O,O,O,O,o,o,O,o,o,O,O,o,O,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,o,o,O,o,o,o,O,O,O,O,O,O],
+    '3': [O,o,O,O,O,O,o,O,o,O,O,O,o,O,O,o,o,o,o,o,o,o,o,o,O,O,O,O,O,o,O,O,O,O,O,o,o,O,O,O,o,o,o,o,o,O,o,o,o,o,O,o,o,O,O],
+    '4': [O,O,o,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,O,O,O,o,o,o,o,o,O,o,o,o,O,O,O,o,O,O],
+    '5': [O,O,O,O,O,O,O,o,o,O,O,O,o,O,O,O,O,O,O,O,O,o,o,o,O,O,O,O,O,O,O,O,O,O,O,o,O,O,O,O,o,o,o,o,o,O,o,o,o,O,O,O,O,O,O],
+    '6': [O,o,O,O,O,O,o,o,o,O,O,O,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,O,O,O,O,O,o,O,O,O,O,o,o,o,o,o,O,o,o,o,O,O,O,O,O,O],
+    '7': [O,O,O,O,O,O,O,O,o,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,o,o,o,O,O,O,O,o,o,o,O,O,O,o,o,O,o,O,O,O,O,O,O,O,o,o,o,O],
+    '8': [O,o,O,O,O,O,o,O,o,O,o,o,o,O,O,O,O,o,o,o,o,o,o,O,O,O,O,O,O,o,O,O,O,O,O,o,O,O,O,O,o,o,o,o,o,O,o,o,o,O,O,O,O,O,O],
+    '9': [O,o,O,O,O,O,o,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,o,o,O,O,O,O,O,o,O,O,O,O,O,o,O,O,O,O,o,o,o,o,o,O,o,o,o,O,O,O,o,O,O],
+;                             1                   2                   3                   4                   5
+;         0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4
+    '.': [o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,o,o,o,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o],
+    '|': [o,o,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,o,o,o,O,O,O,O,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,O],
+    '(': [O,o,O,O,O,o,o,o,o,o,o,o,o,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,o,o],
+    ')': [o,o,O,O,O,O,o,O,O,O,O,O,O,O,O,o,o,o,o,o,o,o,o,o,O,O,O,o,o,o,O,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,o],
+    ':': [o,o,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,O,O,O,o,o,o,O],
+    ';': [o,o,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,o,o,o,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,O,O,O,o,o,o,O],
+    ',': [o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,o,o,o,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,O,O,O,o,o,o,O],
+
+    '_': [o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,o],
+    '-': [o,o,o,o,o,o,o,o,o,O,O,o,o,O,o,o,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,O,o,o,o,o,o,O,o,o,o,O,O,O,o,o,O],
+
+    '+': [o,o,o,o,o,o,o,o,o,O,O,o,o,O,o,o,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,O],
+    '!': [o,o,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,o,o,o,O,O,O,O,o,o,O,O,O,O,O,O,O,O,O,O,o,o,o,O,O,o,o,o,O],
+    '?': [O,o,O,O,O,O,o,O,O,O,O,o,o,O,o,o,o,o,o,o,o,o,o,o,O,O,O,o,o,o,O,O,O,O,o,o,O,O,O,O,o,o,o,o,o,O,o,o,o,O,O,o,o,o,O],
+
+    'ä': [O,o,o,o,o,O,o,o,o,O,O,O,o,O,O,o,O,O,o,O,o,o,O,O,o,o,o,O,O,o,o,o,o,o,O,o,O,O,O,O,o,o,o,o,o,o,O,O,O,o,o,O,O,O,o],
+    'ö': [O,o,o,o,o,O,o,o,o,O,O,O,o,O,O,o,O,O,o,O,o,o,O,O,O,O,O,O,O,o,O,O,O,O,O,o,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,O,O,O,o],
+    'ü': [O,o,o,o,o,O,o,o,o,O,O,O,o,O,O,o,O,O,o,O,o,o,O,O,O,O,O,O,O,o,O,O,O,O,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,o],
+    'ß': [O,o,O,O,O,O,o,O,o,O,O,O,o,O,O,O,O,O,O,O,O,O,O,O,o,o,o,O,O,O,o,o,O,O,O,o,o,o,O,O,o,o,o,o,o,o,o,o,o,o,o,O,O,O,o],
+
+    'cursor': [O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O],
+
+;                             1                   2                   3                   4                   5
+;         0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4
+    ',': [o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,o,o,o,O,o,o,o,o,o,o,o,o,o,o,o,o,o,o,O,O,O,O,O,O,o,o,o,O],
+    'n': [O,O,O,o,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,O,O,O,o,o,o,o,O,O,O,O,O,O,O,O,O,o,o,O,O,o,o,o,O,O,O,O,O],
+    '0': [O,o,O,O,O,O,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,O,O,O,O,O,o,o,O,O,O,o,o,O,o,O,o,o,o,O,O,O,O,O,O,O],
+    'g': [O,o,O,O,O,O,o,o,o,O,O,O,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,O,O,O,O,O,o,o,o,O,O,o,o,o,o,o,O,o,o,o,o,o,O,O,O,O],
+  }
+
+pos = {
+   0:1,  // top-left
+   1:0,  // top-left
+   2:5,  // top-center
+   3:2,  // top-center
+   4:6,  // top-center
+   5:3,  // top-right
+   6:4,  // top-right
+   7:,
+   8:,
+   9:,
+  10:,
+  11:,
+  12:,
+  13:,
+  14:,
+  15:,
+  16:,
+  17:,
+  18:,
+  19:,
+  20:,
+  21:,
+  22:,
+  23:,
+  24:,
+  25:,
+  26:44,  // (bottom-center)
+  27:43,  // (bottom-left block)
+  28:42,  // (bottom-left block)
+  29:49,  // (bottom-left block)
+  30:51,  // (bottom-center)
+  31:53,  // or 54 (bottom-center)
+  32:54,  // or 53 (bottom-center)
+  33:52,  // (bottom-center
+  34:48,  // (bottom-right block)
+  35:50,  // (bottom-right block)
+  36:,
+  37:,
+  38:,
+  39:,
+  40:,
+  41:,
+  42:,
+  43:,
+  44:,
+  45:33,  // arriba palito q
+  46:41,  // palito de Q
+  47:40,  // (al lado palito q)
+  48:39,  // (al lado palito q)
+  49:28,  // arriba palito q
+  50:32,  // arriba palito q
+  51:,
+  52:,
+  53:47,  // (bottom-right block)
+  54:29,  // arriba palito q
+  }
+
+
