@@ -28,6 +28,8 @@ class Parser:
         self._height = 0
         self._array = []
         self._segments = {}
+        self._common_stos = []
+        self._common_and = []
 
     def run(self):
         """Execute the conversor."""
@@ -137,15 +139,17 @@ cpu     8086
 """)
 
         for seg_key, seg_data in self._segments.items():
+            self._common_stos = []
+            self._common_and = []
             self.generate_on(seg_key, seg_data)
             self.generate_off(seg_key, seg_data)
+            self.generate_common(seg_key)
 
     def generate_on(self, seg_key, seg_data):
         out = """
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_%d_on
 segment_%d_on:
-        mov     ax,0b01010101_01010101
 
 """ % (seg_key, seg_key)
         self._output_fd.write(out)
@@ -194,10 +198,40 @@ segment_%d_on:
 
                 x_len -= consumed_pixels
                 x_start += consumed_pixels
-        self._output_fd.write('\n        ret\n')
+        self._output_fd.write("""
+        mov     ax,0b01010101_01010101
+        jmp     segment_%d_common""" % seg_key)
 
     def generate_off(self, seg_key, seg_data):
-        pass
+        out = """
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_%d_off
+segment_%d_off:
+
+""" % (seg_key, seg_key)
+        self._output_fd.write(out)
+
+        for offset, mask in self._common_and:
+            # reverse mask, since it was generated for 'or', not 'and'.
+            mask = (mask ^ 255) & 255
+            self.do_and(offset, mask)
+
+        self._output_fd.write("""
+        mov     ax,0b00000000_00000000
+        jmp     segment_%d_common""" % seg_key)
+
+    def generate_common(self, seg_key):
+        out = """
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_%d_common:
+
+""" % seg_key
+        self._output_fd.write(out)
+        for c in self._common_stos:
+            self._output_fd.write(c)
+        self._output_fd.write("""
+        ret
+""")
 
     def calculate_offset(self, y, x):
 
@@ -233,12 +267,12 @@ segment_%d_on:
             out += '        rep stosw\n'
         else:
             out += '        stosw\n'
-        self._output_fd.write(out)
+        self._common_stos.append(out)
 
     def do_stosb(self, offset):
         out = '        mov     di,0x%04x\n' % offset
         out += '        stosb\n'
-        self._output_fd.write(out)
+        self._common_stos.append(out)
 
     def do_and(self, offset, mask):
         out = '        and     byte [0x%04x], %s\n' % (offset, bin(mask))
@@ -247,6 +281,7 @@ segment_%d_on:
     def do_or(self, offset, mask):
         out = '        or      byte [0x%04x], %s\n' % (offset, bin(mask))
         self._output_fd.write(out)
+        self._common_and.append((offset,mask))
 
 
 def parse_args():

@@ -11,130 +11,30 @@ cpu     8086
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_0_on
 segment_0_on:
-        mov     ax,0b01010101_01010101
 
-        mov     di,0x0016
-        mov     cx,5
-        rep stosw
-        mov     di,0x0020
-        stosb
         or      byte [0x0021], 0b1010000
-        mov     di,0x2016
-        mov     cx,5
-        rep stosw
-        mov     di,0x0066
-        mov     cx,4
-        rep stosw
-        mov     di,0x006e
-        stosb
-        mov     di,0x2066
-        mov     cx,4
-        rep stosw
         or      byte [0x206e], 0b1000000
-        mov     di,0x00b6
-        mov     cx,3
-        rep stosw
-        mov     di,0x00bc
-        stosb
         or      byte [0x00bd], 0b1010000
-        mov     di,0x20b6
-        mov     cx,3
-        rep stosw
-        mov     di,0x20bc
-        stosb
-        mov     di,0x0106
-        mov     cx,3
-        rep stosw
         or      byte [0x010c], 0b1010000
-        mov     di,0x2106
-        mov     cx,3
-        rep stosw
-        mov     di,0x0156
-        mov     cx,2
-        rep stosw
-        mov     di,0x015a
-        stosb
         or      byte [0x015b], 0b1010000
-        mov     di,0x2156
-        mov     cx,2
-        rep stosw
-        mov     di,0x215a
-        stosb
         or      byte [0x215b], 0b1000000
-        mov     di,0x01a6
-        mov     cx,2
-        rep stosw
         or      byte [0x01aa], 0b1010100
-        mov     di,0x21a6
-        mov     cx,2
-        rep stosw
         or      byte [0x21aa], 0b1010000
-        mov     di,0x01f6
-        mov     cx,2
-        rep stosw
         or      byte [0x01fa], 0b1000000
-        mov     di,0x21f6
-        stosw
-        mov     di,0x21f8
-        stosb
         or      byte [0x21f9], 0b1010100
-        mov     di,0x0246
-        stosw
-        mov     di,0x0248
-        stosb
         or      byte [0x0249], 0b1010100
-        mov     di,0x2246
-        stosw
-        mov     di,0x2248
-        stosb
         or      byte [0x2249], 0b1010000
-        mov     di,0x0296
-        stosw
-        mov     di,0x0298
-        stosb
         or      byte [0x0299], 0b1000000
-        mov     di,0x2296
-        stosw
-        mov     di,0x2298
-        stosb
-        mov     di,0x02e6
-        stosw
         or      byte [0x02e8], 0b1010100
-        mov     di,0x22e6
-        stosw
         or      byte [0x22e8], 0b1010000
-        mov     di,0x0336
-        stosw
         or      byte [0x0338], 0b1010000
-        mov     di,0x2336
-        stosw
         or      byte [0x2338], 0b1000000
-        mov     di,0x0386
-        stosw
-        mov     di,0x2386
-        stosw
-        mov     di,0x03d6
-        stosb
         or      byte [0x03d7], 0b1010100
-        mov     di,0x23d6
-        stosb
         or      byte [0x23d7], 0b1010000
-        mov     di,0x0426
-        stosb
         or      byte [0x0427], 0b1010000
-        mov     di,0x2426
-        stosb
         or      byte [0x2427], 0b1010000
-        mov     di,0x0476
-        stosb
         or      byte [0x0477], 0b1000000
-        mov     di,0x2476
-        stosb
         or      byte [0x2477], 0b1000000
-        mov     di,0x04c6
-        stosb
-        mov     di,0x24c6
-        stosb
         or      byte [0x0516], 0b1010100
         or      byte [0x2516], 0b1010100
         or      byte [0x0566], 0b1010100
@@ -148,26 +48,252 @@ segment_0_on:
         or      byte [0x06a6], 0b1000000
         or      byte [0x26a6], 0b1000000
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_0_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_0_off
+segment_0_off:
+
+        and     byte [0x0021], 0b10101111
+        and     byte [0x206e], 0b10111111
+        and     byte [0x00bd], 0b10101111
+        and     byte [0x010c], 0b10101111
+        and     byte [0x015b], 0b10101111
+        and     byte [0x215b], 0b10111111
+        and     byte [0x01aa], 0b10101011
+        and     byte [0x21aa], 0b10101111
+        and     byte [0x01fa], 0b10111111
+        and     byte [0x21f9], 0b10101011
+        and     byte [0x0249], 0b10101011
+        and     byte [0x2249], 0b10101111
+        and     byte [0x0299], 0b10111111
+        and     byte [0x02e8], 0b10101011
+        and     byte [0x22e8], 0b10101111
+        and     byte [0x0338], 0b10101111
+        and     byte [0x2338], 0b10111111
+        and     byte [0x03d7], 0b10101011
+        and     byte [0x23d7], 0b10101111
+        and     byte [0x0427], 0b10101111
+        and     byte [0x2427], 0b10101111
+        and     byte [0x0477], 0b10111111
+        and     byte [0x2477], 0b10111111
+        and     byte [0x0516], 0b10101011
+        and     byte [0x2516], 0b10101011
+        and     byte [0x0566], 0b10101011
+        and     byte [0x2566], 0b10101111
+        and     byte [0x05b6], 0b10101111
+        and     byte [0x25b6], 0b10101111
+        and     byte [0x0606], 0b10101111
+        and     byte [0x2606], 0b10101111
+        and     byte [0x0656], 0b10111111
+        and     byte [0x2656], 0b10111111
+        and     byte [0x06a6], 0b10111111
+        and     byte [0x26a6], 0b10111111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_0_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_0_common:
+
+        mov     di,0x0016
+        mov     cx,5
+        rep stosw
+        mov     di,0x0020
+        stosb
+        mov     di,0x2016
+        mov     cx,5
+        rep stosw
+        mov     di,0x0066
+        mov     cx,4
+        rep stosw
+        mov     di,0x006e
+        stosb
+        mov     di,0x2066
+        mov     cx,4
+        rep stosw
+        mov     di,0x00b6
+        mov     cx,3
+        rep stosw
+        mov     di,0x00bc
+        stosb
+        mov     di,0x20b6
+        mov     cx,3
+        rep stosw
+        mov     di,0x20bc
+        stosb
+        mov     di,0x0106
+        mov     cx,3
+        rep stosw
+        mov     di,0x2106
+        mov     cx,3
+        rep stosw
+        mov     di,0x0156
+        mov     cx,2
+        rep stosw
+        mov     di,0x015a
+        stosb
+        mov     di,0x2156
+        mov     cx,2
+        rep stosw
+        mov     di,0x215a
+        stosb
+        mov     di,0x01a6
+        mov     cx,2
+        rep stosw
+        mov     di,0x21a6
+        mov     cx,2
+        rep stosw
+        mov     di,0x01f6
+        mov     cx,2
+        rep stosw
+        mov     di,0x21f6
+        stosw
+        mov     di,0x21f8
+        stosb
+        mov     di,0x0246
+        stosw
+        mov     di,0x0248
+        stosb
+        mov     di,0x2246
+        stosw
+        mov     di,0x2248
+        stosb
+        mov     di,0x0296
+        stosw
+        mov     di,0x0298
+        stosb
+        mov     di,0x2296
+        stosw
+        mov     di,0x2298
+        stosb
+        mov     di,0x02e6
+        stosw
+        mov     di,0x22e6
+        stosw
+        mov     di,0x0336
+        stosw
+        mov     di,0x2336
+        stosw
+        mov     di,0x0386
+        stosw
+        mov     di,0x2386
+        stosw
+        mov     di,0x03d6
+        stosb
+        mov     di,0x23d6
+        stosb
+        mov     di,0x0426
+        stosb
+        mov     di,0x2426
+        stosb
+        mov     di,0x0476
+        stosb
+        mov     di,0x2476
+        stosb
+        mov     di,0x04c6
+        stosb
+        mov     di,0x24c6
+        stosb
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_1_on
 segment_1_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x0021], 0b101
+        or      byte [0x206e], 0b10101
+        or      byte [0x00bd], 0b101
+        or      byte [0x010c], 0b101
+        or      byte [0x015b], 0b101
+        or      byte [0x215b], 0b10101
+        or      byte [0x01aa], 0b1
+        or      byte [0x21aa], 0b101
+        or      byte [0x01fa], 0b10101
+        or      byte [0x21f9], 0b1
+        or      byte [0x0249], 0b1
+        or      byte [0x2249], 0b101
+        or      byte [0x0299], 0b10101
+        or      byte [0x02e8], 0b1
+        or      byte [0x22e8], 0b101
+        or      byte [0x0338], 0b101
+        or      byte [0x2338], 0b10101
+        or      byte [0x03d7], 0b1
+        or      byte [0x23d7], 0b101
+        or      byte [0x0427], 0b101
+        or      byte [0x2427], 0b101
+        or      byte [0x0477], 0b10101
+        or      byte [0x2477], 0b10101
+        or      byte [0x0516], 0b1
+        or      byte [0x2516], 0b1
+        or      byte [0x0566], 0b1
+        or      byte [0x2566], 0b101
+        or      byte [0x05b6], 0b101
+        or      byte [0x25b6], 0b101
+        or      byte [0x0606], 0b101
+        or      byte [0x2606], 0b101
+        or      byte [0x0656], 0b10101
+        or      byte [0x2656], 0b10101
+        or      byte [0x06a6], 0b10101
+        or      byte [0x26a6], 0b10101
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_1_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_1_off
+segment_1_off:
+
+        and     byte [0x0021], 0b11111010
+        and     byte [0x206e], 0b11101010
+        and     byte [0x00bd], 0b11111010
+        and     byte [0x010c], 0b11111010
+        and     byte [0x015b], 0b11111010
+        and     byte [0x215b], 0b11101010
+        and     byte [0x01aa], 0b11111110
+        and     byte [0x21aa], 0b11111010
+        and     byte [0x01fa], 0b11101010
+        and     byte [0x21f9], 0b11111110
+        and     byte [0x0249], 0b11111110
+        and     byte [0x2249], 0b11111010
+        and     byte [0x0299], 0b11101010
+        and     byte [0x02e8], 0b11111110
+        and     byte [0x22e8], 0b11111010
+        and     byte [0x0338], 0b11111010
+        and     byte [0x2338], 0b11101010
+        and     byte [0x03d7], 0b11111110
+        and     byte [0x23d7], 0b11111010
+        and     byte [0x0427], 0b11111010
+        and     byte [0x2427], 0b11111010
+        and     byte [0x0477], 0b11101010
+        and     byte [0x2477], 0b11101010
+        and     byte [0x0516], 0b11111110
+        and     byte [0x2516], 0b11111110
+        and     byte [0x0566], 0b11111110
+        and     byte [0x2566], 0b11111010
+        and     byte [0x05b6], 0b11111010
+        and     byte [0x25b6], 0b11111010
+        and     byte [0x0606], 0b11111010
+        and     byte [0x2606], 0b11111010
+        and     byte [0x0656], 0b11101010
+        and     byte [0x2656], 0b11101010
+        and     byte [0x06a6], 0b11101010
+        and     byte [0x26a6], 0b11101010
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_1_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_1_common:
+
         mov     di,0x2020
         stosw
         mov     di,0x006f
         stosw
         mov     di,0x0071
         stosb
-        or      byte [0x206e], 0b10101
         mov     di,0x206f
         stosw
         mov     di,0x2071
         stosb
-        or      byte [0x00bd], 0b101
         mov     di,0x00be
         mov     cx,2
         rep stosw
@@ -176,7 +302,6 @@ segment_1_on:
         rep stosw
         mov     di,0x20c1
         stosb
-        or      byte [0x010c], 0b101
         mov     di,0x010d
         mov     cx,2
         rep stosw
@@ -185,45 +310,36 @@ segment_1_on:
         mov     di,0x210c
         mov     cx,3
         rep stosw
-        or      byte [0x015b], 0b101
         mov     di,0x015c
         mov     cx,3
         rep stosw
-        or      byte [0x215b], 0b10101
         mov     di,0x215c
         mov     cx,3
         rep stosw
-        or      byte [0x01aa], 0b1
         mov     di,0x01ab
         mov     cx,3
         rep stosw
         mov     di,0x01b1
         stosb
-        or      byte [0x21aa], 0b101
         mov     di,0x21ab
         mov     cx,3
         rep stosw
         mov     di,0x21b1
         stosb
-        or      byte [0x01fa], 0b10101
         mov     di,0x01fb
         mov     cx,3
         rep stosw
         mov     di,0x0201
         stosb
-        or      byte [0x21f9], 0b1
         mov     di,0x21fa
         mov     cx,4
         rep stosw
-        or      byte [0x0249], 0b1
         mov     di,0x024a
         mov     cx,4
         rep stosw
-        or      byte [0x2249], 0b101
         mov     di,0x224a
         mov     cx,4
         rep stosw
-        or      byte [0x0299], 0b10101
         mov     di,0x029a
         mov     cx,4
         rep stosw
@@ -232,25 +348,21 @@ segment_1_on:
         rep stosw
         mov     di,0x22a1
         stosb
-        or      byte [0x02e8], 0b1
         mov     di,0x02e9
         mov     cx,4
         rep stosw
         mov     di,0x02f1
         stosb
-        or      byte [0x22e8], 0b101
         mov     di,0x22e9
         mov     cx,4
         rep stosw
         mov     di,0x22f1
         stosb
-        or      byte [0x0338], 0b101
         mov     di,0x0339
         mov     cx,4
         rep stosw
         mov     di,0x0341
         stosb
-        or      byte [0x2338], 0b10101
         mov     di,0x2339
         mov     cx,4
         rep stosw
@@ -262,27 +374,21 @@ segment_1_on:
         mov     di,0x2388
         mov     cx,5
         rep stosw
-        or      byte [0x03d7], 0b1
         mov     di,0x03d8
         mov     cx,5
         rep stosw
-        or      byte [0x23d7], 0b101
         mov     di,0x23d8
         mov     cx,5
         rep stosw
-        or      byte [0x0427], 0b101
         mov     di,0x0428
         mov     cx,5
         rep stosw
-        or      byte [0x2427], 0b101
         mov     di,0x2428
         mov     cx,5
         rep stosw
-        or      byte [0x0477], 0b10101
         mov     di,0x0478
         mov     cx,5
         rep stosw
-        or      byte [0x2477], 0b10101
         mov     di,0x2478
         mov     cx,5
         rep stosw
@@ -296,73 +402,61 @@ segment_1_on:
         rep stosw
         mov     di,0x24d1
         stosb
-        or      byte [0x0516], 0b1
         mov     di,0x0517
         mov     cx,5
         rep stosw
         mov     di,0x0521
         stosb
-        or      byte [0x2516], 0b1
         mov     di,0x2517
         mov     cx,5
         rep stosw
         mov     di,0x2521
         stosb
-        or      byte [0x0566], 0b1
         mov     di,0x0567
         mov     cx,5
         rep stosw
         mov     di,0x0571
         stosb
-        or      byte [0x2566], 0b101
         mov     di,0x2567
         mov     cx,5
         rep stosw
         mov     di,0x2571
         stosb
-        or      byte [0x05b6], 0b101
         mov     di,0x05b7
         mov     cx,5
         rep stosw
         mov     di,0x05c1
         stosb
-        or      byte [0x25b6], 0b101
         mov     di,0x25b7
         mov     cx,5
         rep stosw
         mov     di,0x25c1
         stosb
-        or      byte [0x0606], 0b101
         mov     di,0x0607
         mov     cx,5
         rep stosw
         mov     di,0x0611
         stosb
-        or      byte [0x2606], 0b101
         mov     di,0x2607
         mov     cx,5
         rep stosw
         mov     di,0x2611
         stosb
-        or      byte [0x0656], 0b10101
         mov     di,0x0657
         mov     cx,5
         rep stosw
         mov     di,0x0661
         stosb
-        or      byte [0x2656], 0b10101
         mov     di,0x2657
         mov     cx,5
         rep stosw
         mov     di,0x2661
         stosb
-        or      byte [0x06a6], 0b10101
         mov     di,0x06a7
         mov     cx,5
         rep stosw
         mov     di,0x06b1
         stosb
-        or      byte [0x26a6], 0b10101
         mov     di,0x26a7
         mov     cx,5
         rep stosw
@@ -383,199 +477,67 @@ segment_1_on:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_2_on
 segment_2_on:
-        mov     ax,0b01010101_01010101
 
-        mov     di,0x0022
-        mov     cx,5
-        rep stosw
-        mov     di,0x002c
-        stosb
         or      byte [0x002d], 0b1010100
         or      byte [0x2022], 0b10101
-        mov     di,0x2023
-        mov     cx,5
-        rep stosw
         or      byte [0x202d], 0b1010000
         or      byte [0x0072], 0b10101
-        mov     di,0x0073
-        mov     cx,5
-        rep stosw
         or      byte [0x007d], 0b1010000
         or      byte [0x2072], 0b101
-        mov     di,0x2073
-        mov     cx,5
-        rep stosw
         or      byte [0x207d], 0b1000000
         or      byte [0x00c2], 0b101
-        mov     di,0x00c3
-        mov     cx,5
-        rep stosw
         or      byte [0x00cd], 0b1000000
         or      byte [0x20c2], 0b1
-        mov     di,0x20c3
-        mov     cx,5
-        rep stosw
         or      byte [0x0112], 0b1
-        mov     di,0x0113
-        mov     cx,5
-        rep stosw
-        mov     di,0x2113
-        mov     cx,4
-        rep stosw
-        mov     di,0x211b
-        stosb
         or      byte [0x211c], 0b1010100
-        mov     di,0x0163
-        mov     cx,4
-        rep stosw
-        mov     di,0x016b
-        stosb
         or      byte [0x016c], 0b1010100
         or      byte [0x2163], 0b10101
-        mov     di,0x2164
-        mov     cx,4
-        rep stosw
         or      byte [0x216c], 0b1010000
         or      byte [0x01b3], 0b10101
-        mov     di,0x01b4
-        mov     cx,4
-        rep stosw
         or      byte [0x01bc], 0b1010000
         or      byte [0x21b3], 0b101
-        mov     di,0x21b4
-        mov     cx,4
-        rep stosw
         or      byte [0x21bc], 0b1000000
         or      byte [0x0203], 0b101
-        mov     di,0x0204
-        mov     cx,4
-        rep stosw
         or      byte [0x020c], 0b1000000
         or      byte [0x2203], 0b1
-        mov     di,0x2204
-        mov     cx,4
-        rep stosw
         or      byte [0x0253], 0b1
-        mov     di,0x0254
-        mov     cx,4
-        rep stosw
-        mov     di,0x2254
-        mov     cx,3
-        rep stosw
-        mov     di,0x225a
-        stosb
         or      byte [0x225b], 0b1010100
-        mov     di,0x02a4
-        mov     cx,3
-        rep stosw
-        mov     di,0x02aa
-        stosb
         or      byte [0x02ab], 0b1010100
         or      byte [0x22a4], 0b10101
-        mov     di,0x22a5
-        mov     cx,3
-        rep stosw
         or      byte [0x22ab], 0b1010000
         or      byte [0x02f4], 0b10101
-        mov     di,0x02f5
-        mov     cx,3
-        rep stosw
         or      byte [0x02fb], 0b1010000
         or      byte [0x22f4], 0b101
-        mov     di,0x22f5
-        mov     cx,3
-        rep stosw
         or      byte [0x22fb], 0b1000000
         or      byte [0x0344], 0b101
-        mov     di,0x0345
-        mov     cx,3
-        rep stosw
         or      byte [0x034b], 0b1000000
         or      byte [0x2344], 0b1
-        mov     di,0x2345
-        mov     cx,3
-        rep stosw
         or      byte [0x0394], 0b1
-        mov     di,0x0395
-        mov     cx,3
-        rep stosw
-        mov     di,0x2395
-        mov     cx,2
-        rep stosw
-        mov     di,0x2399
-        stosb
         or      byte [0x239a], 0b1010100
-        mov     di,0x03e5
-        mov     cx,2
-        rep stosw
-        mov     di,0x03e9
-        stosb
         or      byte [0x03ea], 0b1010100
         or      byte [0x23e5], 0b10101
-        mov     di,0x23e6
-        mov     cx,2
-        rep stosw
         or      byte [0x23ea], 0b1010000
         or      byte [0x0435], 0b10101
-        mov     di,0x0436
-        mov     cx,2
-        rep stosw
         or      byte [0x043a], 0b1010000
         or      byte [0x2435], 0b101
-        mov     di,0x2436
-        mov     cx,2
-        rep stosw
         or      byte [0x243a], 0b1000000
         or      byte [0x0485], 0b101
-        mov     di,0x0486
-        mov     cx,2
-        rep stosw
         or      byte [0x048a], 0b1000000
         or      byte [0x2485], 0b1
-        mov     di,0x2486
-        mov     cx,2
-        rep stosw
         or      byte [0x04d5], 0b1
-        mov     di,0x04d6
-        mov     cx,2
-        rep stosw
-        mov     di,0x24d6
-        stosw
-        mov     di,0x24d8
-        stosb
         or      byte [0x24d9], 0b1010100
-        mov     di,0x0526
-        stosw
-        mov     di,0x0528
-        stosb
         or      byte [0x0529], 0b1010100
         or      byte [0x2526], 0b10101
-        mov     di,0x2527
-        stosw
         or      byte [0x2529], 0b1010000
         or      byte [0x0576], 0b10101
-        mov     di,0x0577
-        stosw
         or      byte [0x0579], 0b1010000
         or      byte [0x2576], 0b101
-        mov     di,0x2577
-        stosw
         or      byte [0x2579], 0b1000000
         or      byte [0x05c6], 0b101
-        mov     di,0x05c7
-        stosw
         or      byte [0x05c9], 0b1000000
         or      byte [0x25c6], 0b1
-        mov     di,0x25c7
-        stosw
         or      byte [0x0616], 0b1
-        mov     di,0x0617
-        stosw
-        mov     di,0x2617
-        stosb
         or      byte [0x2618], 0b1010100
-        mov     di,0x0667
-        stosb
         or      byte [0x0668], 0b1010100
         or      byte [0x2667], 0b10101
         or      byte [0x2668], 0b1010000
@@ -588,411 +550,647 @@ segment_2_on:
         or      byte [0x2707], 0b1
         or      byte [0x0757], 0b1
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_2_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_2_off
+segment_2_off:
+
+        and     byte [0x002d], 0b10101011
+        and     byte [0x2022], 0b11101010
+        and     byte [0x202d], 0b10101111
+        and     byte [0x0072], 0b11101010
+        and     byte [0x007d], 0b10101111
+        and     byte [0x2072], 0b11111010
+        and     byte [0x207d], 0b10111111
+        and     byte [0x00c2], 0b11111010
+        and     byte [0x00cd], 0b10111111
+        and     byte [0x20c2], 0b11111110
+        and     byte [0x0112], 0b11111110
+        and     byte [0x211c], 0b10101011
+        and     byte [0x016c], 0b10101011
+        and     byte [0x2163], 0b11101010
+        and     byte [0x216c], 0b10101111
+        and     byte [0x01b3], 0b11101010
+        and     byte [0x01bc], 0b10101111
+        and     byte [0x21b3], 0b11111010
+        and     byte [0x21bc], 0b10111111
+        and     byte [0x0203], 0b11111010
+        and     byte [0x020c], 0b10111111
+        and     byte [0x2203], 0b11111110
+        and     byte [0x0253], 0b11111110
+        and     byte [0x225b], 0b10101011
+        and     byte [0x02ab], 0b10101011
+        and     byte [0x22a4], 0b11101010
+        and     byte [0x22ab], 0b10101111
+        and     byte [0x02f4], 0b11101010
+        and     byte [0x02fb], 0b10101111
+        and     byte [0x22f4], 0b11111010
+        and     byte [0x22fb], 0b10111111
+        and     byte [0x0344], 0b11111010
+        and     byte [0x034b], 0b10111111
+        and     byte [0x2344], 0b11111110
+        and     byte [0x0394], 0b11111110
+        and     byte [0x239a], 0b10101011
+        and     byte [0x03ea], 0b10101011
+        and     byte [0x23e5], 0b11101010
+        and     byte [0x23ea], 0b10101111
+        and     byte [0x0435], 0b11101010
+        and     byte [0x043a], 0b10101111
+        and     byte [0x2435], 0b11111010
+        and     byte [0x243a], 0b10111111
+        and     byte [0x0485], 0b11111010
+        and     byte [0x048a], 0b10111111
+        and     byte [0x2485], 0b11111110
+        and     byte [0x04d5], 0b11111110
+        and     byte [0x24d9], 0b10101011
+        and     byte [0x0529], 0b10101011
+        and     byte [0x2526], 0b11101010
+        and     byte [0x2529], 0b10101111
+        and     byte [0x0576], 0b11101010
+        and     byte [0x0579], 0b10101111
+        and     byte [0x2576], 0b11111010
+        and     byte [0x2579], 0b10111111
+        and     byte [0x05c6], 0b11111010
+        and     byte [0x05c9], 0b10111111
+        and     byte [0x25c6], 0b11111110
+        and     byte [0x0616], 0b11111110
+        and     byte [0x2618], 0b10101011
+        and     byte [0x0668], 0b10101011
+        and     byte [0x2667], 0b11101010
+        and     byte [0x2668], 0b10101111
+        and     byte [0x06b7], 0b11101010
+        and     byte [0x06b8], 0b10101111
+        and     byte [0x26b7], 0b11111010
+        and     byte [0x26b8], 0b10111111
+        and     byte [0x0707], 0b11111010
+        and     byte [0x0708], 0b10111111
+        and     byte [0x2707], 0b11111110
+        and     byte [0x0757], 0b11111110
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_2_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_2_common:
+
+        mov     di,0x0022
+        mov     cx,5
+        rep stosw
+        mov     di,0x002c
+        stosb
+        mov     di,0x2023
+        mov     cx,5
+        rep stosw
+        mov     di,0x0073
+        mov     cx,5
+        rep stosw
+        mov     di,0x2073
+        mov     cx,5
+        rep stosw
+        mov     di,0x00c3
+        mov     cx,5
+        rep stosw
+        mov     di,0x20c3
+        mov     cx,5
+        rep stosw
+        mov     di,0x0113
+        mov     cx,5
+        rep stosw
+        mov     di,0x2113
+        mov     cx,4
+        rep stosw
+        mov     di,0x211b
+        stosb
+        mov     di,0x0163
+        mov     cx,4
+        rep stosw
+        mov     di,0x016b
+        stosb
+        mov     di,0x2164
+        mov     cx,4
+        rep stosw
+        mov     di,0x01b4
+        mov     cx,4
+        rep stosw
+        mov     di,0x21b4
+        mov     cx,4
+        rep stosw
+        mov     di,0x0204
+        mov     cx,4
+        rep stosw
+        mov     di,0x2204
+        mov     cx,4
+        rep stosw
+        mov     di,0x0254
+        mov     cx,4
+        rep stosw
+        mov     di,0x2254
+        mov     cx,3
+        rep stosw
+        mov     di,0x225a
+        stosb
+        mov     di,0x02a4
+        mov     cx,3
+        rep stosw
+        mov     di,0x02aa
+        stosb
+        mov     di,0x22a5
+        mov     cx,3
+        rep stosw
+        mov     di,0x02f5
+        mov     cx,3
+        rep stosw
+        mov     di,0x22f5
+        mov     cx,3
+        rep stosw
+        mov     di,0x0345
+        mov     cx,3
+        rep stosw
+        mov     di,0x2345
+        mov     cx,3
+        rep stosw
+        mov     di,0x0395
+        mov     cx,3
+        rep stosw
+        mov     di,0x2395
+        mov     cx,2
+        rep stosw
+        mov     di,0x2399
+        stosb
+        mov     di,0x03e5
+        mov     cx,2
+        rep stosw
+        mov     di,0x03e9
+        stosb
+        mov     di,0x23e6
+        mov     cx,2
+        rep stosw
+        mov     di,0x0436
+        mov     cx,2
+        rep stosw
+        mov     di,0x2436
+        mov     cx,2
+        rep stosw
+        mov     di,0x0486
+        mov     cx,2
+        rep stosw
+        mov     di,0x2486
+        mov     cx,2
+        rep stosw
+        mov     di,0x04d6
+        mov     cx,2
+        rep stosw
+        mov     di,0x24d6
+        stosw
+        mov     di,0x24d8
+        stosb
+        mov     di,0x0526
+        stosw
+        mov     di,0x0528
+        stosb
+        mov     di,0x2527
+        stosw
+        mov     di,0x0577
+        stosw
+        mov     di,0x2577
+        stosw
+        mov     di,0x05c7
+        stosw
+        mov     di,0x25c7
+        stosw
+        mov     di,0x0617
+        stosw
+        mov     di,0x2617
+        stosb
+        mov     di,0x0667
+        stosb
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_3_on
 segment_3_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x002d], 0b1
         or      byte [0x002e], 0b1000000
         or      byte [0x202d], 0b1
-        mov     di,0x202e
-        stosw
         or      byte [0x007d], 0b1
-        mov     di,0x007e
-        stosw
         or      byte [0x0080], 0b1010100
         or      byte [0x207d], 0b1
+        or      byte [0x2081], 0b1010100
+        or      byte [0x00cd], 0b1
+        or      byte [0x00d2], 0b1000000
+        or      byte [0x20cd], 0b1
+        or      byte [0x20d2], 0b1010100
+        or      byte [0x011d], 0b1
+        or      byte [0x0123], 0b1010000
+        or      byte [0x211d], 0b1
+        or      byte [0x016d], 0b1
+        or      byte [0x0174], 0b1000000
+        or      byte [0x216d], 0b1
+        or      byte [0x2174], 0b1010100
+        or      byte [0x01bd], 0b1
+        or      byte [0x21bd], 0b1
+        or      byte [0x21c5], 0b1000000
+        or      byte [0x020d], 0b1
+        or      byte [0x0215], 0b1010000
+        or      byte [0x220d], 0b1
+        or      byte [0x025d], 0b1
+        or      byte [0x0266], 0b1000000
+        or      byte [0x225d], 0b1
+        or      byte [0x2266], 0b1010000
+        or      byte [0x02ad], 0b1
+        or      byte [0x02b6], 0b1010100
+        or      byte [0x22ad], 0b1
+        or      byte [0x22b6], 0b1010100
+        or      byte [0x02fd], 0b1
+        or      byte [0x22fd], 0b1
+        or      byte [0x2307], 0b1000000
+        or      byte [0x034d], 0b1
+        or      byte [0x0357], 0b1010000
+        or      byte [0x234d], 0b1
+        or      byte [0x2357], 0b1010000
+        or      byte [0x039d], 0b1
+        or      byte [0x03a7], 0b1010100
+        or      byte [0x239d], 0b1
+        or      byte [0x23a7], 0b1010100
+        or      byte [0x03ed], 0b1
+        or      byte [0x23ed], 0b1
+        or      byte [0x23f8], 0b1000000
+        or      byte [0x043d], 0b1
+        or      byte [0x0448], 0b1000000
+        or      byte [0x243d], 0b1
+        or      byte [0x2448], 0b1010000
+        or      byte [0x048d], 0b1
+        or      byte [0x0498], 0b1010000
+        or      byte [0x248d], 0b1
+        or      byte [0x2498], 0b1010100
+        or      byte [0x04dd], 0b1
+        or      byte [0x04e8], 0b1010100
+        or      byte [0x24dd], 0b1
+        or      byte [0x24e8], 0b1010100
+        or      byte [0x052d], 0b1
+        or      byte [0x252d], 0b1
+        or      byte [0x057d], 0b1
+        or      byte [0x257d], 0b1
+        or      byte [0x2589], 0b1000000
+        or      byte [0x05cd], 0b1
+        or      byte [0x05d9], 0b1000000
+        or      byte [0x25cd], 0b1
+        or      byte [0x25d9], 0b1000000
+        or      byte [0x061d], 0b1
+        or      byte [0x0629], 0b1000000
+        or      byte [0x261d], 0b1
+        or      byte [0x2629], 0b1010000
+        or      byte [0x066d], 0b1
+        or      byte [0x0679], 0b1010000
+        or      byte [0x266d], 0b1
+        or      byte [0x2679], 0b1010000
+        or      byte [0x06bd], 0b1
+        or      byte [0x06c9], 0b1010000
+        or      byte [0x26bd], 0b1
+        or      byte [0x26c9], 0b1010000
+        or      byte [0x070d], 0b1
+        or      byte [0x0719], 0b1010100
+        or      byte [0x270d], 0b1
+        or      byte [0x2719], 0b1010100
+        or      byte [0x075d], 0b1
+        or      byte [0x0769], 0b1010100
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_3_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_3_off
+segment_3_off:
+
+        and     byte [0x002d], 0b11111110
+        and     byte [0x002e], 0b10111111
+        and     byte [0x202d], 0b11111110
+        and     byte [0x007d], 0b11111110
+        and     byte [0x0080], 0b10101011
+        and     byte [0x207d], 0b11111110
+        and     byte [0x2081], 0b10101011
+        and     byte [0x00cd], 0b11111110
+        and     byte [0x00d2], 0b10111111
+        and     byte [0x20cd], 0b11111110
+        and     byte [0x20d2], 0b10101011
+        and     byte [0x011d], 0b11111110
+        and     byte [0x0123], 0b10101111
+        and     byte [0x211d], 0b11111110
+        and     byte [0x016d], 0b11111110
+        and     byte [0x0174], 0b10111111
+        and     byte [0x216d], 0b11111110
+        and     byte [0x2174], 0b10101011
+        and     byte [0x01bd], 0b11111110
+        and     byte [0x21bd], 0b11111110
+        and     byte [0x21c5], 0b10111111
+        and     byte [0x020d], 0b11111110
+        and     byte [0x0215], 0b10101111
+        and     byte [0x220d], 0b11111110
+        and     byte [0x025d], 0b11111110
+        and     byte [0x0266], 0b10111111
+        and     byte [0x225d], 0b11111110
+        and     byte [0x2266], 0b10101111
+        and     byte [0x02ad], 0b11111110
+        and     byte [0x02b6], 0b10101011
+        and     byte [0x22ad], 0b11111110
+        and     byte [0x22b6], 0b10101011
+        and     byte [0x02fd], 0b11111110
+        and     byte [0x22fd], 0b11111110
+        and     byte [0x2307], 0b10111111
+        and     byte [0x034d], 0b11111110
+        and     byte [0x0357], 0b10101111
+        and     byte [0x234d], 0b11111110
+        and     byte [0x2357], 0b10101111
+        and     byte [0x039d], 0b11111110
+        and     byte [0x03a7], 0b10101011
+        and     byte [0x239d], 0b11111110
+        and     byte [0x23a7], 0b10101011
+        and     byte [0x03ed], 0b11111110
+        and     byte [0x23ed], 0b11111110
+        and     byte [0x23f8], 0b10111111
+        and     byte [0x043d], 0b11111110
+        and     byte [0x0448], 0b10111111
+        and     byte [0x243d], 0b11111110
+        and     byte [0x2448], 0b10101111
+        and     byte [0x048d], 0b11111110
+        and     byte [0x0498], 0b10101111
+        and     byte [0x248d], 0b11111110
+        and     byte [0x2498], 0b10101011
+        and     byte [0x04dd], 0b11111110
+        and     byte [0x04e8], 0b10101011
+        and     byte [0x24dd], 0b11111110
+        and     byte [0x24e8], 0b10101011
+        and     byte [0x052d], 0b11111110
+        and     byte [0x252d], 0b11111110
+        and     byte [0x057d], 0b11111110
+        and     byte [0x257d], 0b11111110
+        and     byte [0x2589], 0b10111111
+        and     byte [0x05cd], 0b11111110
+        and     byte [0x05d9], 0b10111111
+        and     byte [0x25cd], 0b11111110
+        and     byte [0x25d9], 0b10111111
+        and     byte [0x061d], 0b11111110
+        and     byte [0x0629], 0b10111111
+        and     byte [0x261d], 0b11111110
+        and     byte [0x2629], 0b10101111
+        and     byte [0x066d], 0b11111110
+        and     byte [0x0679], 0b10101111
+        and     byte [0x266d], 0b11111110
+        and     byte [0x2679], 0b10101111
+        and     byte [0x06bd], 0b11111110
+        and     byte [0x06c9], 0b10101111
+        and     byte [0x26bd], 0b11111110
+        and     byte [0x26c9], 0b10101111
+        and     byte [0x070d], 0b11111110
+        and     byte [0x0719], 0b10101011
+        and     byte [0x270d], 0b11111110
+        and     byte [0x2719], 0b10101011
+        and     byte [0x075d], 0b11111110
+        and     byte [0x0769], 0b10101011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_3_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_3_common:
+
+        mov     di,0x202e
+        stosw
+        mov     di,0x007e
+        stosw
         mov     di,0x207e
         stosw
         mov     di,0x2080
         stosb
-        or      byte [0x2081], 0b1010100
-        or      byte [0x00cd], 0b1
         mov     di,0x00ce
         mov     cx,2
         rep stosw
-        or      byte [0x00d2], 0b1000000
-        or      byte [0x20cd], 0b1
         mov     di,0x20ce
         mov     cx,2
         rep stosw
-        or      byte [0x20d2], 0b1010100
-        or      byte [0x011d], 0b1
         mov     di,0x011e
         mov     cx,2
         rep stosw
         mov     di,0x0122
         stosb
-        or      byte [0x0123], 0b1010000
-        or      byte [0x211d], 0b1
         mov     di,0x211e
         mov     cx,3
         rep stosw
-        or      byte [0x016d], 0b1
         mov     di,0x016e
         mov     cx,3
         rep stosw
-        or      byte [0x0174], 0b1000000
-        or      byte [0x216d], 0b1
         mov     di,0x216e
         mov     cx,3
         rep stosw
-        or      byte [0x2174], 0b1010100
-        or      byte [0x01bd], 0b1
         mov     di,0x01be
         mov     cx,3
         rep stosw
         mov     di,0x01c4
         stosb
-        or      byte [0x21bd], 0b1
         mov     di,0x21be
         mov     cx,3
         rep stosw
         mov     di,0x21c4
         stosb
-        or      byte [0x21c5], 0b1000000
-        or      byte [0x020d], 0b1
         mov     di,0x020e
         mov     cx,3
         rep stosw
         mov     di,0x0214
         stosb
-        or      byte [0x0215], 0b1010000
-        or      byte [0x220d], 0b1
         mov     di,0x220e
         mov     cx,4
         rep stosw
-        or      byte [0x025d], 0b1
         mov     di,0x025e
         mov     cx,4
         rep stosw
-        or      byte [0x0266], 0b1000000
-        or      byte [0x225d], 0b1
         mov     di,0x225e
         mov     cx,4
         rep stosw
-        or      byte [0x2266], 0b1010000
-        or      byte [0x02ad], 0b1
         mov     di,0x02ae
         mov     cx,4
         rep stosw
-        or      byte [0x02b6], 0b1010100
-        or      byte [0x22ad], 0b1
         mov     di,0x22ae
         mov     cx,4
         rep stosw
-        or      byte [0x22b6], 0b1010100
-        or      byte [0x02fd], 0b1
         mov     di,0x02fe
         mov     cx,4
         rep stosw
         mov     di,0x0306
         stosb
-        or      byte [0x22fd], 0b1
         mov     di,0x22fe
         mov     cx,4
         rep stosw
         mov     di,0x2306
         stosb
-        or      byte [0x2307], 0b1000000
-        or      byte [0x034d], 0b1
         mov     di,0x034e
         mov     cx,4
         rep stosw
         mov     di,0x0356
         stosb
-        or      byte [0x0357], 0b1010000
-        or      byte [0x234d], 0b1
         mov     di,0x234e
         mov     cx,4
         rep stosw
         mov     di,0x2356
         stosb
-        or      byte [0x2357], 0b1010000
-        or      byte [0x039d], 0b1
         mov     di,0x039e
         mov     cx,4
         rep stosw
         mov     di,0x03a6
         stosb
-        or      byte [0x03a7], 0b1010100
-        or      byte [0x239d], 0b1
         mov     di,0x239e
         mov     cx,4
         rep stosw
         mov     di,0x23a6
         stosb
-        or      byte [0x23a7], 0b1010100
-        or      byte [0x03ed], 0b1
         mov     di,0x03ee
         mov     cx,5
         rep stosw
-        or      byte [0x23ed], 0b1
         mov     di,0x23ee
         mov     cx,5
         rep stosw
-        or      byte [0x23f8], 0b1000000
-        or      byte [0x043d], 0b1
         mov     di,0x043e
         mov     cx,5
         rep stosw
-        or      byte [0x0448], 0b1000000
-        or      byte [0x243d], 0b1
         mov     di,0x243e
         mov     cx,5
         rep stosw
-        or      byte [0x2448], 0b1010000
-        or      byte [0x048d], 0b1
         mov     di,0x048e
         mov     cx,5
         rep stosw
-        or      byte [0x0498], 0b1010000
-        or      byte [0x248d], 0b1
         mov     di,0x248e
         mov     cx,5
         rep stosw
-        or      byte [0x2498], 0b1010100
-        or      byte [0x04dd], 0b1
         mov     di,0x04de
         mov     cx,5
         rep stosw
-        or      byte [0x04e8], 0b1010100
-        or      byte [0x24dd], 0b1
         mov     di,0x24de
         mov     cx,5
         rep stosw
-        or      byte [0x24e8], 0b1010100
-        or      byte [0x052d], 0b1
         mov     di,0x052e
         mov     cx,5
         rep stosw
         mov     di,0x0538
         stosb
-        or      byte [0x252d], 0b1
         mov     di,0x252e
         mov     cx,5
         rep stosw
         mov     di,0x2538
         stosb
-        or      byte [0x057d], 0b1
         mov     di,0x057e
         mov     cx,5
         rep stosw
         mov     di,0x0588
         stosb
-        or      byte [0x257d], 0b1
         mov     di,0x257e
         mov     cx,5
         rep stosw
         mov     di,0x2588
         stosb
-        or      byte [0x2589], 0b1000000
-        or      byte [0x05cd], 0b1
         mov     di,0x05ce
         mov     cx,5
         rep stosw
         mov     di,0x05d8
         stosb
-        or      byte [0x05d9], 0b1000000
-        or      byte [0x25cd], 0b1
         mov     di,0x25ce
         mov     cx,5
         rep stosw
         mov     di,0x25d8
         stosb
-        or      byte [0x25d9], 0b1000000
-        or      byte [0x061d], 0b1
         mov     di,0x061e
         mov     cx,5
         rep stosw
         mov     di,0x0628
         stosb
-        or      byte [0x0629], 0b1000000
-        or      byte [0x261d], 0b1
         mov     di,0x261e
         mov     cx,5
         rep stosw
         mov     di,0x2628
         stosb
-        or      byte [0x2629], 0b1010000
-        or      byte [0x066d], 0b1
         mov     di,0x066e
         mov     cx,5
         rep stosw
         mov     di,0x0678
         stosb
-        or      byte [0x0679], 0b1010000
-        or      byte [0x266d], 0b1
         mov     di,0x266e
         mov     cx,5
         rep stosw
         mov     di,0x2678
         stosb
-        or      byte [0x2679], 0b1010000
-        or      byte [0x06bd], 0b1
         mov     di,0x06be
         mov     cx,5
         rep stosw
         mov     di,0x06c8
         stosb
-        or      byte [0x06c9], 0b1010000
-        or      byte [0x26bd], 0b1
         mov     di,0x26be
         mov     cx,5
         rep stosw
         mov     di,0x26c8
         stosb
-        or      byte [0x26c9], 0b1010000
-        or      byte [0x070d], 0b1
         mov     di,0x070e
         mov     cx,5
         rep stosw
         mov     di,0x0718
         stosb
-        or      byte [0x0719], 0b1010100
-        or      byte [0x270d], 0b1
         mov     di,0x270e
         mov     cx,5
         rep stosw
         mov     di,0x2718
         stosb
-        or      byte [0x2719], 0b1010100
-        or      byte [0x075d], 0b1
         mov     di,0x075e
         mov     cx,5
         rep stosw
         mov     di,0x0768
         stosb
-        or      byte [0x0769], 0b1010100
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_4_on
 segment_4_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x002e], 0b10101
-        mov     di,0x002f
-        mov     cx,5
-        rep stosw
         or      byte [0x0039], 0b1010100
-        mov     di,0x2030
-        mov     cx,4
-        rep stosw
-        mov     di,0x2038
-        stosb
         or      byte [0x2039], 0b1010100
         or      byte [0x0080], 0b1
-        mov     di,0x0081
-        mov     cx,4
-        rep stosw
         or      byte [0x0089], 0b1010100
         or      byte [0x2081], 0b1
-        mov     di,0x2082
-        mov     cx,3
-        rep stosw
-        mov     di,0x2088
-        stosb
         or      byte [0x2089], 0b1010100
         or      byte [0x00d2], 0b10101
-        mov     di,0x00d3
-        mov     cx,3
-        rep stosw
         or      byte [0x00d9], 0b1010100
         or      byte [0x20d2], 0b1
-        mov     di,0x20d3
-        mov     cx,3
-        rep stosw
         or      byte [0x20d9], 0b1010100
         or      byte [0x0123], 0b101
-        mov     di,0x0124
-        mov     cx,2
-        rep stosw
-        mov     di,0x0128
-        stosb
         or      byte [0x0129], 0b1010100
-        mov     di,0x2124
-        mov     cx,2
-        rep stosw
-        mov     di,0x2128
-        stosb
         or      byte [0x2129], 0b1010100
         or      byte [0x0174], 0b10101
-        mov     di,0x0175
-        mov     cx,2
-        rep stosw
         or      byte [0x0179], 0b1010100
         or      byte [0x2174], 0b1
-        mov     di,0x2175
-        mov     cx,2
-        rep stosw
         or      byte [0x2179], 0b1010100
-        mov     di,0x01c5
-        mov     cx,2
-        rep stosw
         or      byte [0x01c9], 0b1010100
         or      byte [0x21c5], 0b10101
-        mov     di,0x21c6
-        stosw
-        mov     di,0x21c8
-        stosb
         or      byte [0x21c9], 0b1010100
         or      byte [0x0215], 0b101
-        mov     di,0x0216
-        stosw
-        mov     di,0x0218
-        stosb
         or      byte [0x0219], 0b1010100
-        mov     di,0x2216
-        stosw
-        mov     di,0x2218
-        stosb
         or      byte [0x2219], 0b1010100
         or      byte [0x0266], 0b10101
-        mov     di,0x0267
-        stosw
         or      byte [0x0269], 0b1010100
         or      byte [0x2266], 0b101
-        mov     di,0x2267
-        stosw
         or      byte [0x2269], 0b1010100
         or      byte [0x02b6], 0b1
-        mov     di,0x02b7
-        stosw
         or      byte [0x02b9], 0b1010100
         or      byte [0x22b6], 0b1
-        mov     di,0x22b7
-        stosw
         or      byte [0x22b9], 0b1010100
-        mov     di,0x0307
-        stosw
         or      byte [0x0309], 0b1010100
         or      byte [0x2307], 0b10101
-        mov     di,0x2308
-        stosb
         or      byte [0x2309], 0b1010100
         or      byte [0x0357], 0b101
-        mov     di,0x0358
-        stosb
         or      byte [0x0359], 0b1010100
         or      byte [0x2357], 0b101
-        mov     di,0x2358
-        stosb
         or      byte [0x2359], 0b1010100
         or      byte [0x03a7], 0b1
-        mov     di,0x03a8
-        stosb
         or      byte [0x03a9], 0b1010100
         or      byte [0x23a7], 0b1
-        mov     di,0x23a8
-        stosb
         or      byte [0x23a9], 0b1010100
-        mov     di,0x03f8
-        stosb
         or      byte [0x03f9], 0b1010100
         or      byte [0x23f8], 0b10101
         or      byte [0x23f9], 0b1010100
@@ -1021,12 +1219,169 @@ segment_4_on:
         or      byte [0x06c9], 0b100
         or      byte [0x26c9], 0b100
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_4_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_4_off
+segment_4_off:
+
+        and     byte [0x002e], 0b11101010
+        and     byte [0x0039], 0b10101011
+        and     byte [0x2039], 0b10101011
+        and     byte [0x0080], 0b11111110
+        and     byte [0x0089], 0b10101011
+        and     byte [0x2081], 0b11111110
+        and     byte [0x2089], 0b10101011
+        and     byte [0x00d2], 0b11101010
+        and     byte [0x00d9], 0b10101011
+        and     byte [0x20d2], 0b11111110
+        and     byte [0x20d9], 0b10101011
+        and     byte [0x0123], 0b11111010
+        and     byte [0x0129], 0b10101011
+        and     byte [0x2129], 0b10101011
+        and     byte [0x0174], 0b11101010
+        and     byte [0x0179], 0b10101011
+        and     byte [0x2174], 0b11111110
+        and     byte [0x2179], 0b10101011
+        and     byte [0x01c9], 0b10101011
+        and     byte [0x21c5], 0b11101010
+        and     byte [0x21c9], 0b10101011
+        and     byte [0x0215], 0b11111010
+        and     byte [0x0219], 0b10101011
+        and     byte [0x2219], 0b10101011
+        and     byte [0x0266], 0b11101010
+        and     byte [0x0269], 0b10101011
+        and     byte [0x2266], 0b11111010
+        and     byte [0x2269], 0b10101011
+        and     byte [0x02b6], 0b11111110
+        and     byte [0x02b9], 0b10101011
+        and     byte [0x22b6], 0b11111110
+        and     byte [0x22b9], 0b10101011
+        and     byte [0x0309], 0b10101011
+        and     byte [0x2307], 0b11101010
+        and     byte [0x2309], 0b10101011
+        and     byte [0x0357], 0b11111010
+        and     byte [0x0359], 0b10101011
+        and     byte [0x2357], 0b11111010
+        and     byte [0x2359], 0b10101011
+        and     byte [0x03a7], 0b11111110
+        and     byte [0x03a9], 0b10101011
+        and     byte [0x23a7], 0b11111110
+        and     byte [0x23a9], 0b10101011
+        and     byte [0x03f9], 0b10101011
+        and     byte [0x23f8], 0b11101010
+        and     byte [0x23f9], 0b10101011
+        and     byte [0x0448], 0b11101010
+        and     byte [0x0449], 0b10101011
+        and     byte [0x2448], 0b11111010
+        and     byte [0x2449], 0b10101011
+        and     byte [0x0498], 0b11111010
+        and     byte [0x0499], 0b10101011
+        and     byte [0x2498], 0b11111110
+        and     byte [0x2499], 0b10101011
+        and     byte [0x04e8], 0b11111110
+        and     byte [0x04e9], 0b10101011
+        and     byte [0x24e8], 0b11111110
+        and     byte [0x24e9], 0b10101011
+        and     byte [0x0539], 0b10101011
+        and     byte [0x2539], 0b10101011
+        and     byte [0x0589], 0b10101011
+        and     byte [0x2589], 0b11101011
+        and     byte [0x05d9], 0b11101011
+        and     byte [0x25d9], 0b11101011
+        and     byte [0x0629], 0b11101011
+        and     byte [0x2629], 0b11111011
+        and     byte [0x0679], 0b11111011
+        and     byte [0x2679], 0b11111011
+        and     byte [0x06c9], 0b11111011
+        and     byte [0x26c9], 0b11111011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_4_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_4_common:
+
+        mov     di,0x002f
+        mov     cx,5
+        rep stosw
+        mov     di,0x2030
+        mov     cx,4
+        rep stosw
+        mov     di,0x2038
+        stosb
+        mov     di,0x0081
+        mov     cx,4
+        rep stosw
+        mov     di,0x2082
+        mov     cx,3
+        rep stosw
+        mov     di,0x2088
+        stosb
+        mov     di,0x00d3
+        mov     cx,3
+        rep stosw
+        mov     di,0x20d3
+        mov     cx,3
+        rep stosw
+        mov     di,0x0124
+        mov     cx,2
+        rep stosw
+        mov     di,0x0128
+        stosb
+        mov     di,0x2124
+        mov     cx,2
+        rep stosw
+        mov     di,0x2128
+        stosb
+        mov     di,0x0175
+        mov     cx,2
+        rep stosw
+        mov     di,0x2175
+        mov     cx,2
+        rep stosw
+        mov     di,0x01c5
+        mov     cx,2
+        rep stosw
+        mov     di,0x21c6
+        stosw
+        mov     di,0x21c8
+        stosb
+        mov     di,0x0216
+        stosw
+        mov     di,0x0218
+        stosb
+        mov     di,0x2216
+        stosw
+        mov     di,0x2218
+        stosb
+        mov     di,0x0267
+        stosw
+        mov     di,0x2267
+        stosw
+        mov     di,0x02b7
+        stosw
+        mov     di,0x22b7
+        stosw
+        mov     di,0x0307
+        stosw
+        mov     di,0x2308
+        stosb
+        mov     di,0x0358
+        stosb
+        mov     di,0x2358
+        stosb
+        mov     di,0x03a8
+        stosb
+        mov     di,0x23a8
+        stosb
+        mov     di,0x03f8
+        stosb
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_5_on
 segment_5_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x2022], 0b1000000
         or      byte [0x0072], 0b1000000
@@ -1034,50 +1389,117 @@ segment_5_on:
         or      byte [0x00c2], 0b1010000
         or      byte [0x20c2], 0b1010100
         or      byte [0x0112], 0b1010100
+        or      byte [0x2163], 0b1000000
+        or      byte [0x01b3], 0b1000000
+        or      byte [0x21b3], 0b1010000
+        or      byte [0x0203], 0b1010000
+        or      byte [0x2203], 0b1010100
+        or      byte [0x0253], 0b1010100
+        or      byte [0x22a4], 0b1000000
+        or      byte [0x02f4], 0b1000000
+        or      byte [0x22f4], 0b1010000
+        or      byte [0x0344], 0b1010000
+        or      byte [0x2344], 0b1010100
+        or      byte [0x0394], 0b1010100
+        or      byte [0x23e5], 0b1000000
+        or      byte [0x0435], 0b1000000
+        or      byte [0x2435], 0b1010000
+        or      byte [0x0485], 0b1010000
+        or      byte [0x2485], 0b1010100
+        or      byte [0x04d5], 0b1010100
+        or      byte [0x2526], 0b1000000
+        or      byte [0x0576], 0b1000000
+        or      byte [0x2576], 0b1010000
+        or      byte [0x05c6], 0b1010000
+        or      byte [0x25c6], 0b1010100
+        or      byte [0x0616], 0b1010100
+        or      byte [0x2667], 0b1000000
+        or      byte [0x06b7], 0b1000000
+        or      byte [0x26b7], 0b1010000
+        or      byte [0x0707], 0b1010000
+        or      byte [0x2707], 0b1010100
+        or      byte [0x0757], 0b1010100
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_5_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_5_off
+segment_5_off:
+
+        and     byte [0x2022], 0b10111111
+        and     byte [0x0072], 0b10111111
+        and     byte [0x2072], 0b10101111
+        and     byte [0x00c2], 0b10101111
+        and     byte [0x20c2], 0b10101011
+        and     byte [0x0112], 0b10101011
+        and     byte [0x2163], 0b10111111
+        and     byte [0x01b3], 0b10111111
+        and     byte [0x21b3], 0b10101111
+        and     byte [0x0203], 0b10101111
+        and     byte [0x2203], 0b10101011
+        and     byte [0x0253], 0b10101011
+        and     byte [0x22a4], 0b10111111
+        and     byte [0x02f4], 0b10111111
+        and     byte [0x22f4], 0b10101111
+        and     byte [0x0344], 0b10101111
+        and     byte [0x2344], 0b10101011
+        and     byte [0x0394], 0b10101011
+        and     byte [0x23e5], 0b10111111
+        and     byte [0x0435], 0b10111111
+        and     byte [0x2435], 0b10101111
+        and     byte [0x0485], 0b10101111
+        and     byte [0x2485], 0b10101011
+        and     byte [0x04d5], 0b10101011
+        and     byte [0x2526], 0b10111111
+        and     byte [0x0576], 0b10111111
+        and     byte [0x2576], 0b10101111
+        and     byte [0x05c6], 0b10101111
+        and     byte [0x25c6], 0b10101011
+        and     byte [0x0616], 0b10101011
+        and     byte [0x2667], 0b10111111
+        and     byte [0x06b7], 0b10111111
+        and     byte [0x26b7], 0b10101111
+        and     byte [0x0707], 0b10101111
+        and     byte [0x2707], 0b10101011
+        and     byte [0x0757], 0b10101011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_5_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_5_common:
+
         mov     di,0x2112
         stosb
         mov     di,0x0162
         stosb
         mov     di,0x2162
         stosb
-        or      byte [0x2163], 0b1000000
         mov     di,0x01b2
         stosb
-        or      byte [0x01b3], 0b1000000
         mov     di,0x21b2
         stosb
-        or      byte [0x21b3], 0b1010000
         mov     di,0x0202
         stosb
-        or      byte [0x0203], 0b1010000
         mov     di,0x2202
         stosb
-        or      byte [0x2203], 0b1010100
         mov     di,0x0252
         stosb
-        or      byte [0x0253], 0b1010100
         mov     di,0x2252
         stosw
         mov     di,0x02a2
         stosw
         mov     di,0x22a2
         stosw
-        or      byte [0x22a4], 0b1000000
         mov     di,0x02f2
         stosw
-        or      byte [0x02f4], 0b1000000
         mov     di,0x22f2
         stosw
-        or      byte [0x22f4], 0b1010000
         mov     di,0x0342
         stosw
-        or      byte [0x0344], 0b1010000
         mov     di,0x2342
         stosw
-        or      byte [0x2344], 0b1010100
         mov     di,0x0392
         stosw
-        or      byte [0x0394], 0b1010100
         mov     di,0x2392
         stosw
         mov     di,0x2394
@@ -1090,32 +1512,26 @@ segment_5_on:
         stosw
         mov     di,0x23e4
         stosb
-        or      byte [0x23e5], 0b1000000
         mov     di,0x0432
         stosw
         mov     di,0x0434
         stosb
-        or      byte [0x0435], 0b1000000
         mov     di,0x2432
         stosw
         mov     di,0x2434
         stosb
-        or      byte [0x2435], 0b1010000
         mov     di,0x0482
         stosw
         mov     di,0x0484
         stosb
-        or      byte [0x0485], 0b1010000
         mov     di,0x2482
         stosw
         mov     di,0x2484
         stosb
-        or      byte [0x2485], 0b1010100
         mov     di,0x04d2
         stosw
         mov     di,0x04d4
         stosb
-        or      byte [0x04d5], 0b1010100
         mov     di,0x24d2
         mov     cx,2
         rep stosw
@@ -1125,27 +1541,21 @@ segment_5_on:
         mov     di,0x2522
         mov     cx,2
         rep stosw
-        or      byte [0x2526], 0b1000000
         mov     di,0x0572
         mov     cx,2
         rep stosw
-        or      byte [0x0576], 0b1000000
         mov     di,0x2572
         mov     cx,2
         rep stosw
-        or      byte [0x2576], 0b1010000
         mov     di,0x05c2
         mov     cx,2
         rep stosw
-        or      byte [0x05c6], 0b1010000
         mov     di,0x25c2
         mov     cx,2
         rep stosw
-        or      byte [0x25c6], 0b1010100
         mov     di,0x0612
         mov     cx,2
         rep stosw
-        or      byte [0x0616], 0b1010100
         mov     di,0x2612
         mov     cx,2
         rep stosw
@@ -1161,44 +1571,37 @@ segment_5_on:
         rep stosw
         mov     di,0x2666
         stosb
-        or      byte [0x2667], 0b1000000
         mov     di,0x06b2
         mov     cx,2
         rep stosw
         mov     di,0x06b6
         stosb
-        or      byte [0x06b7], 0b1000000
         mov     di,0x26b2
         mov     cx,2
         rep stosw
         mov     di,0x26b6
         stosb
-        or      byte [0x26b7], 0b1010000
         mov     di,0x0702
         mov     cx,2
         rep stosw
         mov     di,0x0706
         stosb
-        or      byte [0x0707], 0b1010000
         mov     di,0x2702
         mov     cx,2
         rep stosw
         mov     di,0x2706
         stosb
-        or      byte [0x2707], 0b1010100
         mov     di,0x0752
         mov     cx,2
         rep stosw
         mov     di,0x0756
         stosb
-        or      byte [0x0757], 0b1010100
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_6_on
 segment_6_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x202d], 0b100
         or      byte [0x007d], 0b100
@@ -1218,169 +1621,344 @@ segment_6_on:
         or      byte [0x21bd], 0b1010100
         or      byte [0x020c], 0b10101
         or      byte [0x020d], 0b1010100
-        mov     di,0x220c
-        stosb
         or      byte [0x220d], 0b1010100
-        mov     di,0x025c
-        stosb
         or      byte [0x025d], 0b1010100
         or      byte [0x225b], 0b1
-        mov     di,0x225c
-        stosb
         or      byte [0x225d], 0b1010100
         or      byte [0x02ab], 0b1
-        mov     di,0x02ac
-        stosb
         or      byte [0x02ad], 0b1010100
         or      byte [0x22ab], 0b101
-        mov     di,0x22ac
-        stosb
         or      byte [0x22ad], 0b1010100
         or      byte [0x02fb], 0b101
-        mov     di,0x02fc
-        stosb
         or      byte [0x02fd], 0b1010100
         or      byte [0x22fb], 0b10101
-        mov     di,0x22fc
-        stosb
         or      byte [0x22fd], 0b1010100
         or      byte [0x034b], 0b10101
-        mov     di,0x034c
-        stosb
         or      byte [0x034d], 0b1010100
-        mov     di,0x234b
-        stosw
         or      byte [0x234d], 0b1010100
-        mov     di,0x039b
-        stosw
         or      byte [0x039d], 0b1010100
         or      byte [0x239a], 0b1
-        mov     di,0x239b
-        stosw
         or      byte [0x239d], 0b1010100
         or      byte [0x03ea], 0b1
-        mov     di,0x03eb
-        stosw
         or      byte [0x03ed], 0b1010100
         or      byte [0x23ea], 0b101
-        mov     di,0x23eb
-        stosw
         or      byte [0x23ed], 0b1010100
         or      byte [0x043a], 0b101
-        mov     di,0x043b
-        stosw
         or      byte [0x043d], 0b1010100
         or      byte [0x243a], 0b10101
-        mov     di,0x243b
-        stosw
         or      byte [0x243d], 0b1010100
         or      byte [0x048a], 0b10101
+        or      byte [0x048d], 0b1010100
+        or      byte [0x248d], 0b1010100
+        or      byte [0x04dd], 0b1010100
+        or      byte [0x24d9], 0b1
+        or      byte [0x24dd], 0b1010100
+        or      byte [0x0529], 0b1
+        or      byte [0x052d], 0b1010100
+        or      byte [0x2529], 0b101
+        or      byte [0x252d], 0b1010100
+        or      byte [0x0579], 0b101
+        or      byte [0x057d], 0b1010100
+        or      byte [0x2579], 0b10101
+        or      byte [0x257d], 0b1010100
+        or      byte [0x05c9], 0b10101
+        or      byte [0x05cd], 0b1010100
+        or      byte [0x25cd], 0b1010100
+        or      byte [0x061d], 0b1010100
+        or      byte [0x2618], 0b1
+        or      byte [0x261d], 0b1010100
+        or      byte [0x0668], 0b1
+        or      byte [0x066d], 0b1010100
+        or      byte [0x2668], 0b101
+        or      byte [0x266d], 0b1010100
+        or      byte [0x06b8], 0b101
+        or      byte [0x06bd], 0b1010100
+        or      byte [0x26b8], 0b10101
+        or      byte [0x26bd], 0b1010100
+        or      byte [0x0708], 0b10101
+        or      byte [0x070d], 0b1010100
+        or      byte [0x270d], 0b1010100
+        or      byte [0x075d], 0b1010100
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_6_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_6_off
+segment_6_off:
+
+        and     byte [0x202d], 0b11111011
+        and     byte [0x007d], 0b11111011
+        and     byte [0x207d], 0b11101011
+        and     byte [0x00cd], 0b11101011
+        and     byte [0x20cd], 0b10101011
+        and     byte [0x011d], 0b10101011
+        and     byte [0x211c], 0b11111110
+        and     byte [0x211d], 0b10101011
+        and     byte [0x016c], 0b11111110
+        and     byte [0x016d], 0b10101011
+        and     byte [0x216c], 0b11111010
+        and     byte [0x216d], 0b10101011
+        and     byte [0x01bc], 0b11111010
+        and     byte [0x01bd], 0b10101011
+        and     byte [0x21bc], 0b11101010
+        and     byte [0x21bd], 0b10101011
+        and     byte [0x020c], 0b11101010
+        and     byte [0x020d], 0b10101011
+        and     byte [0x220d], 0b10101011
+        and     byte [0x025d], 0b10101011
+        and     byte [0x225b], 0b11111110
+        and     byte [0x225d], 0b10101011
+        and     byte [0x02ab], 0b11111110
+        and     byte [0x02ad], 0b10101011
+        and     byte [0x22ab], 0b11111010
+        and     byte [0x22ad], 0b10101011
+        and     byte [0x02fb], 0b11111010
+        and     byte [0x02fd], 0b10101011
+        and     byte [0x22fb], 0b11101010
+        and     byte [0x22fd], 0b10101011
+        and     byte [0x034b], 0b11101010
+        and     byte [0x034d], 0b10101011
+        and     byte [0x234d], 0b10101011
+        and     byte [0x039d], 0b10101011
+        and     byte [0x239a], 0b11111110
+        and     byte [0x239d], 0b10101011
+        and     byte [0x03ea], 0b11111110
+        and     byte [0x03ed], 0b10101011
+        and     byte [0x23ea], 0b11111010
+        and     byte [0x23ed], 0b10101011
+        and     byte [0x043a], 0b11111010
+        and     byte [0x043d], 0b10101011
+        and     byte [0x243a], 0b11101010
+        and     byte [0x243d], 0b10101011
+        and     byte [0x048a], 0b11101010
+        and     byte [0x048d], 0b10101011
+        and     byte [0x248d], 0b10101011
+        and     byte [0x04dd], 0b10101011
+        and     byte [0x24d9], 0b11111110
+        and     byte [0x24dd], 0b10101011
+        and     byte [0x0529], 0b11111110
+        and     byte [0x052d], 0b10101011
+        and     byte [0x2529], 0b11111010
+        and     byte [0x252d], 0b10101011
+        and     byte [0x0579], 0b11111010
+        and     byte [0x057d], 0b10101011
+        and     byte [0x2579], 0b11101010
+        and     byte [0x257d], 0b10101011
+        and     byte [0x05c9], 0b11101010
+        and     byte [0x05cd], 0b10101011
+        and     byte [0x25cd], 0b10101011
+        and     byte [0x061d], 0b10101011
+        and     byte [0x2618], 0b11111110
+        and     byte [0x261d], 0b10101011
+        and     byte [0x0668], 0b11111110
+        and     byte [0x066d], 0b10101011
+        and     byte [0x2668], 0b11111010
+        and     byte [0x266d], 0b10101011
+        and     byte [0x06b8], 0b11111010
+        and     byte [0x06bd], 0b10101011
+        and     byte [0x26b8], 0b11101010
+        and     byte [0x26bd], 0b10101011
+        and     byte [0x0708], 0b11101010
+        and     byte [0x070d], 0b10101011
+        and     byte [0x270d], 0b10101011
+        and     byte [0x075d], 0b10101011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_6_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_6_common:
+
+        mov     di,0x220c
+        stosb
+        mov     di,0x025c
+        stosb
+        mov     di,0x225c
+        stosb
+        mov     di,0x02ac
+        stosb
+        mov     di,0x22ac
+        stosb
+        mov     di,0x02fc
+        stosb
+        mov     di,0x22fc
+        stosb
+        mov     di,0x034c
+        stosb
+        mov     di,0x234b
+        stosw
+        mov     di,0x039b
+        stosw
+        mov     di,0x239b
+        stosw
+        mov     di,0x03eb
+        stosw
+        mov     di,0x23eb
+        stosw
+        mov     di,0x043b
+        stosw
+        mov     di,0x243b
+        stosw
         mov     di,0x048b
         stosw
-        or      byte [0x048d], 0b1010100
         mov     di,0x248a
         stosw
         mov     di,0x248c
         stosb
-        or      byte [0x248d], 0b1010100
         mov     di,0x04da
         stosw
         mov     di,0x04dc
         stosb
-        or      byte [0x04dd], 0b1010100
-        or      byte [0x24d9], 0b1
         mov     di,0x24da
         stosw
         mov     di,0x24dc
         stosb
-        or      byte [0x24dd], 0b1010100
-        or      byte [0x0529], 0b1
         mov     di,0x052a
         stosw
         mov     di,0x052c
         stosb
-        or      byte [0x052d], 0b1010100
-        or      byte [0x2529], 0b101
         mov     di,0x252a
         stosw
         mov     di,0x252c
         stosb
-        or      byte [0x252d], 0b1010100
-        or      byte [0x0579], 0b101
         mov     di,0x057a
         stosw
         mov     di,0x057c
         stosb
-        or      byte [0x057d], 0b1010100
-        or      byte [0x2579], 0b10101
         mov     di,0x257a
         stosw
         mov     di,0x257c
         stosb
-        or      byte [0x257d], 0b1010100
-        or      byte [0x05c9], 0b10101
         mov     di,0x05ca
         stosw
         mov     di,0x05cc
         stosb
-        or      byte [0x05cd], 0b1010100
         mov     di,0x25c9
         mov     cx,2
         rep stosw
-        or      byte [0x25cd], 0b1010100
         mov     di,0x0619
         mov     cx,2
         rep stosw
-        or      byte [0x061d], 0b1010100
-        or      byte [0x2618], 0b1
         mov     di,0x2619
         mov     cx,2
         rep stosw
-        or      byte [0x261d], 0b1010100
-        or      byte [0x0668], 0b1
         mov     di,0x0669
         mov     cx,2
         rep stosw
-        or      byte [0x066d], 0b1010100
-        or      byte [0x2668], 0b101
         mov     di,0x2669
         mov     cx,2
         rep stosw
-        or      byte [0x266d], 0b1010100
-        or      byte [0x06b8], 0b101
         mov     di,0x06b9
         mov     cx,2
         rep stosw
-        or      byte [0x06bd], 0b1010100
-        or      byte [0x26b8], 0b10101
         mov     di,0x26b9
         mov     cx,2
         rep stosw
-        or      byte [0x26bd], 0b1010100
-        or      byte [0x0708], 0b10101
         mov     di,0x0709
         mov     cx,2
         rep stosw
-        or      byte [0x070d], 0b1010100
         mov     di,0x2708
         mov     cx,2
         rep stosw
         mov     di,0x270c
         stosb
-        or      byte [0x270d], 0b1010100
         mov     di,0x0758
         mov     cx,2
         rep stosw
         mov     di,0x075c
         stosb
-        or      byte [0x075d], 0b1010100
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_7_on
 segment_7_on:
+
+        or      byte [0x27e6], 0b10101
+        or      byte [0x0836], 0b10101
+        or      byte [0x2836], 0b10101
+        or      byte [0x0886], 0b10101
+        or      byte [0x2886], 0b101
+        or      byte [0x08d6], 0b101
+        or      byte [0x28d6], 0b101
+        or      byte [0x0926], 0b101
+        or      byte [0x2926], 0b1
+        or      byte [0x0976], 0b1
+        or      byte [0x2976], 0b1
+        or      byte [0x0a17], 0b10101
+        or      byte [0x2a17], 0b10101
+        or      byte [0x0a67], 0b10101
+        or      byte [0x2a67], 0b101
+        or      byte [0x0ab7], 0b101
+        or      byte [0x2ab7], 0b1
+        or      byte [0x2b10], 0b1010000
+        or      byte [0x0b58], 0b10101
+        or      byte [0x0b5f], 0b1010000
+        or      byte [0x2b58], 0b10101
+        or      byte [0x2b5e], 0b1010100
+        or      byte [0x0ba8], 0b101
+        or      byte [0x2ba8], 0b1
+        or      byte [0x2bad], 0b1010000
+        or      byte [0x0bfd], 0b1000000
+        or      byte [0x2bf9], 0b10101
+        or      byte [0x2bfc], 0b1010100
+        or      byte [0x0c49], 0b101
+        or      byte [0x0c4c], 0b1000000
+        or      byte [0x2c49], 0b1
+        or      byte [0x0c9b], 0b1010100
+        or      byte [0x2c9a], 0b10101
+        or      byte [0x2c9b], 0b1010000
+        or      byte [0x0cea], 0b101
+        or      byte [0x0ceb], 0b1000000
+        or      byte [0x2cea], 0b1
+
         mov     ax,0b01010101_01010101
+        jmp     segment_7_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_7_off
+segment_7_off:
+
+        and     byte [0x27e6], 0b11101010
+        and     byte [0x0836], 0b11101010
+        and     byte [0x2836], 0b11101010
+        and     byte [0x0886], 0b11101010
+        and     byte [0x2886], 0b11111010
+        and     byte [0x08d6], 0b11111010
+        and     byte [0x28d6], 0b11111010
+        and     byte [0x0926], 0b11111010
+        and     byte [0x2926], 0b11111110
+        and     byte [0x0976], 0b11111110
+        and     byte [0x2976], 0b11111110
+        and     byte [0x0a17], 0b11101010
+        and     byte [0x2a17], 0b11101010
+        and     byte [0x0a67], 0b11101010
+        and     byte [0x2a67], 0b11111010
+        and     byte [0x0ab7], 0b11111010
+        and     byte [0x2ab7], 0b11111110
+        and     byte [0x2b10], 0b10101111
+        and     byte [0x0b58], 0b11101010
+        and     byte [0x0b5f], 0b10101111
+        and     byte [0x2b58], 0b11101010
+        and     byte [0x2b5e], 0b10101011
+        and     byte [0x0ba8], 0b11111010
+        and     byte [0x2ba8], 0b11111110
+        and     byte [0x2bad], 0b10101111
+        and     byte [0x0bfd], 0b10111111
+        and     byte [0x2bf9], 0b11101010
+        and     byte [0x2bfc], 0b10101011
+        and     byte [0x0c49], 0b11111010
+        and     byte [0x0c4c], 0b10111111
+        and     byte [0x2c49], 0b11111110
+        and     byte [0x0c9b], 0b10101011
+        and     byte [0x2c9a], 0b11101010
+        and     byte [0x2c9b], 0b10101111
+        and     byte [0x0cea], 0b11111010
+        and     byte [0x0ceb], 0b10111111
+        and     byte [0x2cea], 0b11111110
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_7_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_7_common:
 
         mov     di,0x2746
         mov     cx,6
@@ -1394,67 +1972,56 @@ segment_7_on:
         mov     di,0x07e6
         mov     cx,6
         rep stosw
-        or      byte [0x27e6], 0b10101
         mov     di,0x27e7
         mov     cx,5
         rep stosw
         mov     di,0x27f1
         stosb
-        or      byte [0x0836], 0b10101
         mov     di,0x0837
         mov     cx,5
         rep stosw
         mov     di,0x0841
         stosb
-        or      byte [0x2836], 0b10101
         mov     di,0x2837
         mov     cx,5
         rep stosw
         mov     di,0x2841
         stosb
-        or      byte [0x0886], 0b10101
         mov     di,0x0887
         mov     cx,5
         rep stosw
         mov     di,0x0891
         stosb
-        or      byte [0x2886], 0b101
         mov     di,0x2887
         mov     cx,5
         rep stosw
         mov     di,0x2891
         stosb
-        or      byte [0x08d6], 0b101
         mov     di,0x08d7
         mov     cx,5
         rep stosw
         mov     di,0x08e1
         stosb
-        or      byte [0x28d6], 0b101
         mov     di,0x28d7
         mov     cx,5
         rep stosw
         mov     di,0x28e1
         stosb
-        or      byte [0x0926], 0b101
         mov     di,0x0927
         mov     cx,5
         rep stosw
         mov     di,0x0931
         stosb
-        or      byte [0x2926], 0b1
         mov     di,0x2927
         mov     cx,5
         rep stosw
         mov     di,0x2931
         stosb
-        or      byte [0x0976], 0b1
         mov     di,0x0977
         mov     cx,5
         rep stosw
         mov     di,0x0981
         stosb
-        or      byte [0x2976], 0b1
         mov     di,0x2977
         mov     cx,5
         rep stosw
@@ -1470,27 +2037,21 @@ segment_7_on:
         rep stosw
         mov     di,0x29d1
         stosb
-        or      byte [0x0a17], 0b10101
         mov     di,0x0a18
         mov     cx,5
         rep stosw
-        or      byte [0x2a17], 0b10101
         mov     di,0x2a18
         mov     cx,5
         rep stosw
-        or      byte [0x0a67], 0b10101
         mov     di,0x0a68
         mov     cx,5
         rep stosw
-        or      byte [0x2a67], 0b101
         mov     di,0x2a68
         mov     cx,5
         rep stosw
-        or      byte [0x0ab7], 0b101
         mov     di,0x0ab8
         mov     cx,5
         rep stosw
-        or      byte [0x2ab7], 0b1
         mov     di,0x2ab8
         mov     cx,5
         rep stosw
@@ -1500,177 +2061,70 @@ segment_7_on:
         mov     di,0x2b08
         mov     cx,4
         rep stosw
-        or      byte [0x2b10], 0b1010000
-        or      byte [0x0b58], 0b10101
         mov     di,0x0b59
         mov     cx,3
         rep stosw
-        or      byte [0x0b5f], 0b1010000
-        or      byte [0x2b58], 0b10101
         mov     di,0x2b59
         mov     cx,2
         rep stosw
         mov     di,0x2b5d
         stosb
-        or      byte [0x2b5e], 0b1010100
-        or      byte [0x0ba8], 0b101
         mov     di,0x0ba9
         mov     cx,2
         rep stosw
         mov     di,0x0bad
         stosb
-        or      byte [0x2ba8], 0b1
         mov     di,0x2ba9
         mov     cx,2
         rep stosw
-        or      byte [0x2bad], 0b1010000
         mov     di,0x0bf9
         mov     cx,2
         rep stosw
-        or      byte [0x0bfd], 0b1000000
-        or      byte [0x2bf9], 0b10101
         mov     di,0x2bfa
         stosw
-        or      byte [0x2bfc], 0b1010100
-        or      byte [0x0c49], 0b101
         mov     di,0x0c4a
         stosw
-        or      byte [0x0c4c], 0b1000000
-        or      byte [0x2c49], 0b1
         mov     di,0x2c4a
         stosw
         mov     di,0x0c9a
         stosb
-        or      byte [0x0c9b], 0b1010100
-        or      byte [0x2c9a], 0b10101
-        or      byte [0x2c9b], 0b1010000
-        or      byte [0x0cea], 0b101
-        or      byte [0x0ceb], 0b1000000
-        or      byte [0x2cea], 0b1
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_8_on
 segment_8_on:
-        mov     ax,0b01010101_01010101
 
-        mov     di,0x2752
-        mov     cx,2
-        rep stosw
-        mov     di,0x2756
-        stosb
         or      byte [0x2757], 0b1010100
         or      byte [0x07a2], 0b10101
-        mov     di,0x07a3
-        mov     cx,2
-        rep stosw
-        mov     di,0x07a7
-        stosb
         or      byte [0x27a2], 0b101
-        mov     di,0x27a3
-        mov     cx,2
-        rep stosw
-        mov     di,0x27a7
-        stosb
         or      byte [0x27a8], 0b1000000
         or      byte [0x07f2], 0b1
-        mov     di,0x07f3
-        mov     cx,2
-        rep stosw
-        mov     di,0x07f7
-        stosb
         or      byte [0x07f8], 0b1010000
-        mov     di,0x27f3
-        mov     cx,2
-        rep stosw
-        mov     di,0x27f7
-        stosb
         or      byte [0x27f8], 0b1010100
         or      byte [0x0843], 0b10101
-        mov     di,0x0844
-        mov     cx,2
-        rep stosw
-        mov     di,0x0848
-        stosb
         or      byte [0x2843], 0b101
-        mov     di,0x2844
-        mov     cx,2
-        rep stosw
-        mov     di,0x2848
-        stosb
         or      byte [0x2849], 0b1000000
         or      byte [0x0893], 0b1
-        mov     di,0x0894
-        mov     cx,2
-        rep stosw
-        mov     di,0x0898
-        stosb
         or      byte [0x0899], 0b1010000
-        mov     di,0x2894
-        mov     cx,2
-        rep stosw
-        mov     di,0x2898
-        stosb
         or      byte [0x2899], 0b1010100
         or      byte [0x08e4], 0b10101
-        mov     di,0x08e5
-        mov     cx,2
-        rep stosw
-        mov     di,0x08e9
-        stosb
         or      byte [0x28e4], 0b101
-        mov     di,0x28e5
-        mov     cx,2
-        rep stosw
-        mov     di,0x28e9
-        stosb
         or      byte [0x28ea], 0b1000000
         or      byte [0x0934], 0b1
-        mov     di,0x0935
-        mov     cx,2
-        rep stosw
-        mov     di,0x0939
-        stosb
         or      byte [0x093a], 0b1010000
-        mov     di,0x2935
-        mov     cx,2
-        rep stosw
-        mov     di,0x2939
-        stosb
         or      byte [0x293a], 0b1010100
         or      byte [0x0985], 0b10101
-        mov     di,0x0986
-        mov     cx,2
-        rep stosw
         or      byte [0x098a], 0b1010000
         or      byte [0x2985], 0b101
-        mov     di,0x2986
-        mov     cx,2
-        rep stosw
         or      byte [0x298a], 0b1000000
         or      byte [0x09d5], 0b1
-        mov     di,0x09d6
-        mov     cx,2
-        rep stosw
-        mov     di,0x29d6
-        stosw
-        mov     di,0x29d8
-        stosb
         or      byte [0x29d9], 0b1010100
         or      byte [0x0a26], 0b10101
-        mov     di,0x0a27
-        stosw
         or      byte [0x0a29], 0b1010000
         or      byte [0x2a26], 0b101
-        mov     di,0x2a27
-        stosw
         or      byte [0x2a29], 0b1000000
         or      byte [0x0a76], 0b1
-        mov     di,0x0a77
-        stosw
-        mov     di,0x2a77
-        stosb
         or      byte [0x2a78], 0b1010100
         or      byte [0x0ac7], 0b10101
         or      byte [0x0ac8], 0b1010000
@@ -1678,58 +2132,161 @@ segment_8_on:
         or      byte [0x2ac8], 0b1000000
         or      byte [0x0b17], 0b1
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_8_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_8_off
+segment_8_off:
+
+        and     byte [0x2757], 0b10101011
+        and     byte [0x07a2], 0b11101010
+        and     byte [0x27a2], 0b11111010
+        and     byte [0x27a8], 0b10111111
+        and     byte [0x07f2], 0b11111110
+        and     byte [0x07f8], 0b10101111
+        and     byte [0x27f8], 0b10101011
+        and     byte [0x0843], 0b11101010
+        and     byte [0x2843], 0b11111010
+        and     byte [0x2849], 0b10111111
+        and     byte [0x0893], 0b11111110
+        and     byte [0x0899], 0b10101111
+        and     byte [0x2899], 0b10101011
+        and     byte [0x08e4], 0b11101010
+        and     byte [0x28e4], 0b11111010
+        and     byte [0x28ea], 0b10111111
+        and     byte [0x0934], 0b11111110
+        and     byte [0x093a], 0b10101111
+        and     byte [0x293a], 0b10101011
+        and     byte [0x0985], 0b11101010
+        and     byte [0x098a], 0b10101111
+        and     byte [0x2985], 0b11111010
+        and     byte [0x298a], 0b10111111
+        and     byte [0x09d5], 0b11111110
+        and     byte [0x29d9], 0b10101011
+        and     byte [0x0a26], 0b11101010
+        and     byte [0x0a29], 0b10101111
+        and     byte [0x2a26], 0b11111010
+        and     byte [0x2a29], 0b10111111
+        and     byte [0x0a76], 0b11111110
+        and     byte [0x2a78], 0b10101011
+        and     byte [0x0ac7], 0b11101010
+        and     byte [0x0ac8], 0b10101111
+        and     byte [0x2ac7], 0b11111010
+        and     byte [0x2ac8], 0b10111111
+        and     byte [0x0b17], 0b11111110
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_8_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_8_common:
+
+        mov     di,0x2752
+        mov     cx,2
+        rep stosw
+        mov     di,0x2756
+        stosb
+        mov     di,0x07a3
+        mov     cx,2
+        rep stosw
+        mov     di,0x07a7
+        stosb
+        mov     di,0x27a3
+        mov     cx,2
+        rep stosw
+        mov     di,0x27a7
+        stosb
+        mov     di,0x07f3
+        mov     cx,2
+        rep stosw
+        mov     di,0x07f7
+        stosb
+        mov     di,0x27f3
+        mov     cx,2
+        rep stosw
+        mov     di,0x27f7
+        stosb
+        mov     di,0x0844
+        mov     cx,2
+        rep stosw
+        mov     di,0x0848
+        stosb
+        mov     di,0x2844
+        mov     cx,2
+        rep stosw
+        mov     di,0x2848
+        stosb
+        mov     di,0x0894
+        mov     cx,2
+        rep stosw
+        mov     di,0x0898
+        stosb
+        mov     di,0x2894
+        mov     cx,2
+        rep stosw
+        mov     di,0x2898
+        stosb
+        mov     di,0x08e5
+        mov     cx,2
+        rep stosw
+        mov     di,0x08e9
+        stosb
+        mov     di,0x28e5
+        mov     cx,2
+        rep stosw
+        mov     di,0x28e9
+        stosb
+        mov     di,0x0935
+        mov     cx,2
+        rep stosw
+        mov     di,0x0939
+        stosb
+        mov     di,0x2935
+        mov     cx,2
+        rep stosw
+        mov     di,0x2939
+        stosb
+        mov     di,0x0986
+        mov     cx,2
+        rep stosw
+        mov     di,0x2986
+        mov     cx,2
+        rep stosw
+        mov     di,0x09d6
+        mov     cx,2
+        rep stosw
+        mov     di,0x29d6
+        stosw
+        mov     di,0x29d8
+        stosb
+        mov     di,0x0a27
+        stosw
+        mov     di,0x2a27
+        stosw
+        mov     di,0x0a77
+        stosw
+        mov     di,0x2a77
+        stosb
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_9_on
 segment_9_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x2757], 0b1
-        mov     di,0x2758
-        mov     cx,2
-        rep stosw
-        mov     di,0x275c
-        stosb
         or      byte [0x275d], 0b1010100
-        mov     di,0x07a8
-        mov     cx,2
-        rep stosw
-        mov     di,0x07ac
-        stosb
         or      byte [0x07ad], 0b1010100
         or      byte [0x27a8], 0b10101
-        mov     di,0x27a9
-        mov     cx,2
-        rep stosw
         or      byte [0x27ad], 0b1010000
         or      byte [0x07f8], 0b101
-        mov     di,0x07f9
-        mov     cx,2
-        rep stosw
         or      byte [0x07fd], 0b1000000
         or      byte [0x27f8], 0b1
-        mov     di,0x27f9
-        mov     cx,2
-        rep stosw
-        mov     di,0x0849
-        stosw
-        mov     di,0x084b
-        stosb
         or      byte [0x084c], 0b1010100
         or      byte [0x2849], 0b10101
-        mov     di,0x284a
-        stosw
         or      byte [0x284c], 0b1010000
         or      byte [0x0899], 0b101
-        mov     di,0x089a
-        stosw
         or      byte [0x089c], 0b1000000
         or      byte [0x2899], 0b1
-        mov     di,0x289a
-        stosw
-        mov     di,0x08ea
-        stosb
         or      byte [0x08eb], 0b1010100
         or      byte [0x28ea], 0b10101
         or      byte [0x28eb], 0b1010000
@@ -1737,212 +2294,135 @@ segment_9_on:
         or      byte [0x093b], 0b1000000
         or      byte [0x293a], 0b1
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_9_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_9_off
+segment_9_off:
+
+        and     byte [0x2757], 0b11111110
+        and     byte [0x275d], 0b10101011
+        and     byte [0x07ad], 0b10101011
+        and     byte [0x27a8], 0b11101010
+        and     byte [0x27ad], 0b10101111
+        and     byte [0x07f8], 0b11111010
+        and     byte [0x07fd], 0b10111111
+        and     byte [0x27f8], 0b11111110
+        and     byte [0x084c], 0b10101011
+        and     byte [0x2849], 0b11101010
+        and     byte [0x284c], 0b10101111
+        and     byte [0x0899], 0b11111010
+        and     byte [0x089c], 0b10111111
+        and     byte [0x2899], 0b11111110
+        and     byte [0x08eb], 0b10101011
+        and     byte [0x28ea], 0b11101010
+        and     byte [0x28eb], 0b10101111
+        and     byte [0x093a], 0b11111010
+        and     byte [0x093b], 0b10111111
+        and     byte [0x293a], 0b11111110
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_9_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_9_common:
+
+        mov     di,0x2758
+        mov     cx,2
+        rep stosw
+        mov     di,0x275c
+        stosb
+        mov     di,0x07a8
+        mov     cx,2
+        rep stosw
+        mov     di,0x07ac
+        stosb
+        mov     di,0x27a9
+        mov     cx,2
+        rep stosw
+        mov     di,0x07f9
+        mov     cx,2
+        rep stosw
+        mov     di,0x27f9
+        mov     cx,2
+        rep stosw
+        mov     di,0x0849
+        stosw
+        mov     di,0x084b
+        stosb
+        mov     di,0x284a
+        stosw
+        mov     di,0x089a
+        stosw
+        mov     di,0x289a
+        stosw
+        mov     di,0x08ea
+        stosb
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_10_on
 segment_10_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x275d], 0b1
-        mov     di,0x275e
-        mov     cx,5
-        rep stosw
-        mov     di,0x2768
-        stosb
         or      byte [0x2769], 0b1010100
         or      byte [0x07ad], 0b1
-        mov     di,0x07ae
-        mov     cx,5
-        rep stosw
-        mov     di,0x07b8
-        stosb
         or      byte [0x07b9], 0b1010100
         or      byte [0x27ad], 0b1
-        mov     di,0x27ae
-        mov     cx,5
-        rep stosw
-        mov     di,0x27b8
-        stosb
         or      byte [0x27b9], 0b1010100
         or      byte [0x07fd], 0b1
-        mov     di,0x07fe
-        mov     cx,5
-        rep stosw
-        mov     di,0x0808
-        stosb
         or      byte [0x0809], 0b1010100
         or      byte [0x27fd], 0b1
-        mov     di,0x27fe
-        mov     cx,5
-        rep stosw
-        mov     di,0x2808
-        stosb
         or      byte [0x2809], 0b1010000
         or      byte [0x084d], 0b1
-        mov     di,0x084e
-        mov     cx,5
-        rep stosw
-        mov     di,0x0858
-        stosb
         or      byte [0x0859], 0b1010000
         or      byte [0x284d], 0b1
-        mov     di,0x284e
-        mov     cx,5
-        rep stosw
-        mov     di,0x2858
-        stosb
         or      byte [0x2859], 0b1010000
         or      byte [0x089d], 0b1
-        mov     di,0x089e
-        mov     cx,5
-        rep stosw
-        mov     di,0x08a8
-        stosb
         or      byte [0x08a9], 0b1010000
         or      byte [0x289d], 0b1
-        mov     di,0x289e
-        mov     cx,5
-        rep stosw
-        mov     di,0x28a8
-        stosb
         or      byte [0x28a9], 0b1010000
         or      byte [0x08ed], 0b1
-        mov     di,0x08ee
-        mov     cx,5
-        rep stosw
-        mov     di,0x08f8
-        stosb
         or      byte [0x08f9], 0b1010000
         or      byte [0x28ed], 0b1
-        mov     di,0x28ee
-        mov     cx,5
-        rep stosw
-        mov     di,0x28f8
-        stosb
         or      byte [0x28f9], 0b1000000
         or      byte [0x093d], 0b1
-        mov     di,0x093e
-        mov     cx,5
-        rep stosw
-        mov     di,0x0948
-        stosb
         or      byte [0x0949], 0b1000000
         or      byte [0x293d], 0b1
-        mov     di,0x293e
-        mov     cx,5
-        rep stosw
-        mov     di,0x2948
-        stosb
         or      byte [0x2949], 0b1000000
         or      byte [0x098d], 0b1
-        mov     di,0x098e
-        mov     cx,5
-        rep stosw
-        mov     di,0x0998
-        stosb
         or      byte [0x0999], 0b1000000
         or      byte [0x298d], 0b1
-        mov     di,0x298e
-        mov     cx,5
-        rep stosw
-        mov     di,0x2998
-        stosb
         or      byte [0x09dd], 0b1
-        mov     di,0x09de
-        mov     cx,5
-        rep stosw
-        mov     di,0x09e8
-        stosb
         or      byte [0x29dd], 0b1
-        mov     di,0x29de
-        mov     cx,5
-        rep stosw
-        mov     di,0x29e8
-        stosb
         or      byte [0x0a2d], 0b1
-        mov     di,0x0a2e
-        mov     cx,5
-        rep stosw
         or      byte [0x0a38], 0b1010100
         or      byte [0x2a2d], 0b1
-        mov     di,0x2a2e
-        mov     cx,5
-        rep stosw
         or      byte [0x2a38], 0b1010100
         or      byte [0x0a7d], 0b1
-        mov     di,0x0a7e
-        mov     cx,5
-        rep stosw
         or      byte [0x0a88], 0b1010000
         or      byte [0x2a7d], 0b1
-        mov     di,0x2a7e
-        mov     cx,5
-        rep stosw
         or      byte [0x2a88], 0b1010000
         or      byte [0x0acd], 0b1
-        mov     di,0x0ace
-        mov     cx,5
-        rep stosw
         or      byte [0x0ad8], 0b1000000
         or      byte [0x2acd], 0b1
-        mov     di,0x2ace
-        mov     cx,5
-        rep stosw
         or      byte [0x2ad8], 0b1000000
         or      byte [0x0b1d], 0b1
-        mov     di,0x0b1e
-        mov     cx,5
-        rep stosw
         or      byte [0x2b1e], 0b101
-        mov     di,0x2b1f
-        mov     cx,4
-        rep stosw
         or      byte [0x2b27], 0b1010100
-        mov     di,0x0b70
-        mov     cx,3
-        rep stosw
-        mov     di,0x0b76
-        stosb
         or      byte [0x0b77], 0b1010100
         or      byte [0x2b70], 0b1
-        mov     di,0x2b71
-        mov     cx,3
-        rep stosw
         or      byte [0x2b77], 0b1010000
         or      byte [0x0bc1], 0b101
-        mov     di,0x0bc2
-        mov     cx,2
-        rep stosw
-        mov     di,0x0bc6
-        stosb
         or      byte [0x0bc7], 0b1010000
-        mov     di,0x2bc2
-        mov     cx,2
-        rep stosw
-        mov     di,0x2bc6
-        stosb
         or      byte [0x2bc7], 0b1000000
         or      byte [0x0c12], 0b101
-        mov     di,0x0c13
-        mov     cx,2
-        rep stosw
         or      byte [0x2c12], 0b1
-        mov     di,0x2c13
-        stosw
-        mov     di,0x2c15
-        stosb
         or      byte [0x2c16], 0b1010100
         or      byte [0x0c63], 0b10101
-        mov     di,0x0c64
-        stosw
         or      byte [0x0c66], 0b1010000
         or      byte [0x2c63], 0b101
-        mov     di,0x2c64
-        stosw
         or      byte [0x2c66], 0b1000000
-        mov     di,0x0cb4
-        stosw
         or      byte [0x2cb4], 0b10101
         or      byte [0x2cb5], 0b1010100
         or      byte [0x0d04], 0b101
@@ -1950,38 +2430,295 @@ segment_10_on:
         or      byte [0x2d04], 0b1
         or      byte [0x2d05], 0b1000000
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_10_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_10_off
+segment_10_off:
+
+        and     byte [0x275d], 0b11111110
+        and     byte [0x2769], 0b10101011
+        and     byte [0x07ad], 0b11111110
+        and     byte [0x07b9], 0b10101011
+        and     byte [0x27ad], 0b11111110
+        and     byte [0x27b9], 0b10101011
+        and     byte [0x07fd], 0b11111110
+        and     byte [0x0809], 0b10101011
+        and     byte [0x27fd], 0b11111110
+        and     byte [0x2809], 0b10101111
+        and     byte [0x084d], 0b11111110
+        and     byte [0x0859], 0b10101111
+        and     byte [0x284d], 0b11111110
+        and     byte [0x2859], 0b10101111
+        and     byte [0x089d], 0b11111110
+        and     byte [0x08a9], 0b10101111
+        and     byte [0x289d], 0b11111110
+        and     byte [0x28a9], 0b10101111
+        and     byte [0x08ed], 0b11111110
+        and     byte [0x08f9], 0b10101111
+        and     byte [0x28ed], 0b11111110
+        and     byte [0x28f9], 0b10111111
+        and     byte [0x093d], 0b11111110
+        and     byte [0x0949], 0b10111111
+        and     byte [0x293d], 0b11111110
+        and     byte [0x2949], 0b10111111
+        and     byte [0x098d], 0b11111110
+        and     byte [0x0999], 0b10111111
+        and     byte [0x298d], 0b11111110
+        and     byte [0x09dd], 0b11111110
+        and     byte [0x29dd], 0b11111110
+        and     byte [0x0a2d], 0b11111110
+        and     byte [0x0a38], 0b10101011
+        and     byte [0x2a2d], 0b11111110
+        and     byte [0x2a38], 0b10101011
+        and     byte [0x0a7d], 0b11111110
+        and     byte [0x0a88], 0b10101111
+        and     byte [0x2a7d], 0b11111110
+        and     byte [0x2a88], 0b10101111
+        and     byte [0x0acd], 0b11111110
+        and     byte [0x0ad8], 0b10111111
+        and     byte [0x2acd], 0b11111110
+        and     byte [0x2ad8], 0b10111111
+        and     byte [0x0b1d], 0b11111110
+        and     byte [0x2b1e], 0b11111010
+        and     byte [0x2b27], 0b10101011
+        and     byte [0x0b77], 0b10101011
+        and     byte [0x2b70], 0b11111110
+        and     byte [0x2b77], 0b10101111
+        and     byte [0x0bc1], 0b11111010
+        and     byte [0x0bc7], 0b10101111
+        and     byte [0x2bc7], 0b10111111
+        and     byte [0x0c12], 0b11111010
+        and     byte [0x2c12], 0b11111110
+        and     byte [0x2c16], 0b10101011
+        and     byte [0x0c63], 0b11101010
+        and     byte [0x0c66], 0b10101111
+        and     byte [0x2c63], 0b11111010
+        and     byte [0x2c66], 0b10111111
+        and     byte [0x2cb4], 0b11101010
+        and     byte [0x2cb5], 0b10101011
+        and     byte [0x0d04], 0b11111010
+        and     byte [0x0d05], 0b10101111
+        and     byte [0x2d04], 0b11111110
+        and     byte [0x2d05], 0b10111111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_10_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_10_common:
+
+        mov     di,0x275e
+        mov     cx,5
+        rep stosw
+        mov     di,0x2768
+        stosb
+        mov     di,0x07ae
+        mov     cx,5
+        rep stosw
+        mov     di,0x07b8
+        stosb
+        mov     di,0x27ae
+        mov     cx,5
+        rep stosw
+        mov     di,0x27b8
+        stosb
+        mov     di,0x07fe
+        mov     cx,5
+        rep stosw
+        mov     di,0x0808
+        stosb
+        mov     di,0x27fe
+        mov     cx,5
+        rep stosw
+        mov     di,0x2808
+        stosb
+        mov     di,0x084e
+        mov     cx,5
+        rep stosw
+        mov     di,0x0858
+        stosb
+        mov     di,0x284e
+        mov     cx,5
+        rep stosw
+        mov     di,0x2858
+        stosb
+        mov     di,0x089e
+        mov     cx,5
+        rep stosw
+        mov     di,0x08a8
+        stosb
+        mov     di,0x289e
+        mov     cx,5
+        rep stosw
+        mov     di,0x28a8
+        stosb
+        mov     di,0x08ee
+        mov     cx,5
+        rep stosw
+        mov     di,0x08f8
+        stosb
+        mov     di,0x28ee
+        mov     cx,5
+        rep stosw
+        mov     di,0x28f8
+        stosb
+        mov     di,0x093e
+        mov     cx,5
+        rep stosw
+        mov     di,0x0948
+        stosb
+        mov     di,0x293e
+        mov     cx,5
+        rep stosw
+        mov     di,0x2948
+        stosb
+        mov     di,0x098e
+        mov     cx,5
+        rep stosw
+        mov     di,0x0998
+        stosb
+        mov     di,0x298e
+        mov     cx,5
+        rep stosw
+        mov     di,0x2998
+        stosb
+        mov     di,0x09de
+        mov     cx,5
+        rep stosw
+        mov     di,0x09e8
+        stosb
+        mov     di,0x29de
+        mov     cx,5
+        rep stosw
+        mov     di,0x29e8
+        stosb
+        mov     di,0x0a2e
+        mov     cx,5
+        rep stosw
+        mov     di,0x2a2e
+        mov     cx,5
+        rep stosw
+        mov     di,0x0a7e
+        mov     cx,5
+        rep stosw
+        mov     di,0x2a7e
+        mov     cx,5
+        rep stosw
+        mov     di,0x0ace
+        mov     cx,5
+        rep stosw
+        mov     di,0x2ace
+        mov     cx,5
+        rep stosw
+        mov     di,0x0b1e
+        mov     cx,5
+        rep stosw
+        mov     di,0x2b1f
+        mov     cx,4
+        rep stosw
+        mov     di,0x0b70
+        mov     cx,3
+        rep stosw
+        mov     di,0x0b76
+        stosb
+        mov     di,0x2b71
+        mov     cx,3
+        rep stosw
+        mov     di,0x0bc2
+        mov     cx,2
+        rep stosw
+        mov     di,0x0bc6
+        stosb
+        mov     di,0x2bc2
+        mov     cx,2
+        rep stosw
+        mov     di,0x2bc6
+        stosb
+        mov     di,0x0c13
+        mov     cx,2
+        rep stosw
+        mov     di,0x2c13
+        stosw
+        mov     di,0x2c15
+        stosb
+        mov     di,0x0c64
+        stosw
+        mov     di,0x2c64
+        stosw
+        mov     di,0x0cb4
+        stosw
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_11_on
 segment_11_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x07a2], 0b1000000
         or      byte [0x27a2], 0b1010000
         or      byte [0x07f2], 0b1010100
+        or      byte [0x0843], 0b1000000
+        or      byte [0x2843], 0b1010000
+        or      byte [0x0893], 0b1010100
+        or      byte [0x08e4], 0b1000000
+        or      byte [0x28e4], 0b1010000
+        or      byte [0x0934], 0b1010100
+        or      byte [0x0985], 0b1000000
+        or      byte [0x2985], 0b1010000
+        or      byte [0x09d5], 0b1010100
+        or      byte [0x0a26], 0b1000000
+        or      byte [0x2a26], 0b1010000
+        or      byte [0x0a76], 0b1010100
+        or      byte [0x0ac7], 0b1000000
+        or      byte [0x2ac7], 0b1010000
+        or      byte [0x0b17], 0b1010100
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_11_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_11_off
+segment_11_off:
+
+        and     byte [0x07a2], 0b10111111
+        and     byte [0x27a2], 0b10101111
+        and     byte [0x07f2], 0b10101011
+        and     byte [0x0843], 0b10111111
+        and     byte [0x2843], 0b10101111
+        and     byte [0x0893], 0b10101011
+        and     byte [0x08e4], 0b10111111
+        and     byte [0x28e4], 0b10101111
+        and     byte [0x0934], 0b10101011
+        and     byte [0x0985], 0b10111111
+        and     byte [0x2985], 0b10101111
+        and     byte [0x09d5], 0b10101011
+        and     byte [0x0a26], 0b10111111
+        and     byte [0x2a26], 0b10101111
+        and     byte [0x0a76], 0b10101011
+        and     byte [0x0ac7], 0b10111111
+        and     byte [0x2ac7], 0b10101111
+        and     byte [0x0b17], 0b10101011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_11_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_11_common:
+
         mov     di,0x27f2
         stosb
         mov     di,0x0842
         stosb
-        or      byte [0x0843], 0b1000000
         mov     di,0x2842
         stosb
-        or      byte [0x2843], 0b1010000
         mov     di,0x0892
         stosb
-        or      byte [0x0893], 0b1010100
         mov     di,0x2892
         stosw
         mov     di,0x08e2
         stosw
-        or      byte [0x08e4], 0b1000000
         mov     di,0x28e2
         stosw
-        or      byte [0x28e4], 0b1010000
         mov     di,0x0932
         stosw
-        or      byte [0x0934], 0b1010100
         mov     di,0x2932
         stosw
         mov     di,0x2934
@@ -1990,32 +2727,26 @@ segment_11_on:
         stosw
         mov     di,0x0984
         stosb
-        or      byte [0x0985], 0b1000000
         mov     di,0x2982
         stosw
         mov     di,0x2984
         stosb
-        or      byte [0x2985], 0b1010000
         mov     di,0x09d2
         stosw
         mov     di,0x09d4
         stosb
-        or      byte [0x09d5], 0b1010100
         mov     di,0x29d2
         mov     cx,2
         rep stosw
         mov     di,0x0a22
         mov     cx,2
         rep stosw
-        or      byte [0x0a26], 0b1000000
         mov     di,0x2a22
         mov     cx,2
         rep stosw
-        or      byte [0x2a26], 0b1010000
         mov     di,0x0a72
         mov     cx,2
         rep stosw
-        or      byte [0x0a76], 0b1010100
         mov     di,0x2a72
         mov     cx,2
         rep stosw
@@ -2026,26 +2757,22 @@ segment_11_on:
         rep stosw
         mov     di,0x0ac6
         stosb
-        or      byte [0x0ac7], 0b1000000
         mov     di,0x2ac2
         mov     cx,2
         rep stosw
         mov     di,0x2ac6
         stosb
-        or      byte [0x2ac7], 0b1010000
         mov     di,0x0b12
         mov     cx,2
         rep stosw
         mov     di,0x0b16
         stosb
-        or      byte [0x0b17], 0b1010100
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_12_on
 segment_12_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x27ad], 0b100
         or      byte [0x07fd], 0b10100
@@ -2056,41 +2783,21 @@ segment_12_on:
         or      byte [0x284d], 0b1010100
         or      byte [0x089c], 0b10101
         or      byte [0x089d], 0b1010100
-        mov     di,0x289c
-        stosb
         or      byte [0x289d], 0b1010100
         or      byte [0x08eb], 0b1
-        mov     di,0x08ec
-        stosb
         or      byte [0x08ed], 0b1010100
         or      byte [0x28eb], 0b101
-        mov     di,0x28ec
-        stosb
         or      byte [0x28ed], 0b1010100
         or      byte [0x093b], 0b10101
-        mov     di,0x093c
-        stosb
         or      byte [0x093d], 0b1010100
-        mov     di,0x293b
-        stosw
         or      byte [0x293d], 0b1010100
-        mov     di,0x098b
-        stosw
         or      byte [0x098d], 0b1010100
         or      byte [0x298b], 0b10101
-        mov     di,0x298c
-        stosb
         or      byte [0x298d], 0b1010100
         or      byte [0x09db], 0b101
-        mov     di,0x09dc
-        stosb
         or      byte [0x09dd], 0b1010100
         or      byte [0x29db], 0b1
-        mov     di,0x29dc
-        stosb
         or      byte [0x29dd], 0b1010100
-        mov     di,0x0a2c
-        stosb
         or      byte [0x0a2d], 0b1010100
         or      byte [0x2a2c], 0b10101
         or      byte [0x2a2d], 0b1010100
@@ -2102,12 +2809,78 @@ segment_12_on:
         or      byte [0x2acd], 0b10100
         or      byte [0x0b1d], 0b100
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_12_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_12_off
+segment_12_off:
+
+        and     byte [0x27ad], 0b11111011
+        and     byte [0x07fd], 0b11101011
+        and     byte [0x27fd], 0b10101011
+        and     byte [0x084c], 0b11111110
+        and     byte [0x084d], 0b10101011
+        and     byte [0x284c], 0b11111010
+        and     byte [0x284d], 0b10101011
+        and     byte [0x089c], 0b11101010
+        and     byte [0x089d], 0b10101011
+        and     byte [0x289d], 0b10101011
+        and     byte [0x08eb], 0b11111110
+        and     byte [0x08ed], 0b10101011
+        and     byte [0x28eb], 0b11111010
+        and     byte [0x28ed], 0b10101011
+        and     byte [0x093b], 0b11101010
+        and     byte [0x093d], 0b10101011
+        and     byte [0x293d], 0b10101011
+        and     byte [0x098d], 0b10101011
+        and     byte [0x298b], 0b11101010
+        and     byte [0x298d], 0b10101011
+        and     byte [0x09db], 0b11111010
+        and     byte [0x09dd], 0b10101011
+        and     byte [0x29db], 0b11111110
+        and     byte [0x29dd], 0b10101011
+        and     byte [0x0a2d], 0b10101011
+        and     byte [0x2a2c], 0b11101010
+        and     byte [0x2a2d], 0b10101011
+        and     byte [0x0a7c], 0b11111010
+        and     byte [0x0a7d], 0b10101011
+        and     byte [0x2a7c], 0b11111110
+        and     byte [0x2a7d], 0b10101011
+        and     byte [0x0acd], 0b10101011
+        and     byte [0x2acd], 0b11101011
+        and     byte [0x0b1d], 0b11111011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_12_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_12_common:
+
+        mov     di,0x289c
+        stosb
+        mov     di,0x08ec
+        stosb
+        mov     di,0x28ec
+        stosb
+        mov     di,0x093c
+        stosb
+        mov     di,0x293b
+        stosw
+        mov     di,0x098b
+        stosw
+        mov     di,0x298c
+        stosb
+        mov     di,0x09dc
+        stosb
+        mov     di,0x29dc
+        stosb
+        mov     di,0x0a2c
+        stosb
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_13_on
 segment_13_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x27e6], 0b1000000
         or      byte [0x0836], 0b1000000
@@ -2132,6 +2905,108 @@ segment_13_on:
         or      byte [0x2b06], 0b1010100
         or      byte [0x0b56], 0b1010100
         or      byte [0x2b56], 0b1010100
+        or      byte [0x2bf7], 0b1000000
+        or      byte [0x0c47], 0b1000000
+        or      byte [0x2c47], 0b1000000
+        or      byte [0x0c97], 0b1000000
+        or      byte [0x2c97], 0b1010000
+        or      byte [0x0ce7], 0b1010000
+        or      byte [0x2ce7], 0b1010000
+        or      byte [0x0d37], 0b1010100
+        or      byte [0x2d37], 0b1010100
+        or      byte [0x0dd8], 0b1000000
+        or      byte [0x2dd8], 0b1000000
+        or      byte [0x0e28], 0b1000000
+        or      byte [0x2e28], 0b1010000
+        or      byte [0x0e78], 0b1010000
+        or      byte [0x2e78], 0b1010100
+        or      byte [0x2ec8], 0b1010100
+        or      byte [0x0f18], 0b1010100
+        or      byte [0x2f18], 0b1010000
+        or      byte [0x0f68], 0b1010000
+        or      byte [0x2f68], 0b1000000
+        or      byte [0x0fb8], 0b1000000
+        or      byte [0x3007], 0b1010100
+        or      byte [0x1057], 0b1010100
+        or      byte [0x3057], 0b1010100
+        or      byte [0x10a7], 0b1010000
+        or      byte [0x30a7], 0b1010000
+        or      byte [0x10f7], 0b1010000
+        or      byte [0x30f7], 0b1000000
+        or      byte [0x1147], 0b1000000
+        or      byte [0x3147], 0b1000000
+        or      byte [0x1236], 0b1010100
+        or      byte [0x3236], 0b1010100
+        or      byte [0x1286], 0b1010100
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_13_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_13_off
+segment_13_off:
+
+        and     byte [0x27e6], 0b10111111
+        and     byte [0x0836], 0b10111111
+        and     byte [0x2836], 0b10111111
+        and     byte [0x0886], 0b10111111
+        and     byte [0x2886], 0b10111111
+        and     byte [0x08d6], 0b10111111
+        and     byte [0x28d6], 0b10111111
+        and     byte [0x0926], 0b10111111
+        and     byte [0x2926], 0b10111111
+        and     byte [0x0976], 0b10111111
+        and     byte [0x2976], 0b10111111
+        and     byte [0x09c6], 0b10111111
+        and     byte [0x29c6], 0b10101111
+        and     byte [0x0a16], 0b10101111
+        and     byte [0x2a16], 0b10101111
+        and     byte [0x0a66], 0b10101111
+        and     byte [0x2a66], 0b10101111
+        and     byte [0x0ab6], 0b10101111
+        and     byte [0x2ab6], 0b10101011
+        and     byte [0x0b06], 0b10101011
+        and     byte [0x2b06], 0b10101011
+        and     byte [0x0b56], 0b10101011
+        and     byte [0x2b56], 0b10101011
+        and     byte [0x2bf7], 0b10111111
+        and     byte [0x0c47], 0b10111111
+        and     byte [0x2c47], 0b10111111
+        and     byte [0x0c97], 0b10111111
+        and     byte [0x2c97], 0b10101111
+        and     byte [0x0ce7], 0b10101111
+        and     byte [0x2ce7], 0b10101111
+        and     byte [0x0d37], 0b10101011
+        and     byte [0x2d37], 0b10101011
+        and     byte [0x0dd8], 0b10111111
+        and     byte [0x2dd8], 0b10111111
+        and     byte [0x0e28], 0b10111111
+        and     byte [0x2e28], 0b10101111
+        and     byte [0x0e78], 0b10101111
+        and     byte [0x2e78], 0b10101011
+        and     byte [0x2ec8], 0b10101011
+        and     byte [0x0f18], 0b10101011
+        and     byte [0x2f18], 0b10101111
+        and     byte [0x0f68], 0b10101111
+        and     byte [0x2f68], 0b10111111
+        and     byte [0x0fb8], 0b10111111
+        and     byte [0x3007], 0b10101011
+        and     byte [0x1057], 0b10101011
+        and     byte [0x3057], 0b10101011
+        and     byte [0x10a7], 0b10101111
+        and     byte [0x30a7], 0b10101111
+        and     byte [0x10f7], 0b10101111
+        and     byte [0x30f7], 0b10111111
+        and     byte [0x1147], 0b10111111
+        and     byte [0x3147], 0b10111111
+        and     byte [0x1236], 0b10101011
+        and     byte [0x3236], 0b10101011
+        and     byte [0x1286], 0b10101011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_13_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_13_common:
+
         mov     di,0x0ba6
         stosb
         mov     di,0x2ba6
@@ -2140,106 +3015,76 @@ segment_13_on:
         stosb
         mov     di,0x2bf6
         stosb
-        or      byte [0x2bf7], 0b1000000
         mov     di,0x0c46
         stosb
-        or      byte [0x0c47], 0b1000000
         mov     di,0x2c46
         stosb
-        or      byte [0x2c47], 0b1000000
         mov     di,0x0c96
         stosb
-        or      byte [0x0c97], 0b1000000
         mov     di,0x2c96
         stosb
-        or      byte [0x2c97], 0b1010000
         mov     di,0x0ce6
         stosb
-        or      byte [0x0ce7], 0b1010000
         mov     di,0x2ce6
         stosb
-        or      byte [0x2ce7], 0b1010000
         mov     di,0x0d36
         stosb
-        or      byte [0x0d37], 0b1010100
         mov     di,0x2d36
         stosb
-        or      byte [0x2d37], 0b1010100
         mov     di,0x0d86
         stosw
         mov     di,0x2d86
         stosw
         mov     di,0x0dd6
         stosw
-        or      byte [0x0dd8], 0b1000000
         mov     di,0x2dd6
         stosw
-        or      byte [0x2dd8], 0b1000000
         mov     di,0x0e26
         stosw
-        or      byte [0x0e28], 0b1000000
         mov     di,0x2e26
         stosw
-        or      byte [0x2e28], 0b1010000
         mov     di,0x0e76
         stosw
-        or      byte [0x0e78], 0b1010000
         mov     di,0x2e76
         stosw
-        or      byte [0x2e78], 0b1010100
         mov     di,0x0ec6
         stosw
         mov     di,0x0ec8
         stosb
         mov     di,0x2ec6
         stosw
-        or      byte [0x2ec8], 0b1010100
         mov     di,0x0f16
         stosw
-        or      byte [0x0f18], 0b1010100
         mov     di,0x2f16
         stosw
-        or      byte [0x2f18], 0b1010000
         mov     di,0x0f66
         stosw
-        or      byte [0x0f68], 0b1010000
         mov     di,0x2f66
         stosw
-        or      byte [0x2f68], 0b1000000
         mov     di,0x0fb6
         stosw
-        or      byte [0x0fb8], 0b1000000
         mov     di,0x2fb6
         stosw
         mov     di,0x1006
         stosw
         mov     di,0x3006
         stosb
-        or      byte [0x3007], 0b1010100
         mov     di,0x1056
         stosb
-        or      byte [0x1057], 0b1010100
         mov     di,0x3056
         stosb
-        or      byte [0x3057], 0b1010100
         mov     di,0x10a6
         stosb
-        or      byte [0x10a7], 0b1010000
         mov     di,0x30a6
         stosb
-        or      byte [0x30a7], 0b1010000
         mov     di,0x10f6
         stosb
-        or      byte [0x10f7], 0b1010000
         mov     di,0x30f6
         stosb
-        or      byte [0x30f7], 0b1000000
         mov     di,0x1146
         stosb
-        or      byte [0x1147], 0b1000000
         mov     di,0x3146
         stosb
-        or      byte [0x3147], 0b1000000
         mov     di,0x1196
         stosb
         mov     di,0x3196
@@ -2248,16 +3093,12 @@ segment_13_on:
         stosb
         mov     di,0x31e6
         stosb
-        or      byte [0x1236], 0b1010100
-        or      byte [0x3236], 0b1010100
-        or      byte [0x1286], 0b1010100
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_14_on
 segment_14_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x2809], 0b100
         or      byte [0x0859], 0b100
@@ -2301,91 +3142,43 @@ segment_14_on:
         or      byte [0x2cb9], 0b1010100
         or      byte [0x0d08], 0b10101
         or      byte [0x0d09], 0b1010100
-        mov     di,0x2d08
-        stosb
         or      byte [0x2d09], 0b1010100
-        mov     di,0x0d58
-        stosb
         or      byte [0x0d59], 0b1010100
         or      byte [0x2d57], 0b1
-        mov     di,0x2d58
-        stosb
         or      byte [0x2d59], 0b1010100
         or      byte [0x0da7], 0b1
-        mov     di,0x0da8
-        stosb
         or      byte [0x0da9], 0b1010100
         or      byte [0x2da7], 0b1
-        mov     di,0x2da8
-        stosb
         or      byte [0x2da9], 0b1010100
         or      byte [0x0df7], 0b101
-        mov     di,0x0df8
-        stosb
         or      byte [0x0df9], 0b1010100
         or      byte [0x2df7], 0b101
-        mov     di,0x2df8
-        stosb
         or      byte [0x2df9], 0b1010100
         or      byte [0x0e47], 0b10101
-        mov     di,0x0e48
-        stosb
         or      byte [0x0e49], 0b1010100
         or      byte [0x2e47], 0b10101
-        mov     di,0x2e48
-        stosb
         or      byte [0x2e49], 0b1010100
-        mov     di,0x0e97
-        stosw
         or      byte [0x0e99], 0b1010100
-        mov     di,0x2e97
-        stosw
         or      byte [0x2e99], 0b1010100
-        mov     di,0x0ee7
-        stosw
         or      byte [0x0ee9], 0b1010100
-        mov     di,0x2ee7
-        stosw
         or      byte [0x2ee9], 0b1010100
-        mov     di,0x0f37
-        stosw
         or      byte [0x0f39], 0b1010100
         or      byte [0x2f37], 0b10101
-        mov     di,0x2f38
-        stosb
         or      byte [0x2f39], 0b1010100
         or      byte [0x0f87], 0b10101
-        mov     di,0x0f88
-        stosb
         or      byte [0x0f89], 0b1010100
         or      byte [0x2f87], 0b101
-        mov     di,0x2f88
-        stosb
         or      byte [0x2f89], 0b1010100
         or      byte [0x0fd7], 0b101
-        mov     di,0x0fd8
-        stosb
         or      byte [0x0fd9], 0b1010100
         or      byte [0x2fd7], 0b101
-        mov     di,0x2fd8
-        stosb
         or      byte [0x2fd9], 0b1010100
         or      byte [0x1027], 0b1
-        mov     di,0x1028
-        stosb
         or      byte [0x1029], 0b1010100
         or      byte [0x3027], 0b1
-        mov     di,0x3028
-        stosb
         or      byte [0x3029], 0b1010100
-        mov     di,0x1078
-        stosb
         or      byte [0x1079], 0b1010100
-        mov     di,0x3078
-        stosb
         or      byte [0x3079], 0b1010100
-        mov     di,0x10c8
-        stosb
         or      byte [0x10c9], 0b1010100
         or      byte [0x30c8], 0b10101
         or      byte [0x30c9], 0b1010100
@@ -2423,12 +3216,187 @@ segment_14_on:
         or      byte [0x1489], 0b100
         or      byte [0x3489], 0b100
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_14_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_14_off
+segment_14_off:
+
+        and     byte [0x2809], 0b11111011
+        and     byte [0x0859], 0b11111011
+        and     byte [0x2859], 0b11111011
+        and     byte [0x08a9], 0b11111011
+        and     byte [0x28a9], 0b11111011
+        and     byte [0x08f9], 0b11111011
+        and     byte [0x28f9], 0b11111011
+        and     byte [0x0949], 0b11111011
+        and     byte [0x2949], 0b11111011
+        and     byte [0x0999], 0b11111011
+        and     byte [0x2999], 0b11111011
+        and     byte [0x09e9], 0b11101011
+        and     byte [0x29e9], 0b11101011
+        and     byte [0x0a39], 0b11101011
+        and     byte [0x2a39], 0b11101011
+        and     byte [0x0a89], 0b11101011
+        and     byte [0x2a89], 0b11101011
+        and     byte [0x0ad9], 0b10101011
+        and     byte [0x2ad9], 0b10101011
+        and     byte [0x0b29], 0b10101011
+        and     byte [0x2b29], 0b10101011
+        and     byte [0x0b79], 0b10101011
+        and     byte [0x2b78], 0b11111110
+        and     byte [0x2b79], 0b10101011
+        and     byte [0x0bc8], 0b11111110
+        and     byte [0x0bc9], 0b10101011
+        and     byte [0x2bc8], 0b11111110
+        and     byte [0x2bc9], 0b10101011
+        and     byte [0x0c18], 0b11111010
+        and     byte [0x0c19], 0b10101011
+        and     byte [0x2c18], 0b11111010
+        and     byte [0x2c19], 0b10101011
+        and     byte [0x0c68], 0b11111010
+        and     byte [0x0c69], 0b10101011
+        and     byte [0x2c68], 0b11111010
+        and     byte [0x2c69], 0b10101011
+        and     byte [0x0cb8], 0b11101010
+        and     byte [0x0cb9], 0b10101011
+        and     byte [0x2cb8], 0b11101010
+        and     byte [0x2cb9], 0b10101011
+        and     byte [0x0d08], 0b11101010
+        and     byte [0x0d09], 0b10101011
+        and     byte [0x2d09], 0b10101011
+        and     byte [0x0d59], 0b10101011
+        and     byte [0x2d57], 0b11111110
+        and     byte [0x2d59], 0b10101011
+        and     byte [0x0da7], 0b11111110
+        and     byte [0x0da9], 0b10101011
+        and     byte [0x2da7], 0b11111110
+        and     byte [0x2da9], 0b10101011
+        and     byte [0x0df7], 0b11111010
+        and     byte [0x0df9], 0b10101011
+        and     byte [0x2df7], 0b11111010
+        and     byte [0x2df9], 0b10101011
+        and     byte [0x0e47], 0b11101010
+        and     byte [0x0e49], 0b10101011
+        and     byte [0x2e47], 0b11101010
+        and     byte [0x2e49], 0b10101011
+        and     byte [0x0e99], 0b10101011
+        and     byte [0x2e99], 0b10101011
+        and     byte [0x0ee9], 0b10101011
+        and     byte [0x2ee9], 0b10101011
+        and     byte [0x0f39], 0b10101011
+        and     byte [0x2f37], 0b11101010
+        and     byte [0x2f39], 0b10101011
+        and     byte [0x0f87], 0b11101010
+        and     byte [0x0f89], 0b10101011
+        and     byte [0x2f87], 0b11111010
+        and     byte [0x2f89], 0b10101011
+        and     byte [0x0fd7], 0b11111010
+        and     byte [0x0fd9], 0b10101011
+        and     byte [0x2fd7], 0b11111010
+        and     byte [0x2fd9], 0b10101011
+        and     byte [0x1027], 0b11111110
+        and     byte [0x1029], 0b10101011
+        and     byte [0x3027], 0b11111110
+        and     byte [0x3029], 0b10101011
+        and     byte [0x1079], 0b10101011
+        and     byte [0x3079], 0b10101011
+        and     byte [0x10c9], 0b10101011
+        and     byte [0x30c8], 0b11101010
+        and     byte [0x30c9], 0b10101011
+        and     byte [0x1118], 0b11101010
+        and     byte [0x1119], 0b10101011
+        and     byte [0x3118], 0b11101010
+        and     byte [0x3119], 0b10101011
+        and     byte [0x1168], 0b11111010
+        and     byte [0x1169], 0b10101011
+        and     byte [0x3168], 0b11111010
+        and     byte [0x3169], 0b10101011
+        and     byte [0x11b8], 0b11111010
+        and     byte [0x11b9], 0b10101011
+        and     byte [0x31b8], 0b11111110
+        and     byte [0x31b9], 0b10101011
+        and     byte [0x1208], 0b11111110
+        and     byte [0x1209], 0b10101011
+        and     byte [0x3208], 0b11111110
+        and     byte [0x3209], 0b10101011
+        and     byte [0x1258], 0b11111110
+        and     byte [0x1259], 0b10101011
+        and     byte [0x3259], 0b10101011
+        and     byte [0x12a9], 0b10101011
+        and     byte [0x32a9], 0b10101011
+        and     byte [0x12f9], 0b10101011
+        and     byte [0x32f9], 0b10101011
+        and     byte [0x1349], 0b11101011
+        and     byte [0x3349], 0b11101011
+        and     byte [0x1399], 0b11101011
+        and     byte [0x3399], 0b11101011
+        and     byte [0x13e9], 0b11101011
+        and     byte [0x33e9], 0b11101011
+        and     byte [0x1439], 0b11111011
+        and     byte [0x3439], 0b11111011
+        and     byte [0x1489], 0b11111011
+        and     byte [0x3489], 0b11111011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_14_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_14_common:
+
+        mov     di,0x2d08
+        stosb
+        mov     di,0x0d58
+        stosb
+        mov     di,0x2d58
+        stosb
+        mov     di,0x0da8
+        stosb
+        mov     di,0x2da8
+        stosb
+        mov     di,0x0df8
+        stosb
+        mov     di,0x2df8
+        stosb
+        mov     di,0x0e48
+        stosb
+        mov     di,0x2e48
+        stosb
+        mov     di,0x0e97
+        stosw
+        mov     di,0x2e97
+        stosw
+        mov     di,0x0ee7
+        stosw
+        mov     di,0x2ee7
+        stosw
+        mov     di,0x0f37
+        stosw
+        mov     di,0x2f38
+        stosb
+        mov     di,0x0f88
+        stosb
+        mov     di,0x2f88
+        stosb
+        mov     di,0x0fd8
+        stosb
+        mov     di,0x2fd8
+        stosb
+        mov     di,0x1028
+        stosb
+        mov     di,0x3028
+        stosb
+        mov     di,0x1078
+        stosb
+        mov     di,0x3078
+        stosb
+        mov     di,0x10c8
+        stosb
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_15_on
 segment_15_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x2886], 0b10000
         or      byte [0x08d6], 0b10000
@@ -2452,68 +3420,30 @@ segment_15_on:
         or      byte [0x2ab6], 0b1
         or      byte [0x2ab7], 0b1010100
         or      byte [0x0b06], 0b1
-        mov     di,0x0b07
-        stosb
         or      byte [0x2b06], 0b1
-        mov     di,0x2b07
-        stosb
         or      byte [0x0b56], 0b1
-        mov     di,0x0b57
-        stosb
         or      byte [0x0b58], 0b1000000
         or      byte [0x2b56], 0b1
-        mov     di,0x2b57
-        stosb
         or      byte [0x2b58], 0b1000000
-        mov     di,0x0ba7
-        stosb
         or      byte [0x0ba8], 0b1010000
-        mov     di,0x2ba7
-        stosb
         or      byte [0x2ba8], 0b1010100
-        mov     di,0x0bf7
-        stosw
         or      byte [0x2bf7], 0b10101
-        mov     di,0x2bf8
-        stosb
         or      byte [0x2bf9], 0b1000000
         or      byte [0x0c47], 0b10101
-        mov     di,0x0c48
-        stosb
         or      byte [0x0c49], 0b1010000
         or      byte [0x2c47], 0b10101
-        mov     di,0x2c48
-        stosb
         or      byte [0x2c49], 0b1010100
         or      byte [0x0c97], 0b10101
-        mov     di,0x0c98
-        stosw
         or      byte [0x2c97], 0b101
-        mov     di,0x2c98
-        stosw
         or      byte [0x2c9a], 0b1000000
         or      byte [0x0ce7], 0b101
-        mov     di,0x0ce8
-        stosw
         or      byte [0x0cea], 0b1010000
         or      byte [0x2ce7], 0b101
-        mov     di,0x2ce8
-        stosw
         or      byte [0x2cea], 0b1010100
         or      byte [0x0d37], 0b1
-        mov     di,0x0d38
-        stosw
-        mov     di,0x0d3a
-        stosb
         or      byte [0x2d37], 0b1
-        mov     di,0x2d38
-        stosw
         or      byte [0x2d3a], 0b1010000
-        mov     di,0x0d88
-        stosw
         or      byte [0x0d8a], 0b1000000
-        mov     di,0x2d88
-        stosw
         or      byte [0x0dd8], 0b10101
         or      byte [0x0dd9], 0b1010100
         or      byte [0x2dd8], 0b10101
@@ -2526,12 +3456,119 @@ segment_15_on:
         or      byte [0x0e79], 0b1000000
         or      byte [0x2e78], 0b1
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_15_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_15_off
+segment_15_off:
+
+        and     byte [0x2886], 0b11101111
+        and     byte [0x08d6], 0b11101111
+        and     byte [0x28d6], 0b11101111
+        and     byte [0x0926], 0b11101111
+        and     byte [0x2926], 0b11101011
+        and     byte [0x0976], 0b11101011
+        and     byte [0x2976], 0b11101011
+        and     byte [0x09c6], 0b11101010
+        and     byte [0x29c6], 0b11111010
+        and     byte [0x0a16], 0b11111010
+        and     byte [0x0a17], 0b10111111
+        and     byte [0x2a16], 0b11111010
+        and     byte [0x2a17], 0b10111111
+        and     byte [0x0a66], 0b11111010
+        and     byte [0x0a67], 0b10111111
+        and     byte [0x2a66], 0b11111010
+        and     byte [0x2a67], 0b10101111
+        and     byte [0x0ab6], 0b11111010
+        and     byte [0x0ab7], 0b10101111
+        and     byte [0x2ab6], 0b11111110
+        and     byte [0x2ab7], 0b10101011
+        and     byte [0x0b06], 0b11111110
+        and     byte [0x2b06], 0b11111110
+        and     byte [0x0b56], 0b11111110
+        and     byte [0x0b58], 0b10111111
+        and     byte [0x2b56], 0b11111110
+        and     byte [0x2b58], 0b10111111
+        and     byte [0x0ba8], 0b10101111
+        and     byte [0x2ba8], 0b10101011
+        and     byte [0x2bf7], 0b11101010
+        and     byte [0x2bf9], 0b10111111
+        and     byte [0x0c47], 0b11101010
+        and     byte [0x0c49], 0b10101111
+        and     byte [0x2c47], 0b11101010
+        and     byte [0x2c49], 0b10101011
+        and     byte [0x0c97], 0b11101010
+        and     byte [0x2c97], 0b11111010
+        and     byte [0x2c9a], 0b10111111
+        and     byte [0x0ce7], 0b11111010
+        and     byte [0x0cea], 0b10101111
+        and     byte [0x2ce7], 0b11111010
+        and     byte [0x2cea], 0b10101011
+        and     byte [0x0d37], 0b11111110
+        and     byte [0x2d37], 0b11111110
+        and     byte [0x2d3a], 0b10101111
+        and     byte [0x0d8a], 0b10111111
+        and     byte [0x0dd8], 0b11101010
+        and     byte [0x0dd9], 0b10101011
+        and     byte [0x2dd8], 0b11101010
+        and     byte [0x2dd9], 0b10101011
+        and     byte [0x0e28], 0b11101010
+        and     byte [0x0e29], 0b10101111
+        and     byte [0x2e28], 0b11111010
+        and     byte [0x2e29], 0b10101111
+        and     byte [0x0e78], 0b11111010
+        and     byte [0x0e79], 0b10111111
+        and     byte [0x2e78], 0b11111110
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_15_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_15_common:
+
+        mov     di,0x0b07
+        stosb
+        mov     di,0x2b07
+        stosb
+        mov     di,0x0b57
+        stosb
+        mov     di,0x2b57
+        stosb
+        mov     di,0x0ba7
+        stosb
+        mov     di,0x2ba7
+        stosb
+        mov     di,0x0bf7
+        stosw
+        mov     di,0x2bf8
+        stosb
+        mov     di,0x0c48
+        stosb
+        mov     di,0x2c48
+        stosb
+        mov     di,0x0c98
+        stosw
+        mov     di,0x2c98
+        stosw
+        mov     di,0x0ce8
+        stosw
+        mov     di,0x2ce8
+        stosw
+        mov     di,0x0d38
+        stosw
+        mov     di,0x0d3a
+        stosb
+        mov     di,0x2d38
+        stosw
+        mov     di,0x0d88
+        stosw
+        mov     di,0x2d88
+        stosw
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_16_on
 segment_16_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x28f9], 0b10000
         or      byte [0x0949], 0b10000
@@ -2550,71 +3587,35 @@ segment_16_on:
         or      byte [0x2a89], 0b1000000
         or      byte [0x0ad8], 0b10101
         or      byte [0x2ad8], 0b10101
-        mov     di,0x0b28
-        stosb
         or      byte [0x2b27], 0b1
-        mov     di,0x2b28
-        stosb
         or      byte [0x0b77], 0b1
-        mov     di,0x0b78
-        stosb
         or      byte [0x2b77], 0b101
         or      byte [0x2b78], 0b1010100
         or      byte [0x0bc7], 0b101
         or      byte [0x0bc8], 0b1010100
         or      byte [0x2bc7], 0b10101
         or      byte [0x2bc8], 0b1010100
-        mov     di,0x0c17
-        stosb
         or      byte [0x0c18], 0b1010000
         or      byte [0x2c16], 0b1
-        mov     di,0x2c17
-        stosb
         or      byte [0x2c18], 0b1010000
         or      byte [0x0c66], 0b101
-        mov     di,0x0c67
-        stosb
         or      byte [0x0c68], 0b1010000
         or      byte [0x2c66], 0b10101
-        mov     di,0x2c67
-        stosb
         or      byte [0x2c68], 0b1010000
-        mov     di,0x0cb6
-        stosw
         or      byte [0x0cb8], 0b1000000
         or      byte [0x2cb5], 0b1
-        mov     di,0x2cb6
-        stosw
         or      byte [0x2cb8], 0b1000000
         or      byte [0x0d05], 0b101
-        mov     di,0x0d06
-        stosw
         or      byte [0x0d08], 0b1000000
         or      byte [0x2d05], 0b10101
-        mov     di,0x2d06
-        stosw
-        mov     di,0x0d55
-        stosw
-        mov     di,0x0d57
-        stosb
         or      byte [0x2d55], 0b10101
-        mov     di,0x2d56
-        stosb
         or      byte [0x2d57], 0b1010100
         or      byte [0x0da5], 0b101
-        mov     di,0x0da6
-        stosb
         or      byte [0x0da7], 0b1010100
         or      byte [0x2da5], 0b101
-        mov     di,0x2da6
-        stosb
         or      byte [0x2da7], 0b1010100
         or      byte [0x0df5], 0b1
-        mov     di,0x0df6
-        stosb
         or      byte [0x0df7], 0b1010000
-        mov     di,0x2df6
-        stosb
         or      byte [0x2df7], 0b1010000
         or      byte [0x0e46], 0b10101
         or      byte [0x0e47], 0b1000000
@@ -2624,71 +3625,245 @@ segment_16_on:
         or      byte [0x2e96], 0b101
         or      byte [0x0ee6], 0b1
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_16_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_16_off
+segment_16_off:
+
+        and     byte [0x28f9], 0b11101111
+        and     byte [0x0949], 0b11101111
+        and     byte [0x2949], 0b11101111
+        and     byte [0x0999], 0b11101111
+        and     byte [0x2999], 0b10101111
+        and     byte [0x09e9], 0b10111111
+        and     byte [0x29e9], 0b10111111
+        and     byte [0x0a38], 0b11111110
+        and     byte [0x0a39], 0b10111111
+        and     byte [0x2a38], 0b11111110
+        and     byte [0x2a39], 0b10111111
+        and     byte [0x0a88], 0b11111010
+        and     byte [0x0a89], 0b10111111
+        and     byte [0x2a88], 0b11111010
+        and     byte [0x2a89], 0b10111111
+        and     byte [0x0ad8], 0b11101010
+        and     byte [0x2ad8], 0b11101010
+        and     byte [0x2b27], 0b11111110
+        and     byte [0x0b77], 0b11111110
+        and     byte [0x2b77], 0b11111010
+        and     byte [0x2b78], 0b10101011
+        and     byte [0x0bc7], 0b11111010
+        and     byte [0x0bc8], 0b10101011
+        and     byte [0x2bc7], 0b11101010
+        and     byte [0x2bc8], 0b10101011
+        and     byte [0x0c18], 0b10101111
+        and     byte [0x2c16], 0b11111110
+        and     byte [0x2c18], 0b10101111
+        and     byte [0x0c66], 0b11111010
+        and     byte [0x0c68], 0b10101111
+        and     byte [0x2c66], 0b11101010
+        and     byte [0x2c68], 0b10101111
+        and     byte [0x0cb8], 0b10111111
+        and     byte [0x2cb5], 0b11111110
+        and     byte [0x2cb8], 0b10111111
+        and     byte [0x0d05], 0b11111010
+        and     byte [0x0d08], 0b10111111
+        and     byte [0x2d05], 0b11101010
+        and     byte [0x2d55], 0b11101010
+        and     byte [0x2d57], 0b10101011
+        and     byte [0x0da5], 0b11111010
+        and     byte [0x0da7], 0b10101011
+        and     byte [0x2da5], 0b11111010
+        and     byte [0x2da7], 0b10101011
+        and     byte [0x0df5], 0b11111110
+        and     byte [0x0df7], 0b10101111
+        and     byte [0x2df7], 0b10101111
+        and     byte [0x0e46], 0b11101010
+        and     byte [0x0e47], 0b10111111
+        and     byte [0x2e46], 0b11101010
+        and     byte [0x2e47], 0b10111111
+        and     byte [0x0e96], 0b11111010
+        and     byte [0x2e96], 0b11111010
+        and     byte [0x0ee6], 0b11111110
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_16_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_16_common:
+
+        mov     di,0x0b28
+        stosb
+        mov     di,0x2b28
+        stosb
+        mov     di,0x0b78
+        stosb
+        mov     di,0x0c17
+        stosb
+        mov     di,0x2c17
+        stosb
+        mov     di,0x0c67
+        stosb
+        mov     di,0x2c67
+        stosb
+        mov     di,0x0cb6
+        stosw
+        mov     di,0x2cb6
+        stosw
+        mov     di,0x0d06
+        stosw
+        mov     di,0x2d06
+        stosw
+        mov     di,0x0d55
+        stosw
+        mov     di,0x0d57
+        stosb
+        mov     di,0x2d56
+        stosb
+        mov     di,0x0da6
+        stosb
+        mov     di,0x2da6
+        stosb
+        mov     di,0x0df6
+        stosb
+        mov     di,0x2df6
+        stosb
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_17_on
 segment_17_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x098a], 0b101
         or      byte [0x298a], 0b10101
         or      byte [0x298b], 0b1000000
-        mov     di,0x09da
-        stosb
         or      byte [0x09db], 0b1010000
         or      byte [0x29d9], 0b1
-        mov     di,0x29da
-        stosb
         or      byte [0x29db], 0b1010100
         or      byte [0x0a29], 0b101
+        or      byte [0x2a29], 0b10101
+        or      byte [0x2a2c], 0b1000000
+        or      byte [0x0a7c], 0b1010000
+        or      byte [0x2a78], 0b1
+        or      byte [0x2a7c], 0b1010100
+        or      byte [0x0ac8], 0b101
+        or      byte [0x2ac8], 0b10101
+        or      byte [0x2acd], 0b1000000
+        or      byte [0x0b1d], 0b1010000
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_17_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_17_off
+segment_17_off:
+
+        and     byte [0x098a], 0b11111010
+        and     byte [0x298a], 0b11101010
+        and     byte [0x298b], 0b10111111
+        and     byte [0x09db], 0b10101111
+        and     byte [0x29d9], 0b11111110
+        and     byte [0x29db], 0b10101011
+        and     byte [0x0a29], 0b11111010
+        and     byte [0x2a29], 0b11101010
+        and     byte [0x2a2c], 0b10111111
+        and     byte [0x0a7c], 0b10101111
+        and     byte [0x2a78], 0b11111110
+        and     byte [0x2a7c], 0b10101011
+        and     byte [0x0ac8], 0b11111010
+        and     byte [0x2ac8], 0b11101010
+        and     byte [0x2acd], 0b10111111
+        and     byte [0x0b1d], 0b10101111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_17_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_17_common:
+
+        mov     di,0x09da
+        stosb
+        mov     di,0x29da
+        stosb
         mov     di,0x0a2a
         stosw
-        or      byte [0x2a29], 0b10101
         mov     di,0x2a2a
         stosw
-        or      byte [0x2a2c], 0b1000000
         mov     di,0x0a79
         stosw
         mov     di,0x0a7b
         stosb
-        or      byte [0x0a7c], 0b1010000
-        or      byte [0x2a78], 0b1
         mov     di,0x2a79
         stosw
         mov     di,0x2a7b
         stosb
-        or      byte [0x2a7c], 0b1010100
-        or      byte [0x0ac8], 0b101
         mov     di,0x0ac9
         mov     cx,2
         rep stosw
-        or      byte [0x2ac8], 0b10101
         mov     di,0x2ac9
         mov     cx,2
         rep stosw
-        or      byte [0x2acd], 0b1000000
         mov     di,0x0b18
         mov     cx,2
         rep stosw
         mov     di,0x0b1c
         stosb
-        or      byte [0x0b1d], 0b1010000
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_18_on
 segment_18_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x2b10], 0b101
+        or      byte [0x0b5f], 0b101
+        or      byte [0x2b5e], 0b1
+        or      byte [0x2bad], 0b101
+        or      byte [0x0bfd], 0b10101
+        or      byte [0x2bfc], 0b1
+        or      byte [0x0c4c], 0b10101
+        or      byte [0x0c9b], 0b1
+        or      byte [0x2c9b], 0b101
+        or      byte [0x0ceb], 0b10101
+        or      byte [0x2d3b], 0b10101
+        or      byte [0x0d8b], 0b101
+        or      byte [0x0ddc], 0b101
+        or      byte [0x0e2d], 0b101
+        or      byte [0x2e2e], 0b10101
+        or      byte [0x0e7e], 0b1
+        or      byte [0x2e7f], 0b1
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_18_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_18_off
+segment_18_off:
+
+        and     byte [0x2b10], 0b11111010
+        and     byte [0x0b5f], 0b11111010
+        and     byte [0x2b5e], 0b11111110
+        and     byte [0x2bad], 0b11111010
+        and     byte [0x0bfd], 0b11101010
+        and     byte [0x2bfc], 0b11111110
+        and     byte [0x0c4c], 0b11101010
+        and     byte [0x0c9b], 0b11111110
+        and     byte [0x2c9b], 0b11111010
+        and     byte [0x0ceb], 0b11101010
+        and     byte [0x2d3b], 0b11101010
+        and     byte [0x0d8b], 0b11111010
+        and     byte [0x0ddc], 0b11111010
+        and     byte [0x0e2d], 0b11111010
+        and     byte [0x2e2e], 0b11101010
+        and     byte [0x0e7e], 0b11111110
+        and     byte [0x2e7f], 0b11111110
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_18_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_18_common:
+
         mov     di,0x2b11
         stosb
-        or      byte [0x0b5f], 0b101
         mov     di,0x0b60
         stosw
-        or      byte [0x2b5e], 0b1
         mov     di,0x2b5f
         stosw
         mov     di,0x2b61
@@ -2696,21 +3871,17 @@ segment_18_on:
         mov     di,0x0bae
         mov     cx,2
         rep stosw
-        or      byte [0x2bad], 0b101
         mov     di,0x2bae
         mov     cx,2
         rep stosw
-        or      byte [0x0bfd], 0b10101
         mov     di,0x0bfe
         mov     cx,2
         rep stosw
-        or      byte [0x2bfc], 0b1
         mov     di,0x2bfd
         mov     cx,2
         rep stosw
         mov     di,0x2c01
         stosb
-        or      byte [0x0c4c], 0b10101
         mov     di,0x0c4d
         mov     cx,2
         rep stosw
@@ -2719,15 +3890,12 @@ segment_18_on:
         mov     di,0x2c4c
         mov     cx,3
         rep stosw
-        or      byte [0x0c9b], 0b1
         mov     di,0x0c9c
         mov     cx,3
         rep stosw
-        or      byte [0x2c9b], 0b101
         mov     di,0x2c9c
         mov     cx,3
         rep stosw
-        or      byte [0x0ceb], 0b10101
         mov     di,0x0cec
         mov     cx,3
         rep stosw
@@ -2741,18 +3909,15 @@ segment_18_on:
         rep stosw
         mov     di,0x0d41
         stosb
-        or      byte [0x2d3b], 0b10101
         mov     di,0x2d3c
         mov     cx,3
         rep stosw
-        or      byte [0x0d8b], 0b101
         mov     di,0x0d8c
         mov     cx,3
         rep stosw
         mov     di,0x2d8c
         mov     cx,3
         rep stosw
-        or      byte [0x0ddc], 0b101
         mov     di,0x0ddd
         mov     cx,2
         rep stosw
@@ -2763,21 +3928,17 @@ segment_18_on:
         rep stosw
         mov     di,0x2de1
         stosb
-        or      byte [0x0e2d], 0b101
         mov     di,0x0e2e
         mov     cx,2
         rep stosw
-        or      byte [0x2e2e], 0b10101
         mov     di,0x2e2f
         stosw
         mov     di,0x2e31
         stosb
-        or      byte [0x0e7e], 0b1
         mov     di,0x0e7f
         stosw
         mov     di,0x0e81
         stosb
-        or      byte [0x2e7f], 0b1
         mov     di,0x2e80
         stosw
         mov     di,0x0ed1
@@ -2788,26 +3949,71 @@ segment_18_on:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_19_on
 segment_19_on:
+
+        or      byte [0x2b17], 0b1010100
+        or      byte [0x0b67], 0b1010000
+        or      byte [0x2b67], 0b1000000
+        or      byte [0x2bb6], 0b1010100
+        or      byte [0x0c06], 0b1010000
+        or      byte [0x2c06], 0b1000000
+        or      byte [0x2c55], 0b1010100
+        or      byte [0x0ca5], 0b1010000
+        or      byte [0x2ca5], 0b1000000
+        or      byte [0x2cf4], 0b1010100
+        or      byte [0x0d44], 0b1010000
+        or      byte [0x2d44], 0b1000000
+        or      byte [0x2d93], 0b1010100
+        or      byte [0x0de3], 0b1010000
+        or      byte [0x2de3], 0b1000000
+        or      byte [0x2e32], 0b1010100
+        or      byte [0x0e82], 0b1010000
+        or      byte [0x2e82], 0b1000000
+
         mov     ax,0b01010101_01010101
+        jmp     segment_19_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_19_off
+segment_19_off:
+
+        and     byte [0x2b17], 0b10101011
+        and     byte [0x0b67], 0b10101111
+        and     byte [0x2b67], 0b10111111
+        and     byte [0x2bb6], 0b10101011
+        and     byte [0x0c06], 0b10101111
+        and     byte [0x2c06], 0b10111111
+        and     byte [0x2c55], 0b10101011
+        and     byte [0x0ca5], 0b10101111
+        and     byte [0x2ca5], 0b10111111
+        and     byte [0x2cf4], 0b10101011
+        and     byte [0x0d44], 0b10101111
+        and     byte [0x2d44], 0b10111111
+        and     byte [0x2d93], 0b10101011
+        and     byte [0x0de3], 0b10101111
+        and     byte [0x2de3], 0b10111111
+        and     byte [0x2e32], 0b10101011
+        and     byte [0x0e82], 0b10101111
+        and     byte [0x2e82], 0b10111111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_19_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_19_common:
 
         mov     di,0x2b12
         mov     cx,2
         rep stosw
         mov     di,0x2b16
         stosb
-        or      byte [0x2b17], 0b1010100
         mov     di,0x0b62
         mov     cx,2
         rep stosw
         mov     di,0x0b66
         stosb
-        or      byte [0x0b67], 0b1010000
         mov     di,0x2b62
         mov     cx,2
         rep stosw
         mov     di,0x2b66
         stosb
-        or      byte [0x2b67], 0b1000000
         mov     di,0x0bb2
         mov     cx,2
         rep stosw
@@ -2816,15 +4022,12 @@ segment_19_on:
         mov     di,0x2bb2
         mov     cx,2
         rep stosw
-        or      byte [0x2bb6], 0b1010100
         mov     di,0x0c02
         mov     cx,2
         rep stosw
-        or      byte [0x0c06], 0b1010000
         mov     di,0x2c02
         mov     cx,2
         rep stosw
-        or      byte [0x2c06], 0b1000000
         mov     di,0x0c52
         mov     cx,2
         rep stosw
@@ -2832,53 +4035,40 @@ segment_19_on:
         stosw
         mov     di,0x2c54
         stosb
-        or      byte [0x2c55], 0b1010100
         mov     di,0x0ca2
         stosw
         mov     di,0x0ca4
         stosb
-        or      byte [0x0ca5], 0b1010000
         mov     di,0x2ca2
         stosw
         mov     di,0x2ca4
         stosb
-        or      byte [0x2ca5], 0b1000000
         mov     di,0x0cf2
         stosw
         mov     di,0x0cf4
         stosb
         mov     di,0x2cf2
         stosw
-        or      byte [0x2cf4], 0b1010100
         mov     di,0x0d42
         stosw
-        or      byte [0x0d44], 0b1010000
         mov     di,0x2d42
         stosw
-        or      byte [0x2d44], 0b1000000
         mov     di,0x0d92
         stosw
         mov     di,0x2d92
         stosb
-        or      byte [0x2d93], 0b1010100
         mov     di,0x0de2
         stosb
-        or      byte [0x0de3], 0b1010000
         mov     di,0x2de2
         stosb
-        or      byte [0x2de3], 0b1000000
         mov     di,0x0e32
         stosb
-        or      byte [0x2e32], 0b1010100
-        or      byte [0x0e82], 0b1010000
-        or      byte [0x2e82], 0b1000000
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_20_on
 segment_20_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x2b17], 0b1
         or      byte [0x0b67], 0b1
@@ -2888,189 +4078,194 @@ segment_20_on:
         or      byte [0x0bb7], 0b1
         or      byte [0x0bb8], 0b1010100
         or      byte [0x2bb7], 0b1
-        mov     di,0x2bb8
-        stosb
         or      byte [0x0c07], 0b1
-        mov     di,0x0c08
-        stosb
         or      byte [0x0c09], 0b1000000
         or      byte [0x2c07], 0b1
-        mov     di,0x2c08
-        stosb
         or      byte [0x2c09], 0b1010000
         or      byte [0x0c57], 0b1
-        mov     di,0x0c58
-        stosb
         or      byte [0x0c59], 0b1010100
         or      byte [0x2c57], 0b1
-        mov     di,0x2c58
-        stosw
         or      byte [0x0ca7], 0b1
-        mov     di,0x0ca8
-        stosw
         or      byte [0x0caa], 0b1000000
         or      byte [0x2ca7], 0b1
-        mov     di,0x2ca8
-        stosw
         or      byte [0x2caa], 0b1010000
         or      byte [0x0cf7], 0b1
-        mov     di,0x0cf8
-        stosw
         or      byte [0x0cfa], 0b1010100
         or      byte [0x2cf7], 0b1
+        or      byte [0x0d47], 0b1
+        or      byte [0x0d4b], 0b1000000
+        or      byte [0x2d47], 0b1
+        or      byte [0x2d4b], 0b1010000
+        or      byte [0x0d97], 0b1
+        or      byte [0x0d9b], 0b1010100
+        or      byte [0x2d97], 0b1
+        or      byte [0x0de7], 0b1
+        or      byte [0x0dec], 0b1000000
+        or      byte [0x2de7], 0b1
+        or      byte [0x2dec], 0b1010000
+        or      byte [0x0e37], 0b1
+        or      byte [0x0e3c], 0b1010100
+        or      byte [0x2e37], 0b1
+        or      byte [0x0e87], 0b1
+        or      byte [0x0e8d], 0b1000000
+        or      byte [0x2e87], 0b1
+        or      byte [0x2e8d], 0b1010000
+        or      byte [0x0ed7], 0b1
+        or      byte [0x0edd], 0b1010100
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_20_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_20_off
+segment_20_off:
+
+        and     byte [0x2b17], 0b11111110
+        and     byte [0x0b67], 0b11111110
+        and     byte [0x0b68], 0b10111111
+        and     byte [0x2b67], 0b11111110
+        and     byte [0x2b68], 0b10101111
+        and     byte [0x0bb7], 0b11111110
+        and     byte [0x0bb8], 0b10101011
+        and     byte [0x2bb7], 0b11111110
+        and     byte [0x0c07], 0b11111110
+        and     byte [0x0c09], 0b10111111
+        and     byte [0x2c07], 0b11111110
+        and     byte [0x2c09], 0b10101111
+        and     byte [0x0c57], 0b11111110
+        and     byte [0x0c59], 0b10101011
+        and     byte [0x2c57], 0b11111110
+        and     byte [0x0ca7], 0b11111110
+        and     byte [0x0caa], 0b10111111
+        and     byte [0x2ca7], 0b11111110
+        and     byte [0x2caa], 0b10101111
+        and     byte [0x0cf7], 0b11111110
+        and     byte [0x0cfa], 0b10101011
+        and     byte [0x2cf7], 0b11111110
+        and     byte [0x0d47], 0b11111110
+        and     byte [0x0d4b], 0b10111111
+        and     byte [0x2d47], 0b11111110
+        and     byte [0x2d4b], 0b10101111
+        and     byte [0x0d97], 0b11111110
+        and     byte [0x0d9b], 0b10101011
+        and     byte [0x2d97], 0b11111110
+        and     byte [0x0de7], 0b11111110
+        and     byte [0x0dec], 0b10111111
+        and     byte [0x2de7], 0b11111110
+        and     byte [0x2dec], 0b10101111
+        and     byte [0x0e37], 0b11111110
+        and     byte [0x0e3c], 0b10101011
+        and     byte [0x2e37], 0b11111110
+        and     byte [0x0e87], 0b11111110
+        and     byte [0x0e8d], 0b10111111
+        and     byte [0x2e87], 0b11111110
+        and     byte [0x2e8d], 0b10101111
+        and     byte [0x0ed7], 0b11111110
+        and     byte [0x0edd], 0b10101011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_20_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_20_common:
+
+        mov     di,0x2bb8
+        stosb
+        mov     di,0x0c08
+        stosb
+        mov     di,0x2c08
+        stosb
+        mov     di,0x0c58
+        stosb
+        mov     di,0x2c58
+        stosw
+        mov     di,0x0ca8
+        stosw
+        mov     di,0x2ca8
+        stosw
+        mov     di,0x0cf8
+        stosw
         mov     di,0x2cf8
         stosw
         mov     di,0x2cfa
         stosb
-        or      byte [0x0d47], 0b1
         mov     di,0x0d48
         stosw
         mov     di,0x0d4a
         stosb
-        or      byte [0x0d4b], 0b1000000
-        or      byte [0x2d47], 0b1
         mov     di,0x2d48
         stosw
         mov     di,0x2d4a
         stosb
-        or      byte [0x2d4b], 0b1010000
-        or      byte [0x0d97], 0b1
         mov     di,0x0d98
         stosw
         mov     di,0x0d9a
         stosb
-        or      byte [0x0d9b], 0b1010100
-        or      byte [0x2d97], 0b1
         mov     di,0x2d98
         mov     cx,2
         rep stosw
-        or      byte [0x0de7], 0b1
         mov     di,0x0de8
         mov     cx,2
         rep stosw
-        or      byte [0x0dec], 0b1000000
-        or      byte [0x2de7], 0b1
         mov     di,0x2de8
         mov     cx,2
         rep stosw
-        or      byte [0x2dec], 0b1010000
-        or      byte [0x0e37], 0b1
         mov     di,0x0e38
         mov     cx,2
         rep stosw
-        or      byte [0x0e3c], 0b1010100
-        or      byte [0x2e37], 0b1
         mov     di,0x2e38
         mov     cx,2
         rep stosw
         mov     di,0x2e3c
         stosb
-        or      byte [0x0e87], 0b1
         mov     di,0x0e88
         mov     cx,2
         rep stosw
         mov     di,0x0e8c
         stosb
-        or      byte [0x0e8d], 0b1000000
-        or      byte [0x2e87], 0b1
         mov     di,0x2e88
         mov     cx,2
         rep stosw
         mov     di,0x2e8c
         stosb
-        or      byte [0x2e8d], 0b1010000
-        or      byte [0x0ed7], 0b1
         mov     di,0x0ed8
         mov     cx,2
         rep stosw
         mov     di,0x0edc
         stosb
-        or      byte [0x0edd], 0b1010100
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_21_on
 segment_21_on:
-        mov     ax,0b01010101_01010101
 
-        mov     di,0x2b18
-        mov     cx,2
-        rep stosw
-        mov     di,0x2b1c
-        stosb
         or      byte [0x2b1d], 0b1010100
         or      byte [0x0b68], 0b10101
-        mov     di,0x0b69
-        mov     cx,2
-        rep stosw
         or      byte [0x0b6d], 0b1010100
         or      byte [0x2b68], 0b101
-        mov     di,0x2b69
-        mov     cx,2
-        rep stosw
         or      byte [0x2b6d], 0b1010100
         or      byte [0x0bb8], 0b1
-        mov     di,0x0bb9
-        mov     cx,2
-        rep stosw
         or      byte [0x0bbd], 0b1010100
-        mov     di,0x2bb9
-        mov     cx,2
-        rep stosw
         or      byte [0x2bbd], 0b1010100
         or      byte [0x0c09], 0b10101
-        mov     di,0x0c0a
-        stosw
-        mov     di,0x0c0c
-        stosb
         or      byte [0x0c0d], 0b1010100
         or      byte [0x2c09], 0b101
-        mov     di,0x2c0a
-        stosw
-        mov     di,0x2c0c
-        stosb
         or      byte [0x2c0d], 0b1010100
         or      byte [0x0c59], 0b1
-        mov     di,0x0c5a
-        stosw
-        mov     di,0x0c5c
-        stosb
         or      byte [0x0c5d], 0b1010100
-        mov     di,0x2c5a
-        stosw
-        mov     di,0x2c5c
-        stosb
         or      byte [0x2c5d], 0b1010100
         or      byte [0x0caa], 0b10101
-        mov     di,0x0cab
-        stosw
         or      byte [0x0cad], 0b1010100
         or      byte [0x2caa], 0b101
-        mov     di,0x2cab
-        stosw
         or      byte [0x2cad], 0b1010100
         or      byte [0x0cfa], 0b1
-        mov     di,0x0cfb
-        stosw
         or      byte [0x0cfd], 0b1010100
-        mov     di,0x2cfb
-        stosw
         or      byte [0x2cfd], 0b1010100
         or      byte [0x0d4b], 0b10101
-        mov     di,0x0d4c
-        stosb
         or      byte [0x0d4d], 0b1010100
         or      byte [0x2d4b], 0b101
-        mov     di,0x2d4c
-        stosb
         or      byte [0x2d4d], 0b1010100
         or      byte [0x0d9b], 0b1
-        mov     di,0x0d9c
-        stosb
         or      byte [0x0d9d], 0b1010100
-        mov     di,0x2d9c
-        stosb
         or      byte [0x2d9d], 0b1010100
         or      byte [0x0dec], 0b10101
         or      byte [0x0ded], 0b1010100
@@ -3082,133 +4277,285 @@ segment_21_on:
         or      byte [0x0e8d], 0b10100
         or      byte [0x2e8d], 0b100
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_21_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_21_off
+segment_21_off:
+
+        and     byte [0x2b1d], 0b10101011
+        and     byte [0x0b68], 0b11101010
+        and     byte [0x0b6d], 0b10101011
+        and     byte [0x2b68], 0b11111010
+        and     byte [0x2b6d], 0b10101011
+        and     byte [0x0bb8], 0b11111110
+        and     byte [0x0bbd], 0b10101011
+        and     byte [0x2bbd], 0b10101011
+        and     byte [0x0c09], 0b11101010
+        and     byte [0x0c0d], 0b10101011
+        and     byte [0x2c09], 0b11111010
+        and     byte [0x2c0d], 0b10101011
+        and     byte [0x0c59], 0b11111110
+        and     byte [0x0c5d], 0b10101011
+        and     byte [0x2c5d], 0b10101011
+        and     byte [0x0caa], 0b11101010
+        and     byte [0x0cad], 0b10101011
+        and     byte [0x2caa], 0b11111010
+        and     byte [0x2cad], 0b10101011
+        and     byte [0x0cfa], 0b11111110
+        and     byte [0x0cfd], 0b10101011
+        and     byte [0x2cfd], 0b10101011
+        and     byte [0x0d4b], 0b11101010
+        and     byte [0x0d4d], 0b10101011
+        and     byte [0x2d4b], 0b11111010
+        and     byte [0x2d4d], 0b10101011
+        and     byte [0x0d9b], 0b11111110
+        and     byte [0x0d9d], 0b10101011
+        and     byte [0x2d9d], 0b10101011
+        and     byte [0x0dec], 0b11101010
+        and     byte [0x0ded], 0b10101011
+        and     byte [0x2dec], 0b11111010
+        and     byte [0x2ded], 0b10101011
+        and     byte [0x0e3c], 0b11111110
+        and     byte [0x0e3d], 0b10101011
+        and     byte [0x2e3d], 0b10101011
+        and     byte [0x0e8d], 0b11101011
+        and     byte [0x2e8d], 0b11111011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_21_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_21_common:
+
+        mov     di,0x2b18
+        mov     cx,2
+        rep stosw
+        mov     di,0x2b1c
+        stosb
+        mov     di,0x0b69
+        mov     cx,2
+        rep stosw
+        mov     di,0x2b69
+        mov     cx,2
+        rep stosw
+        mov     di,0x0bb9
+        mov     cx,2
+        rep stosw
+        mov     di,0x2bb9
+        mov     cx,2
+        rep stosw
+        mov     di,0x0c0a
+        stosw
+        mov     di,0x0c0c
+        stosb
+        mov     di,0x2c0a
+        stosw
+        mov     di,0x2c0c
+        stosb
+        mov     di,0x0c5a
+        stosw
+        mov     di,0x0c5c
+        stosb
+        mov     di,0x2c5a
+        stosw
+        mov     di,0x2c5c
+        stosb
+        mov     di,0x0cab
+        stosw
+        mov     di,0x2cab
+        stosw
+        mov     di,0x0cfb
+        stosw
+        mov     di,0x2cfb
+        stosw
+        mov     di,0x0d4c
+        stosb
+        mov     di,0x2d4c
+        stosb
+        mov     di,0x0d9c
+        stosb
+        mov     di,0x2d9c
+        stosb
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_22_on
 segment_22_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x2b1d], 0b1
         or      byte [0x2b1e], 0b1010000
         or      byte [0x0b6d], 0b1
-        mov     di,0x0b6e
-        stosw
         or      byte [0x2b6d], 0b1
-        mov     di,0x2b6e
-        stosw
         or      byte [0x2b70], 0b1010100
         or      byte [0x0bbd], 0b1
+        or      byte [0x0bc1], 0b1010000
+        or      byte [0x2bbd], 0b1
+        or      byte [0x0c0d], 0b1
+        or      byte [0x0c12], 0b1010000
+        or      byte [0x2c0d], 0b1
+        or      byte [0x2c12], 0b1010100
+        or      byte [0x0c5d], 0b1
+        or      byte [0x0c63], 0b1000000
+        or      byte [0x2c5d], 0b1
+        or      byte [0x2c63], 0b1010000
+        or      byte [0x0cad], 0b1
+        or      byte [0x2cad], 0b1
+        or      byte [0x2cb4], 0b1000000
+        or      byte [0x0cfd], 0b1
+        or      byte [0x0d04], 0b1010000
+        or      byte [0x2cfd], 0b1
+        or      byte [0x2d04], 0b1010100
+        or      byte [0x0d4d], 0b1
+        or      byte [0x0d54], 0b1010100
+        or      byte [0x2d4d], 0b1
+        or      byte [0x2d54], 0b1000000
+        or      byte [0x0d9d], 0b1
+        or      byte [0x2d9d], 0b1
+        or      byte [0x2da3], 0b1010000
+        or      byte [0x0ded], 0b1
+        or      byte [0x2ded], 0b1
+        or      byte [0x2df2], 0b1010000
+        or      byte [0x0e3d], 0b1
+        or      byte [0x2e3d], 0b1
+        or      byte [0x2e41], 0b1000000
+        or      byte [0x0e8d], 0b1
+        or      byte [0x0e90], 0b1010000
+        or      byte [0x2e8d], 0b1
+        or      byte [0x0edd], 0b1
+        or      byte [0x0ede], 0b1010000
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_22_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_22_off
+segment_22_off:
+
+        and     byte [0x2b1d], 0b11111110
+        and     byte [0x2b1e], 0b10101111
+        and     byte [0x0b6d], 0b11111110
+        and     byte [0x2b6d], 0b11111110
+        and     byte [0x2b70], 0b10101011
+        and     byte [0x0bbd], 0b11111110
+        and     byte [0x0bc1], 0b10101111
+        and     byte [0x2bbd], 0b11111110
+        and     byte [0x0c0d], 0b11111110
+        and     byte [0x0c12], 0b10101111
+        and     byte [0x2c0d], 0b11111110
+        and     byte [0x2c12], 0b10101011
+        and     byte [0x0c5d], 0b11111110
+        and     byte [0x0c63], 0b10111111
+        and     byte [0x2c5d], 0b11111110
+        and     byte [0x2c63], 0b10101111
+        and     byte [0x0cad], 0b11111110
+        and     byte [0x2cad], 0b11111110
+        and     byte [0x2cb4], 0b10111111
+        and     byte [0x0cfd], 0b11111110
+        and     byte [0x0d04], 0b10101111
+        and     byte [0x2cfd], 0b11111110
+        and     byte [0x2d04], 0b10101011
+        and     byte [0x0d4d], 0b11111110
+        and     byte [0x0d54], 0b10101011
+        and     byte [0x2d4d], 0b11111110
+        and     byte [0x2d54], 0b10111111
+        and     byte [0x0d9d], 0b11111110
+        and     byte [0x2d9d], 0b11111110
+        and     byte [0x2da3], 0b10101111
+        and     byte [0x0ded], 0b11111110
+        and     byte [0x2ded], 0b11111110
+        and     byte [0x2df2], 0b10101111
+        and     byte [0x0e3d], 0b11111110
+        and     byte [0x2e3d], 0b11111110
+        and     byte [0x2e41], 0b10111111
+        and     byte [0x0e8d], 0b11111110
+        and     byte [0x0e90], 0b10101111
+        and     byte [0x2e8d], 0b11111110
+        and     byte [0x0edd], 0b11111110
+        and     byte [0x0ede], 0b10101111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_22_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_22_common:
+
+        mov     di,0x0b6e
+        stosw
+        mov     di,0x2b6e
+        stosw
         mov     di,0x0bbe
         stosw
         mov     di,0x0bc0
         stosb
-        or      byte [0x0bc1], 0b1010000
-        or      byte [0x2bbd], 0b1
         mov     di,0x2bbe
         mov     cx,2
         rep stosw
-        or      byte [0x0c0d], 0b1
         mov     di,0x0c0e
         mov     cx,2
         rep stosw
-        or      byte [0x0c12], 0b1010000
-        or      byte [0x2c0d], 0b1
         mov     di,0x2c0e
         mov     cx,2
         rep stosw
-        or      byte [0x2c12], 0b1010100
-        or      byte [0x0c5d], 0b1
         mov     di,0x0c5e
         mov     cx,2
         rep stosw
         mov     di,0x0c62
         stosb
-        or      byte [0x0c63], 0b1000000
-        or      byte [0x2c5d], 0b1
         mov     di,0x2c5e
         mov     cx,2
         rep stosw
         mov     di,0x2c62
         stosb
-        or      byte [0x2c63], 0b1010000
-        or      byte [0x0cad], 0b1
         mov     di,0x0cae
         mov     cx,3
         rep stosw
-        or      byte [0x2cad], 0b1
         mov     di,0x2cae
         mov     cx,3
         rep stosw
-        or      byte [0x2cb4], 0b1000000
-        or      byte [0x0cfd], 0b1
         mov     di,0x0cfe
         mov     cx,3
         rep stosw
-        or      byte [0x0d04], 0b1010000
-        or      byte [0x2cfd], 0b1
         mov     di,0x2cfe
         mov     cx,3
         rep stosw
-        or      byte [0x2d04], 0b1010100
-        or      byte [0x0d4d], 0b1
         mov     di,0x0d4e
         mov     cx,3
         rep stosw
-        or      byte [0x0d54], 0b1010100
-        or      byte [0x2d4d], 0b1
         mov     di,0x2d4e
         mov     cx,3
         rep stosw
-        or      byte [0x2d54], 0b1000000
-        or      byte [0x0d9d], 0b1
         mov     di,0x0d9e
         mov     cx,3
         rep stosw
-        or      byte [0x2d9d], 0b1
         mov     di,0x2d9e
         mov     cx,2
         rep stosw
         mov     di,0x2da2
         stosb
-        or      byte [0x2da3], 0b1010000
-        or      byte [0x0ded], 0b1
         mov     di,0x0dee
         mov     cx,2
         rep stosw
         mov     di,0x0df2
         stosb
-        or      byte [0x2ded], 0b1
         mov     di,0x2dee
         mov     cx,2
         rep stosw
-        or      byte [0x2df2], 0b1010000
-        or      byte [0x0e3d], 0b1
         mov     di,0x0e3e
         mov     cx,2
         rep stosw
-        or      byte [0x2e3d], 0b1
         mov     di,0x2e3e
         stosw
         mov     di,0x2e40
         stosb
-        or      byte [0x2e41], 0b1000000
-        or      byte [0x0e8d], 0b1
         mov     di,0x0e8e
         stosw
-        or      byte [0x0e90], 0b1010000
-        or      byte [0x2e8d], 0b1
         mov     di,0x2e8e
         stosw
-        or      byte [0x0edd], 0b1
-        or      byte [0x0ede], 0b1010000
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_23_on
 segment_23_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x0b67], 0b100
         or      byte [0x2b67], 0b10100
@@ -3219,106 +4566,221 @@ segment_23_on:
         or      byte [0x0c07], 0b1010100
         or      byte [0x2c06], 0b10101
         or      byte [0x2c07], 0b1010100
-        mov     di,0x0c56
-        stosb
         or      byte [0x0c57], 0b1010100
         or      byte [0x2c55], 0b1
-        mov     di,0x2c56
-        stosb
         or      byte [0x2c57], 0b1010100
         or      byte [0x0ca5], 0b101
-        mov     di,0x0ca6
-        stosb
         or      byte [0x0ca7], 0b1010100
         or      byte [0x2ca5], 0b10101
-        mov     di,0x2ca6
-        stosb
         or      byte [0x2ca7], 0b1010100
-        mov     di,0x0cf5
-        stosw
         or      byte [0x0cf7], 0b1010100
         or      byte [0x2cf4], 0b1
-        mov     di,0x2cf5
-        stosw
         or      byte [0x2cf7], 0b1010100
         or      byte [0x0d44], 0b101
-        mov     di,0x0d45
-        stosw
         or      byte [0x0d47], 0b1010100
         or      byte [0x2d44], 0b10101
+        or      byte [0x2d47], 0b1010100
+        or      byte [0x0d97], 0b1010100
+        or      byte [0x2d93], 0b1
+        or      byte [0x2d97], 0b1010100
+        or      byte [0x0de3], 0b101
+        or      byte [0x0de7], 0b1010100
+        or      byte [0x2de3], 0b10101
+        or      byte [0x2de7], 0b1010100
+        or      byte [0x0e37], 0b1010100
+        or      byte [0x2e32], 0b1
+        or      byte [0x2e37], 0b1010100
+        or      byte [0x0e82], 0b101
+        or      byte [0x0e87], 0b1010100
+        or      byte [0x2e82], 0b10101
+        or      byte [0x2e87], 0b1010100
+        or      byte [0x0ed7], 0b1010100
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_23_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_23_off
+segment_23_off:
+
+        and     byte [0x0b67], 0b11111011
+        and     byte [0x2b67], 0b11101011
+        and     byte [0x0bb7], 0b10101011
+        and     byte [0x2bb6], 0b11111110
+        and     byte [0x2bb7], 0b10101011
+        and     byte [0x0c06], 0b11111010
+        and     byte [0x0c07], 0b10101011
+        and     byte [0x2c06], 0b11101010
+        and     byte [0x2c07], 0b10101011
+        and     byte [0x0c57], 0b10101011
+        and     byte [0x2c55], 0b11111110
+        and     byte [0x2c57], 0b10101011
+        and     byte [0x0ca5], 0b11111010
+        and     byte [0x0ca7], 0b10101011
+        and     byte [0x2ca5], 0b11101010
+        and     byte [0x2ca7], 0b10101011
+        and     byte [0x0cf7], 0b10101011
+        and     byte [0x2cf4], 0b11111110
+        and     byte [0x2cf7], 0b10101011
+        and     byte [0x0d44], 0b11111010
+        and     byte [0x0d47], 0b10101011
+        and     byte [0x2d44], 0b11101010
+        and     byte [0x2d47], 0b10101011
+        and     byte [0x0d97], 0b10101011
+        and     byte [0x2d93], 0b11111110
+        and     byte [0x2d97], 0b10101011
+        and     byte [0x0de3], 0b11111010
+        and     byte [0x0de7], 0b10101011
+        and     byte [0x2de3], 0b11101010
+        and     byte [0x2de7], 0b10101011
+        and     byte [0x0e37], 0b10101011
+        and     byte [0x2e32], 0b11111110
+        and     byte [0x2e37], 0b10101011
+        and     byte [0x0e82], 0b11111010
+        and     byte [0x0e87], 0b10101011
+        and     byte [0x2e82], 0b11101010
+        and     byte [0x2e87], 0b10101011
+        and     byte [0x0ed7], 0b10101011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_23_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_23_common:
+
+        mov     di,0x0c56
+        stosb
+        mov     di,0x2c56
+        stosb
+        mov     di,0x0ca6
+        stosb
+        mov     di,0x2ca6
+        stosb
+        mov     di,0x0cf5
+        stosw
+        mov     di,0x2cf5
+        stosw
+        mov     di,0x0d45
+        stosw
         mov     di,0x2d45
         stosw
-        or      byte [0x2d47], 0b1010100
         mov     di,0x0d94
         stosw
         mov     di,0x0d96
         stosb
-        or      byte [0x0d97], 0b1010100
-        or      byte [0x2d93], 0b1
         mov     di,0x2d94
         stosw
         mov     di,0x2d96
         stosb
-        or      byte [0x2d97], 0b1010100
-        or      byte [0x0de3], 0b101
         mov     di,0x0de4
         stosw
         mov     di,0x0de6
         stosb
-        or      byte [0x0de7], 0b1010100
-        or      byte [0x2de3], 0b10101
         mov     di,0x2de4
         stosw
         mov     di,0x2de6
         stosb
-        or      byte [0x2de7], 0b1010100
         mov     di,0x0e33
         mov     cx,2
         rep stosw
-        or      byte [0x0e37], 0b1010100
-        or      byte [0x2e32], 0b1
         mov     di,0x2e33
         mov     cx,2
         rep stosw
-        or      byte [0x2e37], 0b1010100
-        or      byte [0x0e82], 0b101
         mov     di,0x0e83
         mov     cx,2
         rep stosw
-        or      byte [0x0e87], 0b1010100
-        or      byte [0x2e82], 0b10101
         mov     di,0x2e83
         mov     cx,2
         rep stosw
-        or      byte [0x2e87], 0b1010100
         mov     di,0x0ed2
         mov     cx,2
         rep stosw
         mov     di,0x0ed6
         stosb
-        or      byte [0x0ed7], 0b1010100
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_24_on
 segment_24_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x0d54], 0b1
         or      byte [0x2d54], 0b10101
         or      byte [0x2d55], 0b1000000
-        mov     di,0x0da4
-        stosb
         or      byte [0x0da5], 0b1010000
         or      byte [0x2da3], 0b101
-        mov     di,0x2da4
-        stosb
         or      byte [0x2da5], 0b1010000
-        mov     di,0x0df3
-        stosw
         or      byte [0x0df5], 0b1010100
         or      byte [0x2df2], 0b101
+        or      byte [0x0e46], 0b1000000
+        or      byte [0x2e41], 0b10101
+        or      byte [0x2e46], 0b1000000
+        or      byte [0x0e90], 0b101
+        or      byte [0x0e96], 0b1010000
+        or      byte [0x2e96], 0b1010000
+        or      byte [0x0ede], 0b101
+        or      byte [0x0ee6], 0b1010100
+        or      byte [0x2ede], 0b101
+        or      byte [0x2ee6], 0b1010100
+        or      byte [0x0f36], 0b1010000
+        or      byte [0x2f36], 0b1000000
+        or      byte [0x0f81], 0b1
+        or      byte [0x0f86], 0b1000000
+        or      byte [0x2f82], 0b101
+        or      byte [0x0fd5], 0b1010100
+        or      byte [0x2fd3], 0b101
+        or      byte [0x2fd5], 0b1010000
+        or      byte [0x1025], 0b1010000
+        or      byte [0x3024], 0b101
+        or      byte [0x3025], 0b1000000
+        or      byte [0x1074], 0b1
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_24_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_24_off
+segment_24_off:
+
+        and     byte [0x0d54], 0b11111110
+        and     byte [0x2d54], 0b11101010
+        and     byte [0x2d55], 0b10111111
+        and     byte [0x0da5], 0b10101111
+        and     byte [0x2da3], 0b11111010
+        and     byte [0x2da5], 0b10101111
+        and     byte [0x0df5], 0b10101011
+        and     byte [0x2df2], 0b11111010
+        and     byte [0x0e46], 0b10111111
+        and     byte [0x2e41], 0b11101010
+        and     byte [0x2e46], 0b10111111
+        and     byte [0x0e90], 0b11111010
+        and     byte [0x0e96], 0b10101111
+        and     byte [0x2e96], 0b10101111
+        and     byte [0x0ede], 0b11111010
+        and     byte [0x0ee6], 0b10101011
+        and     byte [0x2ede], 0b11111010
+        and     byte [0x2ee6], 0b10101011
+        and     byte [0x0f36], 0b10101111
+        and     byte [0x2f36], 0b10111111
+        and     byte [0x0f81], 0b11111110
+        and     byte [0x0f86], 0b10111111
+        and     byte [0x2f82], 0b11111010
+        and     byte [0x0fd5], 0b10101011
+        and     byte [0x2fd3], 0b11111010
+        and     byte [0x2fd5], 0b10101111
+        and     byte [0x1025], 0b10101111
+        and     byte [0x3024], 0b11111010
+        and     byte [0x3025], 0b10111111
+        and     byte [0x1074], 0b11111110
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_24_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_24_common:
+
+        mov     di,0x0da4
+        stosb
+        mov     di,0x2da4
+        stosb
+        mov     di,0x0df3
+        stosw
         mov     di,0x2df3
         stosw
         mov     di,0x2df5
@@ -3326,163 +4788,182 @@ segment_24_on:
         mov     di,0x0e42
         mov     cx,2
         rep stosw
-        or      byte [0x0e46], 0b1000000
-        or      byte [0x2e41], 0b10101
         mov     di,0x2e42
         mov     cx,2
         rep stosw
-        or      byte [0x2e46], 0b1000000
-        or      byte [0x0e90], 0b101
         mov     di,0x0e91
         mov     cx,2
         rep stosw
         mov     di,0x0e95
         stosb
-        or      byte [0x0e96], 0b1010000
         mov     di,0x2e90
         mov     cx,3
         rep stosw
-        or      byte [0x2e96], 0b1010000
-        or      byte [0x0ede], 0b101
         mov     di,0x0edf
         mov     cx,3
         rep stosw
         mov     di,0x0ee5
         stosb
-        or      byte [0x0ee6], 0b1010100
-        or      byte [0x2ede], 0b101
         mov     di,0x2edf
         mov     cx,3
         rep stosw
         mov     di,0x2ee5
         stosb
-        or      byte [0x2ee6], 0b1010100
         mov     di,0x0f30
         mov     cx,3
         rep stosw
-        or      byte [0x0f36], 0b1010000
         mov     di,0x2f31
         mov     cx,2
         rep stosw
         mov     di,0x2f35
         stosb
-        or      byte [0x2f36], 0b1000000
-        or      byte [0x0f81], 0b1
         mov     di,0x0f82
         mov     cx,2
         rep stosw
-        or      byte [0x0f86], 0b1000000
-        or      byte [0x2f82], 0b101
         mov     di,0x2f83
         stosw
         mov     di,0x2f85
         stosb
         mov     di,0x0fd3
         stosw
-        or      byte [0x0fd5], 0b1010100
-        or      byte [0x2fd3], 0b101
         mov     di,0x2fd4
         stosb
-        or      byte [0x2fd5], 0b1010000
         mov     di,0x1024
         stosb
-        or      byte [0x1025], 0b1010000
-        or      byte [0x3024], 0b101
-        or      byte [0x3025], 0b1000000
-        or      byte [0x1074], 0b1
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_25_on
 segment_25_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x2d3a], 0b101
         or      byte [0x2d3b], 0b1000000
         or      byte [0x0d8a], 0b10101
         or      byte [0x0d8b], 0b1010000
-        mov     di,0x2d8a
-        stosw
         or      byte [0x0dd9], 0b1
-        mov     di,0x0dda
-        stosw
         or      byte [0x0ddc], 0b1010000
         or      byte [0x2dd9], 0b1
+        or      byte [0x0e29], 0b101
+        or      byte [0x0e2d], 0b1010000
+        or      byte [0x2e29], 0b101
+        or      byte [0x2e2e], 0b1000000
+        or      byte [0x0e79], 0b10101
+        or      byte [0x0e7e], 0b1010100
+        or      byte [0x2e7f], 0b1010100
+        or      byte [0x0f19], 0b10101
+        or      byte [0x0f1f], 0b1010100
+        or      byte [0x2f19], 0b10101
+        or      byte [0x2f1e], 0b1010100
+        or      byte [0x0f69], 0b101
+        or      byte [0x0f6e], 0b1000000
+        or      byte [0x2f69], 0b1
+        or      byte [0x2f6d], 0b1010000
+        or      byte [0x0fb9], 0b1
+        or      byte [0x0fbc], 0b1010100
+        or      byte [0x2fbc], 0b1010000
+        or      byte [0x100a], 0b10101
+        or      byte [0x300a], 0b101
+        or      byte [0x300b], 0b1010000
+        or      byte [0x105a], 0b101
+        or      byte [0x105b], 0b1000000
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_25_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_25_off
+segment_25_off:
+
+        and     byte [0x2d3a], 0b11111010
+        and     byte [0x2d3b], 0b10111111
+        and     byte [0x0d8a], 0b11101010
+        and     byte [0x0d8b], 0b10101111
+        and     byte [0x0dd9], 0b11111110
+        and     byte [0x0ddc], 0b10101111
+        and     byte [0x2dd9], 0b11111110
+        and     byte [0x0e29], 0b11111010
+        and     byte [0x0e2d], 0b10101111
+        and     byte [0x2e29], 0b11111010
+        and     byte [0x2e2e], 0b10111111
+        and     byte [0x0e79], 0b11101010
+        and     byte [0x0e7e], 0b10101011
+        and     byte [0x2e7f], 0b10101011
+        and     byte [0x0f19], 0b11101010
+        and     byte [0x0f1f], 0b10101011
+        and     byte [0x2f19], 0b11101010
+        and     byte [0x2f1e], 0b10101011
+        and     byte [0x0f69], 0b11111010
+        and     byte [0x0f6e], 0b10111111
+        and     byte [0x2f69], 0b11111110
+        and     byte [0x2f6d], 0b10101111
+        and     byte [0x0fb9], 0b11111110
+        and     byte [0x0fbc], 0b10101011
+        and     byte [0x2fbc], 0b10101111
+        and     byte [0x100a], 0b11101010
+        and     byte [0x300a], 0b11111010
+        and     byte [0x300b], 0b10101111
+        and     byte [0x105a], 0b11111010
+        and     byte [0x105b], 0b10111111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_25_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_25_common:
+
+        mov     di,0x2d8a
+        stosw
+        mov     di,0x0dda
+        stosw
         mov     di,0x2dda
         stosw
         mov     di,0x2ddc
         stosb
-        or      byte [0x0e29], 0b101
         mov     di,0x0e2a
         stosw
         mov     di,0x0e2c
         stosb
-        or      byte [0x0e2d], 0b1010000
-        or      byte [0x2e29], 0b101
         mov     di,0x2e2a
         mov     cx,2
         rep stosw
-        or      byte [0x2e2e], 0b1000000
-        or      byte [0x0e79], 0b10101
         mov     di,0x0e7a
         mov     cx,2
         rep stosw
-        or      byte [0x0e7e], 0b1010100
         mov     di,0x2e79
         mov     cx,3
         rep stosw
-        or      byte [0x2e7f], 0b1010100
         mov     di,0x0ec9
         mov     cx,4
         rep stosw
         mov     di,0x2ec9
         mov     cx,4
         rep stosw
-        or      byte [0x0f19], 0b10101
         mov     di,0x0f1a
         mov     cx,2
         rep stosw
         mov     di,0x0f1e
         stosb
-        or      byte [0x0f1f], 0b1010100
-        or      byte [0x2f19], 0b10101
         mov     di,0x2f1a
         mov     cx,2
         rep stosw
-        or      byte [0x2f1e], 0b1010100
-        or      byte [0x0f69], 0b101
         mov     di,0x0f6a
         mov     cx,2
         rep stosw
-        or      byte [0x0f6e], 0b1000000
-        or      byte [0x2f69], 0b1
         mov     di,0x2f6a
         stosw
         mov     di,0x2f6c
         stosb
-        or      byte [0x2f6d], 0b1010000
-        or      byte [0x0fb9], 0b1
         mov     di,0x0fba
         stosw
-        or      byte [0x0fbc], 0b1010100
         mov     di,0x2fba
         stosw
-        or      byte [0x2fbc], 0b1010000
-        or      byte [0x100a], 0b10101
         mov     di,0x100b
         stosb
-        or      byte [0x300a], 0b101
-        or      byte [0x300b], 0b1010000
-        or      byte [0x105a], 0b101
-        or      byte [0x105b], 0b1000000
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_26_on
 segment_26_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x2ec8], 0b1
         or      byte [0x0f18], 0b1
@@ -3495,99 +4976,196 @@ segment_26_on:
         or      byte [0x2f69], 0b1010100
         or      byte [0x0fb8], 0b10101
         or      byte [0x0fb9], 0b1010100
+        or      byte [0x100a], 0b1000000
+        or      byte [0x3007], 0b1
+        or      byte [0x300a], 0b1010000
+        or      byte [0x1057], 0b1
+        or      byte [0x105a], 0b1010000
+        or      byte [0x3057], 0b1
+        or      byte [0x305a], 0b1010000
+        or      byte [0x10a7], 0b101
+        or      byte [0x10aa], 0b1000000
+        or      byte [0x30a7], 0b101
+        or      byte [0x10f7], 0b101
+        or      byte [0x10f9], 0b1010100
+        or      byte [0x30f7], 0b10101
+        or      byte [0x30f9], 0b1010000
+        or      byte [0x1147], 0b10101
+        or      byte [0x1149], 0b1000000
+        or      byte [0x3147], 0b10101
+        or      byte [0x1198], 0b1010100
+        or      byte [0x3198], 0b1010000
+        or      byte [0x11e8], 0b1000000
+        or      byte [0x31e8], 0b1000000
+        or      byte [0x1236], 0b1
+        or      byte [0x3236], 0b1
+        or      byte [0x1286], 0b1
+        or      byte [0x1287], 0b1010100
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_26_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_26_off
+segment_26_off:
+
+        and     byte [0x2ec8], 0b11111110
+        and     byte [0x0f18], 0b11111110
+        and     byte [0x0f19], 0b10111111
+        and     byte [0x2f18], 0b11111010
+        and     byte [0x2f19], 0b10111111
+        and     byte [0x0f68], 0b11111010
+        and     byte [0x0f69], 0b10101111
+        and     byte [0x2f68], 0b11101010
+        and     byte [0x2f69], 0b10101011
+        and     byte [0x0fb8], 0b11101010
+        and     byte [0x0fb9], 0b10101011
+        and     byte [0x100a], 0b10111111
+        and     byte [0x3007], 0b11111110
+        and     byte [0x300a], 0b10101111
+        and     byte [0x1057], 0b11111110
+        and     byte [0x105a], 0b10101111
+        and     byte [0x3057], 0b11111110
+        and     byte [0x305a], 0b10101111
+        and     byte [0x10a7], 0b11111010
+        and     byte [0x10aa], 0b10111111
+        and     byte [0x30a7], 0b11111010
+        and     byte [0x10f7], 0b11111010
+        and     byte [0x10f9], 0b10101011
+        and     byte [0x30f7], 0b11101010
+        and     byte [0x30f9], 0b10101111
+        and     byte [0x1147], 0b11101010
+        and     byte [0x1149], 0b10111111
+        and     byte [0x3147], 0b11101010
+        and     byte [0x1198], 0b10101011
+        and     byte [0x3198], 0b10101111
+        and     byte [0x11e8], 0b10111111
+        and     byte [0x31e8], 0b10111111
+        and     byte [0x1236], 0b11111110
+        and     byte [0x3236], 0b11111110
+        and     byte [0x1286], 0b11111110
+        and     byte [0x1287], 0b10101011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_26_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_26_common:
+
         mov     di,0x2fb8
         stosw
         mov     di,0x1008
         stosw
-        or      byte [0x100a], 0b1000000
-        or      byte [0x3007], 0b1
         mov     di,0x3008
         stosw
-        or      byte [0x300a], 0b1010000
-        or      byte [0x1057], 0b1
         mov     di,0x1058
         stosw
-        or      byte [0x105a], 0b1010000
-        or      byte [0x3057], 0b1
         mov     di,0x3058
         stosw
-        or      byte [0x305a], 0b1010000
-        or      byte [0x10a7], 0b101
         mov     di,0x10a8
         stosw
-        or      byte [0x10aa], 0b1000000
-        or      byte [0x30a7], 0b101
         mov     di,0x30a8
         stosw
-        or      byte [0x10f7], 0b101
         mov     di,0x10f8
         stosb
-        or      byte [0x10f9], 0b1010100
-        or      byte [0x30f7], 0b10101
         mov     di,0x30f8
         stosb
-        or      byte [0x30f9], 0b1010000
-        or      byte [0x1147], 0b10101
         mov     di,0x1148
         stosb
-        or      byte [0x1149], 0b1000000
-        or      byte [0x3147], 0b10101
         mov     di,0x3148
         stosb
         mov     di,0x1197
         stosb
-        or      byte [0x1198], 0b1010100
         mov     di,0x3197
         stosb
-        or      byte [0x3198], 0b1010000
         mov     di,0x11e7
         stosb
-        or      byte [0x11e8], 0b1000000
         mov     di,0x31e7
         stosb
-        or      byte [0x31e8], 0b1000000
-        or      byte [0x1236], 0b1
         mov     di,0x1237
         stosb
-        or      byte [0x3236], 0b1
         mov     di,0x3237
         stosb
-        or      byte [0x1286], 0b1
-        or      byte [0x1287], 0b1010100
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_27_on
 segment_27_on:
+
+        or      byte [0x0f1f], 0b1
+        or      byte [0x2f1e], 0b1
+        or      byte [0x0f6e], 0b10101
+        or      byte [0x2f6d], 0b101
+        or      byte [0x0fbc], 0b1
+        or      byte [0x2fbc], 0b101
+        or      byte [0x300b], 0b101
+        or      byte [0x105b], 0b10101
+        or      byte [0x10ab], 0b10101
+        or      byte [0x30ab], 0b101
+        or      byte [0x10fb], 0b1
+        or      byte [0x30fc], 0b10101
+        or      byte [0x114c], 0b101
+        or      byte [0x314c], 0b1
+        or      byte [0x119d], 0b10101
+        or      byte [0x319d], 0b1
+        or      byte [0x11ee], 0b10101
+        or      byte [0x31ee], 0b101
+        or      byte [0x123f], 0b101
+        or      byte [0x3240], 0b101
+        or      byte [0x1291], 0b10101
+
         mov     ax,0b01010101_01010101
+        jmp     segment_27_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_27_off
+segment_27_off:
+
+        and     byte [0x0f1f], 0b11111110
+        and     byte [0x2f1e], 0b11111110
+        and     byte [0x0f6e], 0b11101010
+        and     byte [0x2f6d], 0b11111010
+        and     byte [0x0fbc], 0b11111110
+        and     byte [0x2fbc], 0b11111010
+        and     byte [0x300b], 0b11111010
+        and     byte [0x105b], 0b11101010
+        and     byte [0x10ab], 0b11101010
+        and     byte [0x30ab], 0b11111010
+        and     byte [0x10fb], 0b11111110
+        and     byte [0x30fc], 0b11101010
+        and     byte [0x114c], 0b11111010
+        and     byte [0x314c], 0b11111110
+        and     byte [0x119d], 0b11101010
+        and     byte [0x319d], 0b11111110
+        and     byte [0x11ee], 0b11101010
+        and     byte [0x31ee], 0b11111010
+        and     byte [0x123f], 0b11111010
+        and     byte [0x3240], 0b11111010
+        and     byte [0x1291], 0b11101010
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_27_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_27_common:
 
         mov     di,0x2ed1
         stosb
-        or      byte [0x0f1f], 0b1
         mov     di,0x0f20
         stosw
-        or      byte [0x2f1e], 0b1
         mov     di,0x2f1f
         stosw
         mov     di,0x2f21
         stosb
-        or      byte [0x0f6e], 0b10101
         mov     di,0x0f6f
         stosw
         mov     di,0x0f71
         stosb
-        or      byte [0x2f6d], 0b101
         mov     di,0x2f6e
         mov     cx,2
         rep stosw
-        or      byte [0x0fbc], 0b1
         mov     di,0x0fbd
         mov     cx,2
         rep stosw
         mov     di,0x0fc1
         stosb
-        or      byte [0x2fbc], 0b101
         mov     di,0x2fbd
         mov     cx,2
         rep stosw
@@ -3596,11 +5174,9 @@ segment_27_on:
         mov     di,0x100c
         mov     cx,3
         rep stosw
-        or      byte [0x300b], 0b101
         mov     di,0x300c
         mov     cx,3
         rep stosw
-        or      byte [0x105b], 0b10101
         mov     di,0x105c
         mov     cx,3
         rep stosw
@@ -3609,146 +5185,83 @@ segment_27_on:
         rep stosw
         mov     di,0x3061
         stosb
-        or      byte [0x10ab], 0b10101
         mov     di,0x10ac
         mov     cx,3
         rep stosw
-        or      byte [0x30ab], 0b101
         mov     di,0x30ac
         mov     cx,3
         rep stosw
-        or      byte [0x10fb], 0b1
         mov     di,0x10fc
         mov     cx,3
         rep stosw
-        or      byte [0x30fc], 0b10101
         mov     di,0x30fd
         mov     cx,2
         rep stosw
         mov     di,0x3101
         stosb
-        or      byte [0x114c], 0b101
         mov     di,0x114d
         mov     cx,2
         rep stosw
         mov     di,0x1151
         stosb
-        or      byte [0x314c], 0b1
         mov     di,0x314d
         mov     cx,2
         rep stosw
         mov     di,0x3151
         stosb
-        or      byte [0x119d], 0b10101
         mov     di,0x119e
         mov     cx,2
         rep stosw
-        or      byte [0x319d], 0b1
         mov     di,0x319e
         mov     cx,2
         rep stosw
-        or      byte [0x11ee], 0b10101
         mov     di,0x11ef
         stosw
         mov     di,0x11f1
         stosb
-        or      byte [0x31ee], 0b101
         mov     di,0x31ef
         stosw
         mov     di,0x31f1
         stosb
-        or      byte [0x123f], 0b101
         mov     di,0x1240
         stosw
-        or      byte [0x3240], 0b101
         mov     di,0x3241
         stosb
-        or      byte [0x1291], 0b10101
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_28_on
 segment_28_on:
-        mov     ax,0b01010101_01010101
 
-        mov     di,0x2ed2
-        mov     cx,2
-        rep stosw
-        mov     di,0x2ed6
-        stosb
         or      byte [0x2ed7], 0b1010100
         or      byte [0x0f22], 0b10101
-        mov     di,0x0f23
-        mov     cx,2
-        rep stosw
         or      byte [0x0f27], 0b1010100
         or      byte [0x2f22], 0b101
-        mov     di,0x2f23
-        mov     cx,2
-        rep stosw
         or      byte [0x2f27], 0b1010100
         or      byte [0x0f72], 0b1
-        mov     di,0x0f73
-        mov     cx,2
-        rep stosw
         or      byte [0x0f77], 0b1010100
-        mov     di,0x2f73
-        mov     cx,2
-        rep stosw
         or      byte [0x2f77], 0b1010100
         or      byte [0x0fc3], 0b10101
-        mov     di,0x0fc4
-        stosw
-        mov     di,0x0fc6
-        stosb
         or      byte [0x0fc7], 0b1010100
         or      byte [0x2fc3], 0b101
-        mov     di,0x2fc4
-        stosw
-        mov     di,0x2fc6
-        stosb
         or      byte [0x2fc7], 0b1010100
         or      byte [0x1013], 0b1
-        mov     di,0x1014
-        stosw
-        mov     di,0x1016
-        stosb
         or      byte [0x1017], 0b1010100
-        mov     di,0x3014
-        stosw
-        mov     di,0x3016
-        stosb
         or      byte [0x3017], 0b1010100
         or      byte [0x1064], 0b10101
-        mov     di,0x1065
-        stosw
         or      byte [0x1067], 0b1010100
         or      byte [0x3064], 0b101
-        mov     di,0x3065
-        stosw
         or      byte [0x3067], 0b1010100
         or      byte [0x10b4], 0b1
-        mov     di,0x10b5
-        stosw
         or      byte [0x10b7], 0b1010100
-        mov     di,0x30b5
-        stosw
         or      byte [0x30b7], 0b1010100
         or      byte [0x1105], 0b10101
-        mov     di,0x1106
-        stosb
         or      byte [0x1107], 0b1010100
         or      byte [0x3105], 0b101
-        mov     di,0x3106
-        stosb
         or      byte [0x3107], 0b1010100
         or      byte [0x1155], 0b1
-        mov     di,0x1156
-        stosb
         or      byte [0x1157], 0b1010100
-        mov     di,0x3156
-        stosb
         or      byte [0x3157], 0b1010100
         or      byte [0x11a6], 0b10101
         or      byte [0x11a7], 0b1010100
@@ -3760,112 +5273,147 @@ segment_28_on:
         or      byte [0x1247], 0b10100
         or      byte [0x3247], 0b100
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_28_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_28_off
+segment_28_off:
+
+        and     byte [0x2ed7], 0b10101011
+        and     byte [0x0f22], 0b11101010
+        and     byte [0x0f27], 0b10101011
+        and     byte [0x2f22], 0b11111010
+        and     byte [0x2f27], 0b10101011
+        and     byte [0x0f72], 0b11111110
+        and     byte [0x0f77], 0b10101011
+        and     byte [0x2f77], 0b10101011
+        and     byte [0x0fc3], 0b11101010
+        and     byte [0x0fc7], 0b10101011
+        and     byte [0x2fc3], 0b11111010
+        and     byte [0x2fc7], 0b10101011
+        and     byte [0x1013], 0b11111110
+        and     byte [0x1017], 0b10101011
+        and     byte [0x3017], 0b10101011
+        and     byte [0x1064], 0b11101010
+        and     byte [0x1067], 0b10101011
+        and     byte [0x3064], 0b11111010
+        and     byte [0x3067], 0b10101011
+        and     byte [0x10b4], 0b11111110
+        and     byte [0x10b7], 0b10101011
+        and     byte [0x30b7], 0b10101011
+        and     byte [0x1105], 0b11101010
+        and     byte [0x1107], 0b10101011
+        and     byte [0x3105], 0b11111010
+        and     byte [0x3107], 0b10101011
+        and     byte [0x1155], 0b11111110
+        and     byte [0x1157], 0b10101011
+        and     byte [0x3157], 0b10101011
+        and     byte [0x11a6], 0b11101010
+        and     byte [0x11a7], 0b10101011
+        and     byte [0x31a6], 0b11111010
+        and     byte [0x31a7], 0b10101011
+        and     byte [0x11f6], 0b11111110
+        and     byte [0x11f7], 0b10101011
+        and     byte [0x31f7], 0b10101011
+        and     byte [0x1247], 0b11101011
+        and     byte [0x3247], 0b11111011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_28_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_28_common:
+
+        mov     di,0x2ed2
+        mov     cx,2
+        rep stosw
+        mov     di,0x2ed6
+        stosb
+        mov     di,0x0f23
+        mov     cx,2
+        rep stosw
+        mov     di,0x2f23
+        mov     cx,2
+        rep stosw
+        mov     di,0x0f73
+        mov     cx,2
+        rep stosw
+        mov     di,0x2f73
+        mov     cx,2
+        rep stosw
+        mov     di,0x0fc4
+        stosw
+        mov     di,0x0fc6
+        stosb
+        mov     di,0x2fc4
+        stosw
+        mov     di,0x2fc6
+        stosb
+        mov     di,0x1014
+        stosw
+        mov     di,0x1016
+        stosb
+        mov     di,0x3014
+        stosw
+        mov     di,0x3016
+        stosb
+        mov     di,0x1065
+        stosw
+        mov     di,0x3065
+        stosw
+        mov     di,0x10b5
+        stosw
+        mov     di,0x30b5
+        stosw
+        mov     di,0x1106
+        stosb
+        mov     di,0x3106
+        stosb
+        mov     di,0x1156
+        stosb
+        mov     di,0x3156
+        stosb
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_29_on
 segment_29_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x2ed7], 0b1
-        mov     di,0x2ed8
-        mov     cx,2
-        rep stosw
-        mov     di,0x2edc
-        stosb
         or      byte [0x2edd], 0b1010100
         or      byte [0x0f27], 0b1
-        mov     di,0x0f28
-        mov     cx,2
-        rep stosw
-        mov     di,0x0f2c
-        stosb
         or      byte [0x0f2d], 0b1010000
         or      byte [0x2f27], 0b1
-        mov     di,0x2f28
-        mov     cx,2
-        rep stosw
-        mov     di,0x2f2c
-        stosb
         or      byte [0x2f2d], 0b1000000
         or      byte [0x0f77], 0b1
-        mov     di,0x0f78
-        mov     cx,2
-        rep stosw
-        mov     di,0x0f7c
-        stosb
         or      byte [0x2f77], 0b1
-        mov     di,0x2f78
-        mov     cx,2
-        rep stosw
         or      byte [0x2f7c], 0b1010100
         or      byte [0x0fc7], 0b1
-        mov     di,0x0fc8
-        mov     cx,2
-        rep stosw
         or      byte [0x0fcc], 0b1010000
         or      byte [0x2fc7], 0b1
-        mov     di,0x2fc8
-        mov     cx,2
-        rep stosw
         or      byte [0x2fcc], 0b1000000
         or      byte [0x1017], 0b1
-        mov     di,0x1018
-        mov     cx,2
-        rep stosw
         or      byte [0x3017], 0b1
-        mov     di,0x3018
-        stosw
-        mov     di,0x301a
-        stosb
         or      byte [0x301b], 0b1010100
         or      byte [0x1067], 0b1
-        mov     di,0x1068
-        stosw
-        mov     di,0x106a
-        stosb
         or      byte [0x106b], 0b1010000
         or      byte [0x3067], 0b1
-        mov     di,0x3068
-        stosw
-        mov     di,0x306a
-        stosb
         or      byte [0x306b], 0b1000000
         or      byte [0x10b7], 0b1
-        mov     di,0x10b8
-        stosw
-        mov     di,0x10ba
-        stosb
         or      byte [0x30b7], 0b1
-        mov     di,0x30b8
-        stosw
         or      byte [0x30ba], 0b1010100
         or      byte [0x1107], 0b1
-        mov     di,0x1108
-        stosw
         or      byte [0x110a], 0b1010000
         or      byte [0x3107], 0b1
-        mov     di,0x3108
-        stosw
         or      byte [0x310a], 0b1000000
         or      byte [0x1157], 0b1
-        mov     di,0x1158
-        stosw
         or      byte [0x3157], 0b1
-        mov     di,0x3158
-        stosb
         or      byte [0x3159], 0b1010100
         or      byte [0x11a7], 0b1
-        mov     di,0x11a8
-        stosb
         or      byte [0x11a9], 0b1010000
         or      byte [0x31a7], 0b1
-        mov     di,0x31a8
-        stosb
         or      byte [0x31a9], 0b1000000
         or      byte [0x11f7], 0b1
-        mov     di,0x11f8
-        stosb
         or      byte [0x31f7], 0b1
         or      byte [0x31f8], 0b1010100
         or      byte [0x1247], 0b1
@@ -3874,140 +5422,311 @@ segment_29_on:
         or      byte [0x3248], 0b1000000
         or      byte [0x1297], 0b1
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_29_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_29_off
+segment_29_off:
+
+        and     byte [0x2ed7], 0b11111110
+        and     byte [0x2edd], 0b10101011
+        and     byte [0x0f27], 0b11111110
+        and     byte [0x0f2d], 0b10101111
+        and     byte [0x2f27], 0b11111110
+        and     byte [0x2f2d], 0b10111111
+        and     byte [0x0f77], 0b11111110
+        and     byte [0x2f77], 0b11111110
+        and     byte [0x2f7c], 0b10101011
+        and     byte [0x0fc7], 0b11111110
+        and     byte [0x0fcc], 0b10101111
+        and     byte [0x2fc7], 0b11111110
+        and     byte [0x2fcc], 0b10111111
+        and     byte [0x1017], 0b11111110
+        and     byte [0x3017], 0b11111110
+        and     byte [0x301b], 0b10101011
+        and     byte [0x1067], 0b11111110
+        and     byte [0x106b], 0b10101111
+        and     byte [0x3067], 0b11111110
+        and     byte [0x306b], 0b10111111
+        and     byte [0x10b7], 0b11111110
+        and     byte [0x30b7], 0b11111110
+        and     byte [0x30ba], 0b10101011
+        and     byte [0x1107], 0b11111110
+        and     byte [0x110a], 0b10101111
+        and     byte [0x3107], 0b11111110
+        and     byte [0x310a], 0b10111111
+        and     byte [0x1157], 0b11111110
+        and     byte [0x3157], 0b11111110
+        and     byte [0x3159], 0b10101011
+        and     byte [0x11a7], 0b11111110
+        and     byte [0x11a9], 0b10101111
+        and     byte [0x31a7], 0b11111110
+        and     byte [0x31a9], 0b10111111
+        and     byte [0x11f7], 0b11111110
+        and     byte [0x31f7], 0b11111110
+        and     byte [0x31f8], 0b10101011
+        and     byte [0x1247], 0b11111110
+        and     byte [0x1248], 0b10101111
+        and     byte [0x3247], 0b11111110
+        and     byte [0x3248], 0b10111111
+        and     byte [0x1297], 0b11111110
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_29_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_29_common:
+
+        mov     di,0x2ed8
+        mov     cx,2
+        rep stosw
+        mov     di,0x2edc
+        stosb
+        mov     di,0x0f28
+        mov     cx,2
+        rep stosw
+        mov     di,0x0f2c
+        stosb
+        mov     di,0x2f28
+        mov     cx,2
+        rep stosw
+        mov     di,0x2f2c
+        stosb
+        mov     di,0x0f78
+        mov     cx,2
+        rep stosw
+        mov     di,0x0f7c
+        stosb
+        mov     di,0x2f78
+        mov     cx,2
+        rep stosw
+        mov     di,0x0fc8
+        mov     cx,2
+        rep stosw
+        mov     di,0x2fc8
+        mov     cx,2
+        rep stosw
+        mov     di,0x1018
+        mov     cx,2
+        rep stosw
+        mov     di,0x3018
+        stosw
+        mov     di,0x301a
+        stosb
+        mov     di,0x1068
+        stosw
+        mov     di,0x106a
+        stosb
+        mov     di,0x3068
+        stosw
+        mov     di,0x306a
+        stosb
+        mov     di,0x10b8
+        stosw
+        mov     di,0x10ba
+        stosb
+        mov     di,0x30b8
+        stosw
+        mov     di,0x1108
+        stosw
+        mov     di,0x3108
+        stosw
+        mov     di,0x1158
+        stosw
+        mov     di,0x3158
+        stosb
+        mov     di,0x11a8
+        stosb
+        mov     di,0x31a8
+        stosb
+        mov     di,0x11f8
+        stosb
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_30_on
 segment_30_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x2edd], 0b1
         or      byte [0x2ede], 0b1010000
         or      byte [0x0f2d], 0b1
+        or      byte [0x2f2d], 0b1
+        or      byte [0x0f7d], 0b1
+        or      byte [0x0f81], 0b1010100
+        or      byte [0x2f7d], 0b1
+        or      byte [0x2f82], 0b1010000
+        or      byte [0x0fcd], 0b1
+        or      byte [0x2fcd], 0b1
+        or      byte [0x2fd3], 0b1010000
+        or      byte [0x101d], 0b1
+        or      byte [0x301d], 0b1
+        or      byte [0x3024], 0b1010000
+        or      byte [0x106d], 0b1
+        or      byte [0x1074], 0b1010100
+        or      byte [0x306d], 0b1
+        or      byte [0x10bd], 0b1
+        or      byte [0x10c4], 0b1010100
+        or      byte [0x30bd], 0b1
+        or      byte [0x30c4], 0b1010000
+        or      byte [0x110d], 0b1
+        or      byte [0x310d], 0b1
+        or      byte [0x3113], 0b1010100
+        or      byte [0x115d], 0b1
+        or      byte [0x1163], 0b1010000
+        or      byte [0x315d], 0b1
+        or      byte [0x3163], 0b1000000
+        or      byte [0x11ad], 0b1
+        or      byte [0x11b2], 0b1010100
+        or      byte [0x31ad], 0b1
+        or      byte [0x31b2], 0b1000000
+        or      byte [0x11fd], 0b1
+        or      byte [0x1201], 0b1010100
+        or      byte [0x31fd], 0b1
+        or      byte [0x3201], 0b1000000
+        or      byte [0x124d], 0b1
+        or      byte [0x1250], 0b1010000
+        or      byte [0x324d], 0b1
+        or      byte [0x129d], 0b1
+        or      byte [0x129e], 0b1010000
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_30_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_30_off
+segment_30_off:
+
+        and     byte [0x2edd], 0b11111110
+        and     byte [0x2ede], 0b10101111
+        and     byte [0x0f2d], 0b11111110
+        and     byte [0x2f2d], 0b11111110
+        and     byte [0x0f7d], 0b11111110
+        and     byte [0x0f81], 0b10101011
+        and     byte [0x2f7d], 0b11111110
+        and     byte [0x2f82], 0b10101111
+        and     byte [0x0fcd], 0b11111110
+        and     byte [0x2fcd], 0b11111110
+        and     byte [0x2fd3], 0b10101111
+        and     byte [0x101d], 0b11111110
+        and     byte [0x301d], 0b11111110
+        and     byte [0x3024], 0b10101111
+        and     byte [0x106d], 0b11111110
+        and     byte [0x1074], 0b10101011
+        and     byte [0x306d], 0b11111110
+        and     byte [0x10bd], 0b11111110
+        and     byte [0x10c4], 0b10101011
+        and     byte [0x30bd], 0b11111110
+        and     byte [0x30c4], 0b10101111
+        and     byte [0x110d], 0b11111110
+        and     byte [0x310d], 0b11111110
+        and     byte [0x3113], 0b10101011
+        and     byte [0x115d], 0b11111110
+        and     byte [0x1163], 0b10101111
+        and     byte [0x315d], 0b11111110
+        and     byte [0x3163], 0b10111111
+        and     byte [0x11ad], 0b11111110
+        and     byte [0x11b2], 0b10101011
+        and     byte [0x31ad], 0b11111110
+        and     byte [0x31b2], 0b10111111
+        and     byte [0x11fd], 0b11111110
+        and     byte [0x1201], 0b10101011
+        and     byte [0x31fd], 0b11111110
+        and     byte [0x3201], 0b10111111
+        and     byte [0x124d], 0b11111110
+        and     byte [0x1250], 0b10101111
+        and     byte [0x324d], 0b11111110
+        and     byte [0x129d], 0b11111110
+        and     byte [0x129e], 0b10101111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_30_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_30_common:
+
         mov     di,0x0f2e
         stosw
-        or      byte [0x2f2d], 0b1
         mov     di,0x2f2e
         stosw
         mov     di,0x2f30
         stosb
-        or      byte [0x0f7d], 0b1
         mov     di,0x0f7e
         stosw
         mov     di,0x0f80
         stosb
-        or      byte [0x0f81], 0b1010100
-        or      byte [0x2f7d], 0b1
         mov     di,0x2f7e
         mov     cx,2
         rep stosw
-        or      byte [0x2f82], 0b1010000
-        or      byte [0x0fcd], 0b1
         mov     di,0x0fce
         mov     cx,2
         rep stosw
         mov     di,0x0fd2
         stosb
-        or      byte [0x2fcd], 0b1
         mov     di,0x2fce
         mov     cx,2
         rep stosw
         mov     di,0x2fd2
         stosb
-        or      byte [0x2fd3], 0b1010000
-        or      byte [0x101d], 0b1
         mov     di,0x101e
         mov     cx,3
         rep stosw
-        or      byte [0x301d], 0b1
         mov     di,0x301e
         mov     cx,3
         rep stosw
-        or      byte [0x3024], 0b1010000
-        or      byte [0x106d], 0b1
         mov     di,0x106e
         mov     cx,3
         rep stosw
-        or      byte [0x1074], 0b1010100
-        or      byte [0x306d], 0b1
         mov     di,0x306e
         mov     cx,3
         rep stosw
         mov     di,0x3074
         stosb
-        or      byte [0x10bd], 0b1
         mov     di,0x10be
         mov     cx,3
         rep stosw
-        or      byte [0x10c4], 0b1010100
-        or      byte [0x30bd], 0b1
         mov     di,0x30be
         mov     cx,3
         rep stosw
-        or      byte [0x30c4], 0b1010000
-        or      byte [0x110d], 0b1
         mov     di,0x110e
         mov     cx,3
         rep stosw
-        or      byte [0x310d], 0b1
         mov     di,0x310e
         mov     cx,2
         rep stosw
         mov     di,0x3112
         stosb
-        or      byte [0x3113], 0b1010100
-        or      byte [0x115d], 0b1
         mov     di,0x115e
         mov     cx,2
         rep stosw
         mov     di,0x1162
         stosb
-        or      byte [0x1163], 0b1010000
-        or      byte [0x315d], 0b1
         mov     di,0x315e
         mov     cx,2
         rep stosw
         mov     di,0x3162
         stosb
-        or      byte [0x3163], 0b1000000
-        or      byte [0x11ad], 0b1
         mov     di,0x11ae
         mov     cx,2
         rep stosw
-        or      byte [0x11b2], 0b1010100
-        or      byte [0x31ad], 0b1
         mov     di,0x31ae
         mov     cx,2
         rep stosw
-        or      byte [0x31b2], 0b1000000
-        or      byte [0x11fd], 0b1
         mov     di,0x11fe
         stosw
         mov     di,0x1200
         stosb
-        or      byte [0x1201], 0b1010100
-        or      byte [0x31fd], 0b1
         mov     di,0x31fe
         stosw
         mov     di,0x3200
         stosb
-        or      byte [0x3201], 0b1000000
-        or      byte [0x124d], 0b1
         mov     di,0x124e
         stosw
-        or      byte [0x1250], 0b1010000
-        or      byte [0x324d], 0b1
         mov     di,0x324e
         stosw
-        or      byte [0x129d], 0b1
-        or      byte [0x129e], 0b1010000
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_31_on
 segment_31_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x2ee6], 0b1
         or      byte [0x0f36], 0b101
@@ -4015,60 +5734,26 @@ segment_31_on:
         or      byte [0x2f37], 0b1000000
         or      byte [0x0f86], 0b10101
         or      byte [0x0f87], 0b1000000
-        mov     di,0x2f86
-        stosb
         or      byte [0x2f87], 0b1010000
         or      byte [0x0fd5], 0b1
-        mov     di,0x0fd6
-        stosb
         or      byte [0x0fd7], 0b1010000
         or      byte [0x2fd5], 0b101
-        mov     di,0x2fd6
-        stosb
         or      byte [0x2fd7], 0b1010000
         or      byte [0x1025], 0b101
-        mov     di,0x1026
-        stosb
         or      byte [0x1027], 0b1010100
         or      byte [0x3025], 0b10101
-        mov     di,0x3026
-        stosb
         or      byte [0x3027], 0b1010100
-        mov     di,0x1075
-        stosw
-        mov     di,0x1077
-        stosb
-        mov     di,0x3075
-        stosw
-        mov     di,0x3077
-        stosb
         or      byte [0x10c5], 0b101
-        mov     di,0x10c6
-        stosw
         or      byte [0x30c5], 0b1
-        mov     di,0x30c6
-        stosw
         or      byte [0x30c8], 0b1000000
-        mov     di,0x1116
-        stosw
         or      byte [0x1118], 0b1000000
         or      byte [0x3116], 0b10101
-        mov     di,0x3117
-        stosb
         or      byte [0x3118], 0b1000000
         or      byte [0x1166], 0b101
-        mov     di,0x1167
-        stosb
         or      byte [0x1168], 0b1010000
         or      byte [0x3166], 0b1
-        mov     di,0x3167
-        stosb
         or      byte [0x3168], 0b1010000
-        mov     di,0x11b7
-        stosb
         or      byte [0x11b8], 0b1010000
-        mov     di,0x31b7
-        stosb
         or      byte [0x31b8], 0b1010100
         or      byte [0x1207], 0b10101
         or      byte [0x1208], 0b1010100
@@ -4077,12 +5762,6 @@ segment_31_on:
         or      byte [0x1257], 0b1
         or      byte [0x1258], 0b1010100
         or      byte [0x3257], 0b1
-        mov     di,0x3258
-        stosb
-        mov     di,0x12a8
-        stosb
-        mov     di,0x32a8
-        stosb
         or      byte [0x12f8], 0b10101
         or      byte [0x32f8], 0b10101
         or      byte [0x1348], 0b101
@@ -4106,38 +5785,186 @@ segment_31_on:
         or      byte [0x1579], 0b100
         or      byte [0x3579], 0b100
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_31_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_31_off
+segment_31_off:
+
+        and     byte [0x2ee6], 0b11111110
+        and     byte [0x0f36], 0b11111010
+        and     byte [0x2f36], 0b11101010
+        and     byte [0x2f37], 0b10111111
+        and     byte [0x0f86], 0b11101010
+        and     byte [0x0f87], 0b10111111
+        and     byte [0x2f87], 0b10101111
+        and     byte [0x0fd5], 0b11111110
+        and     byte [0x0fd7], 0b10101111
+        and     byte [0x2fd5], 0b11111010
+        and     byte [0x2fd7], 0b10101111
+        and     byte [0x1025], 0b11111010
+        and     byte [0x1027], 0b10101011
+        and     byte [0x3025], 0b11101010
+        and     byte [0x3027], 0b10101011
+        and     byte [0x10c5], 0b11111010
+        and     byte [0x30c5], 0b11111110
+        and     byte [0x30c8], 0b10111111
+        and     byte [0x1118], 0b10111111
+        and     byte [0x3116], 0b11101010
+        and     byte [0x3118], 0b10111111
+        and     byte [0x1166], 0b11111010
+        and     byte [0x1168], 0b10101111
+        and     byte [0x3166], 0b11111110
+        and     byte [0x3168], 0b10101111
+        and     byte [0x11b8], 0b10101111
+        and     byte [0x31b8], 0b10101011
+        and     byte [0x1207], 0b11101010
+        and     byte [0x1208], 0b10101011
+        and     byte [0x3207], 0b11111010
+        and     byte [0x3208], 0b10101011
+        and     byte [0x1257], 0b11111110
+        and     byte [0x1258], 0b10101011
+        and     byte [0x3257], 0b11111110
+        and     byte [0x12f8], 0b11101010
+        and     byte [0x32f8], 0b11101010
+        and     byte [0x1348], 0b11111010
+        and     byte [0x1349], 0b10111111
+        and     byte [0x3348], 0b11111010
+        and     byte [0x3349], 0b10111111
+        and     byte [0x1398], 0b11111110
+        and     byte [0x1399], 0b10111111
+        and     byte [0x3398], 0b11111110
+        and     byte [0x3399], 0b10111111
+        and     byte [0x13e9], 0b10111111
+        and     byte [0x33e9], 0b10111111
+        and     byte [0x1439], 0b10101111
+        and     byte [0x3439], 0b11101111
+        and     byte [0x1489], 0b11101111
+        and     byte [0x3489], 0b11101111
+        and     byte [0x14d9], 0b11101011
+        and     byte [0x34d9], 0b11111011
+        and     byte [0x1529], 0b11111011
+        and     byte [0x3529], 0b11111011
+        and     byte [0x1579], 0b11111011
+        and     byte [0x3579], 0b11111011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_31_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_31_common:
+
+        mov     di,0x2f86
+        stosb
+        mov     di,0x0fd6
+        stosb
+        mov     di,0x2fd6
+        stosb
+        mov     di,0x1026
+        stosb
+        mov     di,0x3026
+        stosb
+        mov     di,0x1075
+        stosw
+        mov     di,0x1077
+        stosb
+        mov     di,0x3075
+        stosw
+        mov     di,0x3077
+        stosb
+        mov     di,0x10c6
+        stosw
+        mov     di,0x30c6
+        stosw
+        mov     di,0x1116
+        stosw
+        mov     di,0x3117
+        stosb
+        mov     di,0x1167
+        stosb
+        mov     di,0x3167
+        stosb
+        mov     di,0x11b7
+        stosb
+        mov     di,0x31b7
+        stosb
+        mov     di,0x3258
+        stosb
+        mov     di,0x12a8
+        stosb
+        mov     di,0x32a8
+        stosb
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_32_on
 segment_32_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x0f22], 0b1000000
         or      byte [0x2f22], 0b1010000
         or      byte [0x0f72], 0b1010100
+        or      byte [0x0fc3], 0b1000000
+        or      byte [0x2fc3], 0b1010000
+        or      byte [0x1013], 0b1010100
+        or      byte [0x1064], 0b1000000
+        or      byte [0x3064], 0b1010000
+        or      byte [0x10b4], 0b1010100
+        or      byte [0x1105], 0b1000000
+        or      byte [0x3105], 0b1010000
+        or      byte [0x1155], 0b1010100
+        or      byte [0x11a6], 0b1000000
+        or      byte [0x31a6], 0b1010000
+        or      byte [0x11f6], 0b1010100
+        or      byte [0x1247], 0b1000000
+        or      byte [0x3247], 0b1010000
+        or      byte [0x1297], 0b1010100
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_32_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_32_off
+segment_32_off:
+
+        and     byte [0x0f22], 0b10111111
+        and     byte [0x2f22], 0b10101111
+        and     byte [0x0f72], 0b10101011
+        and     byte [0x0fc3], 0b10111111
+        and     byte [0x2fc3], 0b10101111
+        and     byte [0x1013], 0b10101011
+        and     byte [0x1064], 0b10111111
+        and     byte [0x3064], 0b10101111
+        and     byte [0x10b4], 0b10101011
+        and     byte [0x1105], 0b10111111
+        and     byte [0x3105], 0b10101111
+        and     byte [0x1155], 0b10101011
+        and     byte [0x11a6], 0b10111111
+        and     byte [0x31a6], 0b10101111
+        and     byte [0x11f6], 0b10101011
+        and     byte [0x1247], 0b10111111
+        and     byte [0x3247], 0b10101111
+        and     byte [0x1297], 0b10101011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_32_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_32_common:
+
         mov     di,0x2f72
         stosb
         mov     di,0x0fc2
         stosb
-        or      byte [0x0fc3], 0b1000000
         mov     di,0x2fc2
         stosb
-        or      byte [0x2fc3], 0b1010000
         mov     di,0x1012
         stosb
-        or      byte [0x1013], 0b1010100
         mov     di,0x3012
         stosw
         mov     di,0x1062
         stosw
-        or      byte [0x1064], 0b1000000
         mov     di,0x3062
         stosw
-        or      byte [0x3064], 0b1010000
         mov     di,0x10b2
         stosw
-        or      byte [0x10b4], 0b1010100
         mov     di,0x30b2
         stosw
         mov     di,0x30b4
@@ -4146,32 +5973,26 @@ segment_32_on:
         stosw
         mov     di,0x1104
         stosb
-        or      byte [0x1105], 0b1000000
         mov     di,0x3102
         stosw
         mov     di,0x3104
         stosb
-        or      byte [0x3105], 0b1010000
         mov     di,0x1152
         stosw
         mov     di,0x1154
         stosb
-        or      byte [0x1155], 0b1010100
         mov     di,0x3152
         mov     cx,2
         rep stosw
         mov     di,0x11a2
         mov     cx,2
         rep stosw
-        or      byte [0x11a6], 0b1000000
         mov     di,0x31a2
         mov     cx,2
         rep stosw
-        or      byte [0x31a6], 0b1010000
         mov     di,0x11f2
         mov     cx,2
         rep stosw
-        or      byte [0x11f6], 0b1010100
         mov     di,0x31f2
         mov     cx,2
         rep stosw
@@ -4182,26 +6003,22 @@ segment_32_on:
         rep stosw
         mov     di,0x1246
         stosb
-        or      byte [0x1247], 0b1000000
         mov     di,0x3242
         mov     cx,2
         rep stosw
         mov     di,0x3246
         stosb
-        or      byte [0x3247], 0b1010000
         mov     di,0x1292
         mov     cx,2
         rep stosw
         mov     di,0x1296
         stosb
-        or      byte [0x1297], 0b1010100
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_33_on
 segment_33_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x0f2d], 0b100
         or      byte [0x2f2d], 0b10100
@@ -4212,378 +6029,539 @@ segment_33_on:
         or      byte [0x0fcd], 0b1010100
         or      byte [0x2fcc], 0b10101
         or      byte [0x2fcd], 0b1010100
-        mov     di,0x101c
-        stosb
         or      byte [0x101d], 0b1010100
         or      byte [0x301b], 0b1
-        mov     di,0x301c
-        stosb
         or      byte [0x301d], 0b1010100
         or      byte [0x106b], 0b101
-        mov     di,0x106c
-        stosb
         or      byte [0x106d], 0b1010100
         or      byte [0x306b], 0b10101
-        mov     di,0x306c
-        stosb
         or      byte [0x306d], 0b1010100
-        mov     di,0x10bb
-        stosw
         or      byte [0x10bd], 0b1010100
         or      byte [0x30ba], 0b1
-        mov     di,0x30bb
-        stosw
         or      byte [0x30bd], 0b1010100
         or      byte [0x110a], 0b101
-        mov     di,0x110b
-        stosw
         or      byte [0x110d], 0b1010100
         or      byte [0x310a], 0b10101
+        or      byte [0x310d], 0b1010100
+        or      byte [0x115d], 0b1010100
+        or      byte [0x3159], 0b1
+        or      byte [0x315d], 0b1010100
+        or      byte [0x11a9], 0b101
+        or      byte [0x11ad], 0b1010100
+        or      byte [0x31a9], 0b10101
+        or      byte [0x31ad], 0b1010100
+        or      byte [0x11fd], 0b1010100
+        or      byte [0x31f8], 0b1
+        or      byte [0x31fd], 0b1010100
+        or      byte [0x1248], 0b101
+        or      byte [0x124d], 0b1010100
+        or      byte [0x3248], 0b10101
+        or      byte [0x324d], 0b1010100
+        or      byte [0x129d], 0b1010100
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_33_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_33_off
+segment_33_off:
+
+        and     byte [0x0f2d], 0b11111011
+        and     byte [0x2f2d], 0b11101011
+        and     byte [0x0f7d], 0b10101011
+        and     byte [0x2f7c], 0b11111110
+        and     byte [0x2f7d], 0b10101011
+        and     byte [0x0fcc], 0b11111010
+        and     byte [0x0fcd], 0b10101011
+        and     byte [0x2fcc], 0b11101010
+        and     byte [0x2fcd], 0b10101011
+        and     byte [0x101d], 0b10101011
+        and     byte [0x301b], 0b11111110
+        and     byte [0x301d], 0b10101011
+        and     byte [0x106b], 0b11111010
+        and     byte [0x106d], 0b10101011
+        and     byte [0x306b], 0b11101010
+        and     byte [0x306d], 0b10101011
+        and     byte [0x10bd], 0b10101011
+        and     byte [0x30ba], 0b11111110
+        and     byte [0x30bd], 0b10101011
+        and     byte [0x110a], 0b11111010
+        and     byte [0x110d], 0b10101011
+        and     byte [0x310a], 0b11101010
+        and     byte [0x310d], 0b10101011
+        and     byte [0x115d], 0b10101011
+        and     byte [0x3159], 0b11111110
+        and     byte [0x315d], 0b10101011
+        and     byte [0x11a9], 0b11111010
+        and     byte [0x11ad], 0b10101011
+        and     byte [0x31a9], 0b11101010
+        and     byte [0x31ad], 0b10101011
+        and     byte [0x11fd], 0b10101011
+        and     byte [0x31f8], 0b11111110
+        and     byte [0x31fd], 0b10101011
+        and     byte [0x1248], 0b11111010
+        and     byte [0x124d], 0b10101011
+        and     byte [0x3248], 0b11101010
+        and     byte [0x324d], 0b10101011
+        and     byte [0x129d], 0b10101011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_33_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_33_common:
+
+        mov     di,0x101c
+        stosb
+        mov     di,0x301c
+        stosb
+        mov     di,0x106c
+        stosb
+        mov     di,0x306c
+        stosb
+        mov     di,0x10bb
+        stosw
+        mov     di,0x30bb
+        stosw
+        mov     di,0x110b
+        stosw
         mov     di,0x310b
         stosw
-        or      byte [0x310d], 0b1010100
         mov     di,0x115a
         stosw
         mov     di,0x115c
         stosb
-        or      byte [0x115d], 0b1010100
-        or      byte [0x3159], 0b1
         mov     di,0x315a
         stosw
         mov     di,0x315c
         stosb
-        or      byte [0x315d], 0b1010100
-        or      byte [0x11a9], 0b101
         mov     di,0x11aa
         stosw
         mov     di,0x11ac
         stosb
-        or      byte [0x11ad], 0b1010100
-        or      byte [0x31a9], 0b10101
         mov     di,0x31aa
         stosw
         mov     di,0x31ac
         stosb
-        or      byte [0x31ad], 0b1010100
         mov     di,0x11f9
         mov     cx,2
         rep stosw
-        or      byte [0x11fd], 0b1010100
-        or      byte [0x31f8], 0b1
         mov     di,0x31f9
         mov     cx,2
         rep stosw
-        or      byte [0x31fd], 0b1010100
-        or      byte [0x1248], 0b101
         mov     di,0x1249
         mov     cx,2
         rep stosw
-        or      byte [0x124d], 0b1010100
-        or      byte [0x3248], 0b10101
         mov     di,0x3249
         mov     cx,2
         rep stosw
-        or      byte [0x324d], 0b1010100
         mov     di,0x1298
         mov     cx,2
         rep stosw
         mov     di,0x129c
         stosb
-        or      byte [0x129d], 0b1010100
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_34_on
 segment_34_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x305a], 0b101
         or      byte [0x10aa], 0b10101
         or      byte [0x10ab], 0b1000000
-        mov     di,0x30aa
-        stosb
         or      byte [0x30ab], 0b1010000
         or      byte [0x10f9], 0b1
-        mov     di,0x10fa
-        stosb
         or      byte [0x10fb], 0b1010100
         or      byte [0x30f9], 0b101
-        mov     di,0x30fa
-        stosw
         or      byte [0x30fc], 0b1000000
         or      byte [0x1149], 0b10101
+        or      byte [0x114c], 0b1010000
+        or      byte [0x314c], 0b1010100
+        or      byte [0x1198], 0b1
+        or      byte [0x119d], 0b1000000
+        or      byte [0x3198], 0b101
+        or      byte [0x319d], 0b1010100
+        or      byte [0x11e8], 0b10101
+        or      byte [0x11ee], 0b1000000
+        or      byte [0x31e8], 0b10101
+        or      byte [0x31ee], 0b1010000
+        or      byte [0x123f], 0b1010000
+        or      byte [0x3240], 0b1010000
+        or      byte [0x1287], 0b1
+        or      byte [0x1291], 0b1000000
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_34_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_34_off
+segment_34_off:
+
+        and     byte [0x305a], 0b11111010
+        and     byte [0x10aa], 0b11101010
+        and     byte [0x10ab], 0b10111111
+        and     byte [0x30ab], 0b10101111
+        and     byte [0x10f9], 0b11111110
+        and     byte [0x10fb], 0b10101011
+        and     byte [0x30f9], 0b11111010
+        and     byte [0x30fc], 0b10111111
+        and     byte [0x1149], 0b11101010
+        and     byte [0x114c], 0b10101111
+        and     byte [0x314c], 0b10101011
+        and     byte [0x1198], 0b11111110
+        and     byte [0x119d], 0b10111111
+        and     byte [0x3198], 0b11111010
+        and     byte [0x319d], 0b10101011
+        and     byte [0x11e8], 0b11101010
+        and     byte [0x11ee], 0b10111111
+        and     byte [0x31e8], 0b11101010
+        and     byte [0x31ee], 0b10101111
+        and     byte [0x123f], 0b10101111
+        and     byte [0x3240], 0b10101111
+        and     byte [0x1287], 0b11111110
+        and     byte [0x1291], 0b10111111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_34_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_34_common:
+
+        mov     di,0x30aa
+        stosb
+        mov     di,0x10fa
+        stosb
+        mov     di,0x30fa
+        stosw
         mov     di,0x114a
         stosw
-        or      byte [0x114c], 0b1010000
         mov     di,0x3149
         stosw
         mov     di,0x314b
         stosb
-        or      byte [0x314c], 0b1010100
-        or      byte [0x1198], 0b1
         mov     di,0x1199
         mov     cx,2
         rep stosw
-        or      byte [0x119d], 0b1000000
-        or      byte [0x3198], 0b101
         mov     di,0x3199
         mov     cx,2
         rep stosw
-        or      byte [0x319d], 0b1010100
-        or      byte [0x11e8], 0b10101
         mov     di,0x11e9
         mov     cx,2
         rep stosw
         mov     di,0x11ed
         stosb
-        or      byte [0x11ee], 0b1000000
-        or      byte [0x31e8], 0b10101
         mov     di,0x31e9
         mov     cx,2
         rep stosw
         mov     di,0x31ed
         stosb
-        or      byte [0x31ee], 0b1010000
         mov     di,0x1238
         mov     cx,3
         rep stosw
         mov     di,0x123e
         stosb
-        or      byte [0x123f], 0b1010000
         mov     di,0x3238
         mov     cx,4
         rep stosw
-        or      byte [0x3240], 0b1010000
-        or      byte [0x1287], 0b1
         mov     di,0x1288
         mov     cx,4
         rep stosw
         mov     di,0x1290
         stosb
-        or      byte [0x1291], 0b1000000
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_35_on
 segment_35_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x10c4], 0b1
         or      byte [0x10c5], 0b1010000
         or      byte [0x30c4], 0b101
         or      byte [0x30c5], 0b1010100
-        mov     di,0x1114
-        stosw
         or      byte [0x3113], 0b1
-        mov     di,0x3114
-        stosw
         or      byte [0x3116], 0b1000000
         or      byte [0x1163], 0b101
-        mov     di,0x1164
-        stosw
         or      byte [0x1166], 0b1010000
         or      byte [0x3163], 0b10101
-        mov     di,0x3164
-        stosw
         or      byte [0x3166], 0b1010100
         or      byte [0x11b2], 0b1
+        or      byte [0x31b2], 0b10101
+        or      byte [0x1201], 0b1
+        or      byte [0x1207], 0b1000000
+        or      byte [0x3201], 0b10101
+        or      byte [0x3207], 0b1010000
+        or      byte [0x1250], 0b101
+        or      byte [0x1257], 0b1010100
+        or      byte [0x3257], 0b1010100
+        or      byte [0x129e], 0b101
+        or      byte [0x329d], 0b1
+        or      byte [0x12ed], 0b1
+        or      byte [0x12f8], 0b1000000
+        or      byte [0x32ed], 0b1
+        or      byte [0x32f8], 0b1000000
+        or      byte [0x133d], 0b1
+        or      byte [0x1348], 0b1010000
+        or      byte [0x333d], 0b1
+        or      byte [0x3348], 0b1010000
+        or      byte [0x138d], 0b1
+        or      byte [0x1398], 0b1010100
+        or      byte [0x338d], 0b1
+        or      byte [0x3398], 0b1010100
+        or      byte [0x13dd], 0b1
+        or      byte [0x33dd], 0b1
+        or      byte [0x142d], 0b1
+        or      byte [0x342d], 0b1
+        or      byte [0x3439], 0b1000000
+        or      byte [0x147d], 0b1
+        or      byte [0x1489], 0b1000000
+        or      byte [0x347d], 0b1
+        or      byte [0x3489], 0b1000000
+        or      byte [0x14cd], 0b1
+        or      byte [0x14d9], 0b1000000
+        or      byte [0x34cd], 0b1
+        or      byte [0x34d9], 0b1010000
+        or      byte [0x151d], 0b1
+        or      byte [0x1529], 0b1010000
+        or      byte [0x351d], 0b1
+        or      byte [0x3529], 0b1010000
+        or      byte [0x156d], 0b1
+        or      byte [0x1579], 0b1010000
+        or      byte [0x356d], 0b1
+        or      byte [0x3579], 0b1010000
+        or      byte [0x15bd], 0b1
+        or      byte [0x15c9], 0b1010100
+        or      byte [0x35bd], 0b1
+        or      byte [0x35c9], 0b1010100
+        or      byte [0x160d], 0b1
+        or      byte [0x1619], 0b1010100
+        or      byte [0x360d], 0b1
+        or      byte [0x3619], 0b1010100
+        or      byte [0x165d], 0b1
+        or      byte [0x1669], 0b1010100
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_35_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_35_off
+segment_35_off:
+
+        and     byte [0x10c4], 0b11111110
+        and     byte [0x10c5], 0b10101111
+        and     byte [0x30c4], 0b11111010
+        and     byte [0x30c5], 0b10101011
+        and     byte [0x3113], 0b11111110
+        and     byte [0x3116], 0b10111111
+        and     byte [0x1163], 0b11111010
+        and     byte [0x1166], 0b10101111
+        and     byte [0x3163], 0b11101010
+        and     byte [0x3166], 0b10101011
+        and     byte [0x11b2], 0b11111110
+        and     byte [0x31b2], 0b11101010
+        and     byte [0x1201], 0b11111110
+        and     byte [0x1207], 0b10111111
+        and     byte [0x3201], 0b11101010
+        and     byte [0x3207], 0b10101111
+        and     byte [0x1250], 0b11111010
+        and     byte [0x1257], 0b10101011
+        and     byte [0x3257], 0b10101011
+        and     byte [0x129e], 0b11111010
+        and     byte [0x329d], 0b11111110
+        and     byte [0x12ed], 0b11111110
+        and     byte [0x12f8], 0b10111111
+        and     byte [0x32ed], 0b11111110
+        and     byte [0x32f8], 0b10111111
+        and     byte [0x133d], 0b11111110
+        and     byte [0x1348], 0b10101111
+        and     byte [0x333d], 0b11111110
+        and     byte [0x3348], 0b10101111
+        and     byte [0x138d], 0b11111110
+        and     byte [0x1398], 0b10101011
+        and     byte [0x338d], 0b11111110
+        and     byte [0x3398], 0b10101011
+        and     byte [0x13dd], 0b11111110
+        and     byte [0x33dd], 0b11111110
+        and     byte [0x142d], 0b11111110
+        and     byte [0x342d], 0b11111110
+        and     byte [0x3439], 0b10111111
+        and     byte [0x147d], 0b11111110
+        and     byte [0x1489], 0b10111111
+        and     byte [0x347d], 0b11111110
+        and     byte [0x3489], 0b10111111
+        and     byte [0x14cd], 0b11111110
+        and     byte [0x14d9], 0b10111111
+        and     byte [0x34cd], 0b11111110
+        and     byte [0x34d9], 0b10101111
+        and     byte [0x151d], 0b11111110
+        and     byte [0x1529], 0b10101111
+        and     byte [0x351d], 0b11111110
+        and     byte [0x3529], 0b10101111
+        and     byte [0x156d], 0b11111110
+        and     byte [0x1579], 0b10101111
+        and     byte [0x356d], 0b11111110
+        and     byte [0x3579], 0b10101111
+        and     byte [0x15bd], 0b11111110
+        and     byte [0x15c9], 0b10101011
+        and     byte [0x35bd], 0b11111110
+        and     byte [0x35c9], 0b10101011
+        and     byte [0x160d], 0b11111110
+        and     byte [0x1619], 0b10101011
+        and     byte [0x360d], 0b11111110
+        and     byte [0x3619], 0b10101011
+        and     byte [0x165d], 0b11111110
+        and     byte [0x1669], 0b10101011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_35_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_35_common:
+
+        mov     di,0x1114
+        stosw
+        mov     di,0x3114
+        stosw
+        mov     di,0x1164
+        stosw
+        mov     di,0x3164
+        stosw
         mov     di,0x11b3
         mov     cx,2
         rep stosw
-        or      byte [0x31b2], 0b10101
         mov     di,0x31b3
         mov     cx,2
         rep stosw
-        or      byte [0x1201], 0b1
         mov     di,0x1202
         mov     cx,2
         rep stosw
         mov     di,0x1206
         stosb
-        or      byte [0x1207], 0b1000000
-        or      byte [0x3201], 0b10101
         mov     di,0x3202
         mov     cx,2
         rep stosw
         mov     di,0x3206
         stosb
-        or      byte [0x3207], 0b1010000
-        or      byte [0x1250], 0b101
         mov     di,0x1251
         mov     cx,3
         rep stosw
-        or      byte [0x1257], 0b1010100
         mov     di,0x3250
         mov     cx,3
         rep stosw
         mov     di,0x3256
         stosb
-        or      byte [0x3257], 0b1010100
-        or      byte [0x129e], 0b101
         mov     di,0x129f
         mov     cx,4
         rep stosw
         mov     di,0x12a7
         stosb
-        or      byte [0x329d], 0b1
         mov     di,0x329e
         mov     cx,5
         rep stosw
-        or      byte [0x12ed], 0b1
         mov     di,0x12ee
         mov     cx,5
         rep stosw
-        or      byte [0x12f8], 0b1000000
-        or      byte [0x32ed], 0b1
         mov     di,0x32ee
         mov     cx,5
         rep stosw
-        or      byte [0x32f8], 0b1000000
-        or      byte [0x133d], 0b1
         mov     di,0x133e
         mov     cx,5
         rep stosw
-        or      byte [0x1348], 0b1010000
-        or      byte [0x333d], 0b1
         mov     di,0x333e
         mov     cx,5
         rep stosw
-        or      byte [0x3348], 0b1010000
-        or      byte [0x138d], 0b1
         mov     di,0x138e
         mov     cx,5
         rep stosw
-        or      byte [0x1398], 0b1010100
-        or      byte [0x338d], 0b1
         mov     di,0x338e
         mov     cx,5
         rep stosw
-        or      byte [0x3398], 0b1010100
-        or      byte [0x13dd], 0b1
         mov     di,0x13de
         mov     cx,5
         rep stosw
         mov     di,0x13e8
         stosb
-        or      byte [0x33dd], 0b1
         mov     di,0x33de
         mov     cx,5
         rep stosw
         mov     di,0x33e8
         stosb
-        or      byte [0x142d], 0b1
         mov     di,0x142e
         mov     cx,5
         rep stosw
         mov     di,0x1438
         stosb
-        or      byte [0x342d], 0b1
         mov     di,0x342e
         mov     cx,5
         rep stosw
         mov     di,0x3438
         stosb
-        or      byte [0x3439], 0b1000000
-        or      byte [0x147d], 0b1
         mov     di,0x147e
         mov     cx,5
         rep stosw
         mov     di,0x1488
         stosb
-        or      byte [0x1489], 0b1000000
-        or      byte [0x347d], 0b1
         mov     di,0x347e
         mov     cx,5
         rep stosw
         mov     di,0x3488
         stosb
-        or      byte [0x3489], 0b1000000
-        or      byte [0x14cd], 0b1
         mov     di,0x14ce
         mov     cx,5
         rep stosw
         mov     di,0x14d8
         stosb
-        or      byte [0x14d9], 0b1000000
-        or      byte [0x34cd], 0b1
         mov     di,0x34ce
         mov     cx,5
         rep stosw
         mov     di,0x34d8
         stosb
-        or      byte [0x34d9], 0b1010000
-        or      byte [0x151d], 0b1
         mov     di,0x151e
         mov     cx,5
         rep stosw
         mov     di,0x1528
         stosb
-        or      byte [0x1529], 0b1010000
-        or      byte [0x351d], 0b1
         mov     di,0x351e
         mov     cx,5
         rep stosw
         mov     di,0x3528
         stosb
-        or      byte [0x3529], 0b1010000
-        or      byte [0x156d], 0b1
         mov     di,0x156e
         mov     cx,5
         rep stosw
         mov     di,0x1578
         stosb
-        or      byte [0x1579], 0b1010000
-        or      byte [0x356d], 0b1
         mov     di,0x356e
         mov     cx,5
         rep stosw
         mov     di,0x3578
         stosb
-        or      byte [0x3579], 0b1010000
-        or      byte [0x15bd], 0b1
         mov     di,0x15be
         mov     cx,5
         rep stosw
         mov     di,0x15c8
         stosb
-        or      byte [0x15c9], 0b1010100
-        or      byte [0x35bd], 0b1
         mov     di,0x35be
         mov     cx,5
         rep stosw
         mov     di,0x35c8
         stosb
-        or      byte [0x35c9], 0b1010100
-        or      byte [0x160d], 0b1
         mov     di,0x160e
         mov     cx,5
         rep stosw
         mov     di,0x1618
         stosb
-        or      byte [0x1619], 0b1010100
-        or      byte [0x360d], 0b1
         mov     di,0x360e
         mov     cx,5
         rep stosw
         mov     di,0x3618
         stosb
-        or      byte [0x3619], 0b1010100
-        or      byte [0x165d], 0b1
         mov     di,0x165e
         mov     cx,5
         rep stosw
         mov     di,0x1668
         stosb
-        or      byte [0x1669], 0b1010100
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_36_on
 segment_36_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x3286], 0b1010100
         or      byte [0x12d6], 0b1010100
@@ -4600,12 +6578,38 @@ segment_36_on:
         or      byte [0x3466], 0b1000000
         or      byte [0x14b6], 0b1000000
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_36_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_36_off
+segment_36_off:
+
+        and     byte [0x3286], 0b10101011
+        and     byte [0x12d6], 0b10101011
+        and     byte [0x32d6], 0b10101111
+        and     byte [0x1326], 0b10101111
+        and     byte [0x3326], 0b10101111
+        and     byte [0x1376], 0b10101111
+        and     byte [0x3376], 0b10101111
+        and     byte [0x13c6], 0b10111111
+        and     byte [0x33c6], 0b10111111
+        and     byte [0x1416], 0b10111111
+        and     byte [0x3416], 0b10111111
+        and     byte [0x1466], 0b10111111
+        and     byte [0x3466], 0b10111111
+        and     byte [0x14b6], 0b10111111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_36_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_36_common:
+
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_37_on
 segment_37_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x3286], 0b1
         or      byte [0x3287], 0b1010100
@@ -4636,34 +6640,121 @@ segment_37_on:
         or      byte [0x35a6], 0b1000000
         or      byte [0x15f6], 0b1000000
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_37_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_37_off
+segment_37_off:
+
+        and     byte [0x3286], 0b11111110
+        and     byte [0x3287], 0b10101011
+        and     byte [0x12d6], 0b11111110
+        and     byte [0x12d7], 0b10101111
+        and     byte [0x32d6], 0b11111010
+        and     byte [0x32d7], 0b10101111
+        and     byte [0x1326], 0b11111010
+        and     byte [0x1327], 0b10111111
+        and     byte [0x3326], 0b11111010
+        and     byte [0x3327], 0b10111111
+        and     byte [0x1376], 0b11111010
+        and     byte [0x1377], 0b10111111
+        and     byte [0x3376], 0b11111010
+        and     byte [0x13c6], 0b11101010
+        and     byte [0x33c6], 0b11101011
+        and     byte [0x1416], 0b11101011
+        and     byte [0x3416], 0b11101011
+        and     byte [0x1466], 0b11101111
+        and     byte [0x3466], 0b11101111
+        and     byte [0x14b6], 0b11101111
+        and     byte [0x34b6], 0b10101111
+        and     byte [0x1506], 0b10101111
+        and     byte [0x3506], 0b10111111
+        and     byte [0x1556], 0b10111111
+        and     byte [0x3556], 0b10111111
+        and     byte [0x15a6], 0b10111111
+        and     byte [0x35a6], 0b10111111
+        and     byte [0x15f6], 0b10111111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_37_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_37_common:
+
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_38_on
 segment_38_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x3287], 0b1
+        or      byte [0x12d7], 0b101
+        or      byte [0x32d7], 0b101
+        or      byte [0x1327], 0b10101
+        or      byte [0x3327], 0b10101
+        or      byte [0x1377], 0b10101
+        or      byte [0x33c6], 0b1
+        or      byte [0x1416], 0b1
+        or      byte [0x3416], 0b1
+        or      byte [0x1466], 0b101
+        or      byte [0x3466], 0b101
+        or      byte [0x14b6], 0b101
+        or      byte [0x34b6], 0b101
+        or      byte [0x1506], 0b101
+        or      byte [0x3506], 0b10101
+        or      byte [0x1556], 0b10101
+        or      byte [0x3556], 0b10101
+        or      byte [0x15a6], 0b10101
+        or      byte [0x35a6], 0b10101
+        or      byte [0x15f6], 0b10101
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_38_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_38_off
+segment_38_off:
+
+        and     byte [0x3287], 0b11111110
+        and     byte [0x12d7], 0b11111010
+        and     byte [0x32d7], 0b11111010
+        and     byte [0x1327], 0b11101010
+        and     byte [0x3327], 0b11101010
+        and     byte [0x1377], 0b11101010
+        and     byte [0x33c6], 0b11111110
+        and     byte [0x1416], 0b11111110
+        and     byte [0x3416], 0b11111110
+        and     byte [0x1466], 0b11111010
+        and     byte [0x3466], 0b11111010
+        and     byte [0x14b6], 0b11111010
+        and     byte [0x34b6], 0b11111010
+        and     byte [0x1506], 0b11111010
+        and     byte [0x3506], 0b11101010
+        and     byte [0x1556], 0b11101010
+        and     byte [0x3556], 0b11101010
+        and     byte [0x15a6], 0b11101010
+        and     byte [0x35a6], 0b11101010
+        and     byte [0x15f6], 0b11101010
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_38_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_38_common:
+
         mov     di,0x3288
         mov     cx,5
         rep stosw
-        or      byte [0x12d7], 0b101
         mov     di,0x12d8
         mov     cx,5
         rep stosw
-        or      byte [0x32d7], 0b101
         mov     di,0x32d8
         mov     cx,5
         rep stosw
-        or      byte [0x1327], 0b10101
         mov     di,0x1328
         mov     cx,5
         rep stosw
-        or      byte [0x3327], 0b10101
         mov     di,0x3328
         mov     cx,5
         rep stosw
-        or      byte [0x1377], 0b10101
         mov     di,0x1378
         mov     cx,5
         rep stosw
@@ -4677,85 +6768,71 @@ segment_38_on:
         rep stosw
         mov     di,0x13d1
         stosb
-        or      byte [0x33c6], 0b1
         mov     di,0x33c7
         mov     cx,5
         rep stosw
         mov     di,0x33d1
         stosb
-        or      byte [0x1416], 0b1
         mov     di,0x1417
         mov     cx,5
         rep stosw
         mov     di,0x1421
         stosb
-        or      byte [0x3416], 0b1
         mov     di,0x3417
         mov     cx,5
         rep stosw
         mov     di,0x3421
         stosb
-        or      byte [0x1466], 0b101
         mov     di,0x1467
         mov     cx,5
         rep stosw
         mov     di,0x1471
         stosb
-        or      byte [0x3466], 0b101
         mov     di,0x3467
         mov     cx,5
         rep stosw
         mov     di,0x3471
         stosb
-        or      byte [0x14b6], 0b101
         mov     di,0x14b7
         mov     cx,5
         rep stosw
         mov     di,0x14c1
         stosb
-        or      byte [0x34b6], 0b101
         mov     di,0x34b7
         mov     cx,5
         rep stosw
         mov     di,0x34c1
         stosb
-        or      byte [0x1506], 0b101
         mov     di,0x1507
         mov     cx,5
         rep stosw
         mov     di,0x1511
         stosb
-        or      byte [0x3506], 0b10101
         mov     di,0x3507
         mov     cx,5
         rep stosw
         mov     di,0x3511
         stosb
-        or      byte [0x1556], 0b10101
         mov     di,0x1557
         mov     cx,5
         rep stosw
         mov     di,0x1561
         stosb
-        or      byte [0x3556], 0b10101
         mov     di,0x3557
         mov     cx,5
         rep stosw
         mov     di,0x3561
         stosb
-        or      byte [0x15a6], 0b10101
         mov     di,0x15a7
         mov     cx,5
         rep stosw
         mov     di,0x15b1
         stosb
-        or      byte [0x35a6], 0b10101
         mov     di,0x35a7
         mov     cx,5
         rep stosw
         mov     di,0x35b1
         stosb
-        or      byte [0x15f6], 0b10101
         mov     di,0x15f7
         mov     cx,5
         rep stosw
@@ -4773,26 +6850,71 @@ segment_38_on:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_39_on
 segment_39_on:
+
+        or      byte [0x3297], 0b1010100
+        or      byte [0x12e7], 0b1010000
+        or      byte [0x32e7], 0b1000000
+        or      byte [0x3336], 0b1010100
+        or      byte [0x1386], 0b1010000
+        or      byte [0x3386], 0b1000000
+        or      byte [0x33d5], 0b1010100
+        or      byte [0x1425], 0b1010000
+        or      byte [0x3425], 0b1000000
+        or      byte [0x3474], 0b1010100
+        or      byte [0x14c4], 0b1010000
+        or      byte [0x34c4], 0b1000000
+        or      byte [0x3513], 0b1010100
+        or      byte [0x1563], 0b1010000
+        or      byte [0x3563], 0b1000000
+        or      byte [0x35b2], 0b1010100
+        or      byte [0x1602], 0b1010000
+        or      byte [0x3602], 0b1000000
+
         mov     ax,0b01010101_01010101
+        jmp     segment_39_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_39_off
+segment_39_off:
+
+        and     byte [0x3297], 0b10101011
+        and     byte [0x12e7], 0b10101111
+        and     byte [0x32e7], 0b10111111
+        and     byte [0x3336], 0b10101011
+        and     byte [0x1386], 0b10101111
+        and     byte [0x3386], 0b10111111
+        and     byte [0x33d5], 0b10101011
+        and     byte [0x1425], 0b10101111
+        and     byte [0x3425], 0b10111111
+        and     byte [0x3474], 0b10101011
+        and     byte [0x14c4], 0b10101111
+        and     byte [0x34c4], 0b10111111
+        and     byte [0x3513], 0b10101011
+        and     byte [0x1563], 0b10101111
+        and     byte [0x3563], 0b10111111
+        and     byte [0x35b2], 0b10101011
+        and     byte [0x1602], 0b10101111
+        and     byte [0x3602], 0b10111111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_39_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_39_common:
 
         mov     di,0x3292
         mov     cx,2
         rep stosw
         mov     di,0x3296
         stosb
-        or      byte [0x3297], 0b1010100
         mov     di,0x12e2
         mov     cx,2
         rep stosw
         mov     di,0x12e6
         stosb
-        or      byte [0x12e7], 0b1010000
         mov     di,0x32e2
         mov     cx,2
         rep stosw
         mov     di,0x32e6
         stosb
-        or      byte [0x32e7], 0b1000000
         mov     di,0x1332
         mov     cx,2
         rep stosw
@@ -4801,15 +6923,12 @@ segment_39_on:
         mov     di,0x3332
         mov     cx,2
         rep stosw
-        or      byte [0x3336], 0b1010100
         mov     di,0x1382
         mov     cx,2
         rep stosw
-        or      byte [0x1386], 0b1010000
         mov     di,0x3382
         mov     cx,2
         rep stosw
-        or      byte [0x3386], 0b1000000
         mov     di,0x13d2
         mov     cx,2
         rep stosw
@@ -4817,243 +6936,229 @@ segment_39_on:
         stosw
         mov     di,0x33d4
         stosb
-        or      byte [0x33d5], 0b1010100
         mov     di,0x1422
         stosw
         mov     di,0x1424
         stosb
-        or      byte [0x1425], 0b1010000
         mov     di,0x3422
         stosw
         mov     di,0x3424
         stosb
-        or      byte [0x3425], 0b1000000
         mov     di,0x1472
         stosw
         mov     di,0x1474
         stosb
         mov     di,0x3472
         stosw
-        or      byte [0x3474], 0b1010100
         mov     di,0x14c2
         stosw
-        or      byte [0x14c4], 0b1010000
         mov     di,0x34c2
         stosw
-        or      byte [0x34c4], 0b1000000
         mov     di,0x1512
         stosw
         mov     di,0x3512
         stosb
-        or      byte [0x3513], 0b1010100
         mov     di,0x1562
         stosb
-        or      byte [0x1563], 0b1010000
         mov     di,0x3562
         stosb
-        or      byte [0x3563], 0b1000000
         mov     di,0x15b2
         stosb
-        or      byte [0x35b2], 0b1010100
-        or      byte [0x1602], 0b1010000
-        or      byte [0x3602], 0b1000000
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_40_on
 segment_40_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x3297], 0b1
         or      byte [0x12e7], 0b101
         or      byte [0x12e8], 0b1000000
         or      byte [0x32e7], 0b10101
         or      byte [0x32e8], 0b1010000
-        mov     di,0x1337
-        stosb
         or      byte [0x1338], 0b1010100
         or      byte [0x3336], 0b1
-        mov     di,0x3337
-        stosw
         or      byte [0x1386], 0b101
-        mov     di,0x1387
-        stosw
         or      byte [0x1389], 0b1000000
         or      byte [0x3386], 0b10101
+        or      byte [0x3389], 0b1010000
+        or      byte [0x13d9], 0b1010100
+        or      byte [0x33d5], 0b1
+        or      byte [0x1425], 0b101
+        or      byte [0x142a], 0b1000000
+        or      byte [0x3425], 0b10101
+        or      byte [0x342a], 0b1010000
+        or      byte [0x147a], 0b1010100
+        or      byte [0x3474], 0b1
+        or      byte [0x14c4], 0b101
+        or      byte [0x14cb], 0b1000000
+        or      byte [0x34c4], 0b10101
+        or      byte [0x34cb], 0b1010000
+        or      byte [0x151b], 0b1010100
+        or      byte [0x3513], 0b1
+        or      byte [0x1563], 0b101
+        or      byte [0x156c], 0b1000000
+        or      byte [0x3563], 0b10101
+        or      byte [0x356c], 0b1010000
+        or      byte [0x15bc], 0b1010100
+        or      byte [0x35b2], 0b1
+        or      byte [0x1602], 0b101
+        or      byte [0x160d], 0b1000000
+        or      byte [0x3602], 0b10101
+        or      byte [0x360d], 0b1010000
+        or      byte [0x165d], 0b1010100
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_40_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_40_off
+segment_40_off:
+
+        and     byte [0x3297], 0b11111110
+        and     byte [0x12e7], 0b11111010
+        and     byte [0x12e8], 0b10111111
+        and     byte [0x32e7], 0b11101010
+        and     byte [0x32e8], 0b10101111
+        and     byte [0x1338], 0b10101011
+        and     byte [0x3336], 0b11111110
+        and     byte [0x1386], 0b11111010
+        and     byte [0x1389], 0b10111111
+        and     byte [0x3386], 0b11101010
+        and     byte [0x3389], 0b10101111
+        and     byte [0x13d9], 0b10101011
+        and     byte [0x33d5], 0b11111110
+        and     byte [0x1425], 0b11111010
+        and     byte [0x142a], 0b10111111
+        and     byte [0x3425], 0b11101010
+        and     byte [0x342a], 0b10101111
+        and     byte [0x147a], 0b10101011
+        and     byte [0x3474], 0b11111110
+        and     byte [0x14c4], 0b11111010
+        and     byte [0x14cb], 0b10111111
+        and     byte [0x34c4], 0b11101010
+        and     byte [0x34cb], 0b10101111
+        and     byte [0x151b], 0b10101011
+        and     byte [0x3513], 0b11111110
+        and     byte [0x1563], 0b11111010
+        and     byte [0x156c], 0b10111111
+        and     byte [0x3563], 0b11101010
+        and     byte [0x356c], 0b10101111
+        and     byte [0x15bc], 0b10101011
+        and     byte [0x35b2], 0b11111110
+        and     byte [0x1602], 0b11111010
+        and     byte [0x160d], 0b10111111
+        and     byte [0x3602], 0b11101010
+        and     byte [0x360d], 0b10101111
+        and     byte [0x165d], 0b10101011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_40_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_40_common:
+
+        mov     di,0x1337
+        stosb
+        mov     di,0x3337
+        stosw
+        mov     di,0x1387
+        stosw
         mov     di,0x3387
         stosw
-        or      byte [0x3389], 0b1010000
         mov     di,0x13d6
         stosw
         mov     di,0x13d8
         stosb
-        or      byte [0x13d9], 0b1010100
-        or      byte [0x33d5], 0b1
         mov     di,0x33d6
         mov     cx,2
         rep stosw
-        or      byte [0x1425], 0b101
         mov     di,0x1426
         mov     cx,2
         rep stosw
-        or      byte [0x142a], 0b1000000
-        or      byte [0x3425], 0b10101
         mov     di,0x3426
         mov     cx,2
         rep stosw
-        or      byte [0x342a], 0b1010000
         mov     di,0x1475
         mov     cx,2
         rep stosw
         mov     di,0x1479
         stosb
-        or      byte [0x147a], 0b1010100
-        or      byte [0x3474], 0b1
         mov     di,0x3475
         mov     cx,3
         rep stosw
-        or      byte [0x14c4], 0b101
         mov     di,0x14c5
         mov     cx,3
         rep stosw
-        or      byte [0x14cb], 0b1000000
-        or      byte [0x34c4], 0b10101
         mov     di,0x34c5
         mov     cx,3
         rep stosw
-        or      byte [0x34cb], 0b1010000
         mov     di,0x1514
         mov     cx,3
         rep stosw
         mov     di,0x151a
         stosb
-        or      byte [0x151b], 0b1010100
-        or      byte [0x3513], 0b1
         mov     di,0x3514
         mov     cx,4
         rep stosw
-        or      byte [0x1563], 0b101
         mov     di,0x1564
         mov     cx,4
         rep stosw
-        or      byte [0x156c], 0b1000000
-        or      byte [0x3563], 0b10101
         mov     di,0x3564
         mov     cx,4
         rep stosw
-        or      byte [0x356c], 0b1010000
         mov     di,0x15b3
         mov     cx,4
         rep stosw
         mov     di,0x15bb
         stosb
-        or      byte [0x15bc], 0b1010100
-        or      byte [0x35b2], 0b1
         mov     di,0x35b3
         mov     cx,5
         rep stosw
-        or      byte [0x1602], 0b101
         mov     di,0x1603
         mov     cx,5
         rep stosw
-        or      byte [0x160d], 0b1000000
-        or      byte [0x3602], 0b10101
         mov     di,0x3603
         mov     cx,5
         rep stosw
-        or      byte [0x360d], 0b1010000
         mov     di,0x1652
         mov     cx,5
         rep stosw
         mov     di,0x165c
         stosb
-        or      byte [0x165d], 0b1010100
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_41_on
 segment_41_on:
-        mov     ax,0b01010101_01010101
 
-        mov     di,0x3298
-        mov     cx,2
-        rep stosw
-        mov     di,0x329c
-        stosb
         or      byte [0x329d], 0b1010100
         or      byte [0x12e8], 0b10101
-        mov     di,0x12e9
-        mov     cx,2
-        rep stosw
         or      byte [0x12ed], 0b1010100
         or      byte [0x32e8], 0b101
-        mov     di,0x32e9
-        mov     cx,2
-        rep stosw
         or      byte [0x32ed], 0b1010100
         or      byte [0x1338], 0b1
-        mov     di,0x1339
-        mov     cx,2
-        rep stosw
         or      byte [0x133d], 0b1010100
-        mov     di,0x3339
-        mov     cx,2
-        rep stosw
         or      byte [0x333d], 0b1010100
         or      byte [0x1389], 0b10101
-        mov     di,0x138a
-        stosw
-        mov     di,0x138c
-        stosb
         or      byte [0x138d], 0b1010100
         or      byte [0x3389], 0b101
-        mov     di,0x338a
-        stosw
-        mov     di,0x338c
-        stosb
         or      byte [0x338d], 0b1010100
         or      byte [0x13d9], 0b1
-        mov     di,0x13da
-        stosw
-        mov     di,0x13dc
-        stosb
         or      byte [0x13dd], 0b1010100
-        mov     di,0x33da
-        stosw
-        mov     di,0x33dc
-        stosb
         or      byte [0x33dd], 0b1010100
         or      byte [0x142a], 0b10101
-        mov     di,0x142b
-        stosw
         or      byte [0x142d], 0b1010100
         or      byte [0x342a], 0b101
-        mov     di,0x342b
-        stosw
         or      byte [0x342d], 0b1010100
         or      byte [0x147a], 0b1
-        mov     di,0x147b
-        stosw
         or      byte [0x147d], 0b1010100
-        mov     di,0x347b
-        stosw
         or      byte [0x347d], 0b1010100
         or      byte [0x14cb], 0b10101
-        mov     di,0x14cc
-        stosb
         or      byte [0x14cd], 0b1010100
         or      byte [0x34cb], 0b101
-        mov     di,0x34cc
-        stosb
         or      byte [0x34cd], 0b1010100
         or      byte [0x151b], 0b1
-        mov     di,0x151c
-        stosb
         or      byte [0x151d], 0b1010100
-        mov     di,0x351c
-        stosb
         or      byte [0x351d], 0b1010100
         or      byte [0x156c], 0b10101
         or      byte [0x156d], 0b1010100
@@ -5065,12 +7170,111 @@ segment_41_on:
         or      byte [0x160d], 0b10100
         or      byte [0x360d], 0b100
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_41_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_41_off
+segment_41_off:
+
+        and     byte [0x329d], 0b10101011
+        and     byte [0x12e8], 0b11101010
+        and     byte [0x12ed], 0b10101011
+        and     byte [0x32e8], 0b11111010
+        and     byte [0x32ed], 0b10101011
+        and     byte [0x1338], 0b11111110
+        and     byte [0x133d], 0b10101011
+        and     byte [0x333d], 0b10101011
+        and     byte [0x1389], 0b11101010
+        and     byte [0x138d], 0b10101011
+        and     byte [0x3389], 0b11111010
+        and     byte [0x338d], 0b10101011
+        and     byte [0x13d9], 0b11111110
+        and     byte [0x13dd], 0b10101011
+        and     byte [0x33dd], 0b10101011
+        and     byte [0x142a], 0b11101010
+        and     byte [0x142d], 0b10101011
+        and     byte [0x342a], 0b11111010
+        and     byte [0x342d], 0b10101011
+        and     byte [0x147a], 0b11111110
+        and     byte [0x147d], 0b10101011
+        and     byte [0x347d], 0b10101011
+        and     byte [0x14cb], 0b11101010
+        and     byte [0x14cd], 0b10101011
+        and     byte [0x34cb], 0b11111010
+        and     byte [0x34cd], 0b10101011
+        and     byte [0x151b], 0b11111110
+        and     byte [0x151d], 0b10101011
+        and     byte [0x351d], 0b10101011
+        and     byte [0x156c], 0b11101010
+        and     byte [0x156d], 0b10101011
+        and     byte [0x356c], 0b11111010
+        and     byte [0x356d], 0b10101011
+        and     byte [0x15bc], 0b11111110
+        and     byte [0x15bd], 0b10101011
+        and     byte [0x35bd], 0b10101011
+        and     byte [0x160d], 0b11101011
+        and     byte [0x360d], 0b11111011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_41_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_41_common:
+
+        mov     di,0x3298
+        mov     cx,2
+        rep stosw
+        mov     di,0x329c
+        stosb
+        mov     di,0x12e9
+        mov     cx,2
+        rep stosw
+        mov     di,0x32e9
+        mov     cx,2
+        rep stosw
+        mov     di,0x1339
+        mov     cx,2
+        rep stosw
+        mov     di,0x3339
+        mov     cx,2
+        rep stosw
+        mov     di,0x138a
+        stosw
+        mov     di,0x138c
+        stosb
+        mov     di,0x338a
+        stosw
+        mov     di,0x338c
+        stosb
+        mov     di,0x13da
+        stosw
+        mov     di,0x13dc
+        stosb
+        mov     di,0x33da
+        stosw
+        mov     di,0x33dc
+        stosb
+        mov     di,0x142b
+        stosw
+        mov     di,0x342b
+        stosw
+        mov     di,0x147b
+        stosw
+        mov     di,0x347b
+        stosw
+        mov     di,0x14cc
+        stosb
+        mov     di,0x34cc
+        stosb
+        mov     di,0x151c
+        stosb
+        mov     di,0x351c
+        stosb
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_42_on
 segment_42_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x3646], 0b1000000
         or      byte [0x1696], 0b1010100
@@ -5078,53 +7282,158 @@ segment_42_on:
         or      byte [0x16e6], 0b10101
         or      byte [0x16e7], 0b1010000
         or      byte [0x36e6], 0b10101
-        mov     di,0x36e7
-        stosb
         or      byte [0x1736], 0b10101
-        mov     di,0x1737
-        stosb
         or      byte [0x1738], 0b1000000
         or      byte [0x3736], 0b10101
-        mov     di,0x3737
-        stosb
         or      byte [0x3738], 0b1010100
         or      byte [0x1786], 0b101
-        mov     di,0x1787
-        stosw
         or      byte [0x3786], 0b101
-        mov     di,0x3787
-        stosw
         or      byte [0x3789], 0b1000000
         or      byte [0x17d6], 0b101
-        mov     di,0x17d7
-        stosw
         or      byte [0x17d9], 0b1010100
         or      byte [0x37d6], 0b101
+        or      byte [0x37da], 0b1000000
+        or      byte [0x1826], 0b1
+        or      byte [0x182a], 0b1010000
+        or      byte [0x3826], 0b1
+        or      byte [0x1876], 0b1
+        or      byte [0x187b], 0b1000000
+        or      byte [0x3876], 0b1
+        or      byte [0x387b], 0b1010000
+        or      byte [0x38cc], 0b1010000
+        or      byte [0x1917], 0b10101
+        or      byte [0x191c], 0b1010100
+        or      byte [0x3917], 0b10101
+        or      byte [0x391d], 0b1000000
+        or      byte [0x1967], 0b101
+        or      byte [0x196d], 0b1010000
+        or      byte [0x3967], 0b101
+        or      byte [0x19b7], 0b101
+        or      byte [0x19be], 0b1000000
+        or      byte [0x39b7], 0b1
+        or      byte [0x39be], 0b1010100
+        or      byte [0x3a0f], 0b1010000
+        or      byte [0x1a58], 0b10101
+        or      byte [0x1a5f], 0b1010100
+        or      byte [0x3a58], 0b101
+        or      byte [0x3a60], 0b1000000
+        or      byte [0x1aa8], 0b101
+        or      byte [0x1ab0], 0b1010000
+        or      byte [0x3aa8], 0b1
+        or      byte [0x1b01], 0b1000000
+        or      byte [0x3af9], 0b10101
+        or      byte [0x3b01], 0b1010100
+        or      byte [0x1b49], 0b101
+        or      byte [0x3b49], 0b101
+        or      byte [0x3b9a], 0b10101
+        or      byte [0x1bea], 0b101
+        or      byte [0x3bea], 0b1
+        or      byte [0x1c3b], 0b10101
+        or      byte [0x3c3b], 0b1
+        or      byte [0x3c8c], 0b101
+        or      byte [0x3cdd], 0b101
+        or      byte [0x1d2e], 0b10101
+        or      byte [0x3d81], 0b101
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_42_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_42_off
+segment_42_off:
+
+        and     byte [0x3646], 0b10111111
+        and     byte [0x1696], 0b10101011
+        and     byte [0x3696], 0b11101010
+        and     byte [0x16e6], 0b11101010
+        and     byte [0x16e7], 0b10101111
+        and     byte [0x36e6], 0b11101010
+        and     byte [0x1736], 0b11101010
+        and     byte [0x1738], 0b10111111
+        and     byte [0x3736], 0b11101010
+        and     byte [0x3738], 0b10101011
+        and     byte [0x1786], 0b11111010
+        and     byte [0x3786], 0b11111010
+        and     byte [0x3789], 0b10111111
+        and     byte [0x17d6], 0b11111010
+        and     byte [0x17d9], 0b10101011
+        and     byte [0x37d6], 0b11111010
+        and     byte [0x37da], 0b10111111
+        and     byte [0x1826], 0b11111110
+        and     byte [0x182a], 0b10101111
+        and     byte [0x3826], 0b11111110
+        and     byte [0x1876], 0b11111110
+        and     byte [0x187b], 0b10111111
+        and     byte [0x3876], 0b11111110
+        and     byte [0x387b], 0b10101111
+        and     byte [0x38cc], 0b10101111
+        and     byte [0x1917], 0b11101010
+        and     byte [0x191c], 0b10101011
+        and     byte [0x3917], 0b11101010
+        and     byte [0x391d], 0b10111111
+        and     byte [0x1967], 0b11111010
+        and     byte [0x196d], 0b10101111
+        and     byte [0x3967], 0b11111010
+        and     byte [0x19b7], 0b11111010
+        and     byte [0x19be], 0b10111111
+        and     byte [0x39b7], 0b11111110
+        and     byte [0x39be], 0b10101011
+        and     byte [0x3a0f], 0b10101111
+        and     byte [0x1a58], 0b11101010
+        and     byte [0x1a5f], 0b10101011
+        and     byte [0x3a58], 0b11111010
+        and     byte [0x3a60], 0b10111111
+        and     byte [0x1aa8], 0b11111010
+        and     byte [0x1ab0], 0b10101111
+        and     byte [0x3aa8], 0b11111110
+        and     byte [0x1b01], 0b10111111
+        and     byte [0x3af9], 0b11101010
+        and     byte [0x3b01], 0b10101011
+        and     byte [0x1b49], 0b11111010
+        and     byte [0x3b49], 0b11111010
+        and     byte [0x3b9a], 0b11101010
+        and     byte [0x1bea], 0b11111010
+        and     byte [0x3bea], 0b11111110
+        and     byte [0x1c3b], 0b11101010
+        and     byte [0x3c3b], 0b11111110
+        and     byte [0x3c8c], 0b11111010
+        and     byte [0x3cdd], 0b11111010
+        and     byte [0x1d2e], 0b11101010
+        and     byte [0x3d81], 0b11111010
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_42_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_42_common:
+
+        mov     di,0x36e7
+        stosb
+        mov     di,0x1737
+        stosb
+        mov     di,0x3737
+        stosb
+        mov     di,0x1787
+        stosw
+        mov     di,0x3787
+        stosw
+        mov     di,0x17d7
+        stosw
         mov     di,0x37d7
         stosw
         mov     di,0x37d9
         stosb
-        or      byte [0x37da], 0b1000000
-        or      byte [0x1826], 0b1
         mov     di,0x1827
         stosw
         mov     di,0x1829
         stosb
-        or      byte [0x182a], 0b1010000
-        or      byte [0x3826], 0b1
         mov     di,0x3827
         mov     cx,2
         rep stosw
-        or      byte [0x1876], 0b1
         mov     di,0x1877
         mov     cx,2
         rep stosw
-        or      byte [0x187b], 0b1000000
-        or      byte [0x3876], 0b1
         mov     di,0x3877
         mov     cx,2
         rep stosw
-        or      byte [0x387b], 0b1010000
         mov     di,0x18c7
         mov     cx,2
         rep stosw
@@ -5135,40 +7444,28 @@ segment_42_on:
         rep stosw
         mov     di,0x38cb
         stosb
-        or      byte [0x38cc], 0b1010000
-        or      byte [0x1917], 0b10101
         mov     di,0x1918
         mov     cx,2
         rep stosw
-        or      byte [0x191c], 0b1010100
-        or      byte [0x3917], 0b10101
         mov     di,0x3918
         mov     cx,2
         rep stosw
         mov     di,0x391c
         stosb
-        or      byte [0x391d], 0b1000000
-        or      byte [0x1967], 0b101
         mov     di,0x1968
         mov     cx,2
         rep stosw
         mov     di,0x196c
         stosb
-        or      byte [0x196d], 0b1010000
-        or      byte [0x3967], 0b101
         mov     di,0x3968
         mov     cx,3
         rep stosw
-        or      byte [0x19b7], 0b101
         mov     di,0x19b8
         mov     cx,3
         rep stosw
-        or      byte [0x19be], 0b1000000
-        or      byte [0x39b7], 0b1
         mov     di,0x39b8
         mov     cx,3
         rep stosw
-        or      byte [0x39be], 0b1010100
         mov     di,0x1a08
         mov     cx,3
         rep stosw
@@ -5179,82 +7476,63 @@ segment_42_on:
         rep stosw
         mov     di,0x3a0e
         stosb
-        or      byte [0x3a0f], 0b1010000
-        or      byte [0x1a58], 0b10101
         mov     di,0x1a59
         mov     cx,3
         rep stosw
-        or      byte [0x1a5f], 0b1010100
-        or      byte [0x3a58], 0b101
         mov     di,0x3a59
         mov     cx,3
         rep stosw
         mov     di,0x3a5f
         stosb
-        or      byte [0x3a60], 0b1000000
-        or      byte [0x1aa8], 0b101
         mov     di,0x1aa9
         mov     cx,3
         rep stosw
         mov     di,0x1aaf
         stosb
-        or      byte [0x1ab0], 0b1010000
-        or      byte [0x3aa8], 0b1
         mov     di,0x3aa9
         mov     cx,4
         rep stosw
         mov     di,0x1af9
         mov     cx,4
         rep stosw
-        or      byte [0x1b01], 0b1000000
-        or      byte [0x3af9], 0b10101
         mov     di,0x3afa
         mov     cx,3
         rep stosw
         mov     di,0x3b00
         stosb
-        or      byte [0x3b01], 0b1010100
-        or      byte [0x1b49], 0b101
         mov     di,0x1b4a
         mov     cx,4
         rep stosw
-        or      byte [0x3b49], 0b101
         mov     di,0x3b4a
         mov     cx,4
         rep stosw
         mov     di,0x1b9a
         mov     cx,4
         rep stosw
-        or      byte [0x3b9a], 0b10101
         mov     di,0x3b9b
         mov     cx,3
         rep stosw
         mov     di,0x3ba1
         stosb
-        or      byte [0x1bea], 0b101
         mov     di,0x1beb
         mov     cx,3
         rep stosw
         mov     di,0x1bf1
         stosb
-        or      byte [0x3bea], 0b1
         mov     di,0x3beb
         mov     cx,3
         rep stosw
         mov     di,0x3bf1
         stosb
-        or      byte [0x1c3b], 0b10101
         mov     di,0x1c3c
         mov     cx,3
         rep stosw
-        or      byte [0x3c3b], 0b1
         mov     di,0x3c3c
         mov     cx,3
         rep stosw
         mov     di,0x1c8c
         mov     cx,3
         rep stosw
-        or      byte [0x3c8c], 0b101
         mov     di,0x3c8d
         mov     cx,2
         rep stosw
@@ -5265,11 +7543,9 @@ segment_42_on:
         rep stosw
         mov     di,0x1ce1
         stosb
-        or      byte [0x3cdd], 0b101
         mov     di,0x3cde
         mov     cx,2
         rep stosw
-        or      byte [0x1d2e], 0b10101
         mov     di,0x1d2f
         stosw
         mov     di,0x1d31
@@ -5280,22 +7556,77 @@ segment_42_on:
         stosb
         mov     di,0x1d80
         stosw
-        or      byte [0x3d81], 0b101
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_43_on
 segment_43_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x3646], 0b10101
+        or      byte [0x1696], 0b1
+        or      byte [0x16e7], 0b101
+        or      byte [0x1738], 0b10101
+        or      byte [0x3738], 0b1
+        or      byte [0x3789], 0b10101
+        or      byte [0x17d9], 0b1
+        or      byte [0x37da], 0b10101
+        or      byte [0x182a], 0b101
+        or      byte [0x187b], 0b10101
+        or      byte [0x387b], 0b101
+        or      byte [0x38cc], 0b101
+        or      byte [0x191c], 0b1
+        or      byte [0x391d], 0b10101
+        or      byte [0x196d], 0b101
+        or      byte [0x19be], 0b10101
+        or      byte [0x39be], 0b1
+        or      byte [0x3a0f], 0b101
+        or      byte [0x1a5f], 0b1
+        or      byte [0x3a60], 0b10101
+        or      byte [0x1ab0], 0b101
+        or      byte [0x1b01], 0b10101
+        or      byte [0x3b01], 0b1
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_43_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_43_off
+segment_43_off:
+
+        and     byte [0x3646], 0b11101010
+        and     byte [0x1696], 0b11111110
+        and     byte [0x16e7], 0b11111010
+        and     byte [0x1738], 0b11101010
+        and     byte [0x3738], 0b11111110
+        and     byte [0x3789], 0b11101010
+        and     byte [0x17d9], 0b11111110
+        and     byte [0x37da], 0b11101010
+        and     byte [0x182a], 0b11111010
+        and     byte [0x187b], 0b11101010
+        and     byte [0x387b], 0b11111010
+        and     byte [0x38cc], 0b11111010
+        and     byte [0x191c], 0b11111110
+        and     byte [0x391d], 0b11101010
+        and     byte [0x196d], 0b11111010
+        and     byte [0x19be], 0b11101010
+        and     byte [0x39be], 0b11111110
+        and     byte [0x3a0f], 0b11111010
+        and     byte [0x1a5f], 0b11111110
+        and     byte [0x3a60], 0b11101010
+        and     byte [0x1ab0], 0b11111010
+        and     byte [0x1b01], 0b11101010
+        and     byte [0x3b01], 0b11111110
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_43_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_43_common:
+
         mov     di,0x3647
         mov     cx,5
         rep stosw
         mov     di,0x3651
         stosb
-        or      byte [0x1696], 0b1
         mov     di,0x1697
         mov     cx,5
         rep stosw
@@ -5306,20 +7637,17 @@ segment_43_on:
         rep stosw
         mov     di,0x36a1
         stosb
-        or      byte [0x16e7], 0b101
         mov     di,0x16e8
         mov     cx,5
         rep stosw
         mov     di,0x36e8
         mov     cx,5
         rep stosw
-        or      byte [0x1738], 0b10101
         mov     di,0x1739
         mov     cx,4
         rep stosw
         mov     di,0x1741
         stosb
-        or      byte [0x3738], 0b1
         mov     di,0x3739
         mov     cx,4
         rep stosw
@@ -5330,21 +7658,17 @@ segment_43_on:
         rep stosw
         mov     di,0x1791
         stosb
-        or      byte [0x3789], 0b10101
         mov     di,0x378a
         mov     cx,4
         rep stosw
-        or      byte [0x17d9], 0b1
         mov     di,0x17da
         mov     cx,4
         rep stosw
-        or      byte [0x37da], 0b10101
         mov     di,0x37db
         mov     cx,3
         rep stosw
         mov     di,0x37e1
         stosb
-        or      byte [0x182a], 0b101
         mov     di,0x182b
         mov     cx,3
         rep stosw
@@ -5355,46 +7679,38 @@ segment_43_on:
         rep stosw
         mov     di,0x3831
         stosb
-        or      byte [0x187b], 0b10101
         mov     di,0x187c
         mov     cx,3
         rep stosw
-        or      byte [0x387b], 0b101
         mov     di,0x387c
         mov     cx,3
         rep stosw
         mov     di,0x18cc
         mov     cx,3
         rep stosw
-        or      byte [0x38cc], 0b101
         mov     di,0x38cd
         mov     cx,2
         rep stosw
         mov     di,0x38d1
         stosb
-        or      byte [0x191c], 0b1
         mov     di,0x191d
         mov     cx,2
         rep stosw
         mov     di,0x1921
         stosb
-        or      byte [0x391d], 0b10101
         mov     di,0x391e
         mov     cx,2
         rep stosw
-        or      byte [0x196d], 0b101
         mov     di,0x196e
         mov     cx,2
         rep stosw
         mov     di,0x396e
         mov     cx,2
         rep stosw
-        or      byte [0x19be], 0b10101
         mov     di,0x19bf
         stosw
         mov     di,0x19c1
         stosb
-        or      byte [0x39be], 0b1
         mov     di,0x39bf
         stosw
         mov     di,0x39c1
@@ -5403,66 +7719,126 @@ segment_43_on:
         stosw
         mov     di,0x1a11
         stosb
-        or      byte [0x3a0f], 0b101
         mov     di,0x3a10
         stosw
-        or      byte [0x1a5f], 0b1
         mov     di,0x1a60
         stosw
-        or      byte [0x3a60], 0b10101
         mov     di,0x3a61
         stosb
-        or      byte [0x1ab0], 0b101
         mov     di,0x1ab1
         stosb
         mov     di,0x3ab1
         stosb
-        or      byte [0x1b01], 0b10101
-        or      byte [0x3b01], 0b1
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_44_on
 segment_44_on:
+
+        or      byte [0x3657], 0b1010100
+        or      byte [0x16a7], 0b1010100
+        or      byte [0x36a7], 0b1010000
+        or      byte [0x16f7], 0b1010000
+        or      byte [0x36f7], 0b1000000
+        or      byte [0x1747], 0b1000000
+        or      byte [0x3796], 0b1010100
+        or      byte [0x17e6], 0b1010100
+        or      byte [0x37e6], 0b1010000
+        or      byte [0x1836], 0b1010000
+        or      byte [0x3836], 0b1000000
+        or      byte [0x1886], 0b1000000
+        or      byte [0x38d5], 0b1010100
+        or      byte [0x1925], 0b1010100
+        or      byte [0x3925], 0b1010000
+        or      byte [0x1975], 0b1010000
+        or      byte [0x3975], 0b1000000
+        or      byte [0x19c5], 0b1000000
+        or      byte [0x3a14], 0b1010100
+        or      byte [0x1a64], 0b1010100
+        or      byte [0x3a64], 0b1010000
+        or      byte [0x1ab4], 0b1010000
+        or      byte [0x3ab4], 0b1000000
+        or      byte [0x1b04], 0b1000000
+        or      byte [0x1b52], 0b10101
+        or      byte [0x3b52], 0b101
+        or      byte [0x3b53], 0b1010100
+        or      byte [0x1ba2], 0b1
+        or      byte [0x1ba3], 0b1010100
+        or      byte [0x3ba3], 0b10000
+
         mov     ax,0b01010101_01010101
+        jmp     segment_44_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_44_off
+segment_44_off:
+
+        and     byte [0x3657], 0b10101011
+        and     byte [0x16a7], 0b10101011
+        and     byte [0x36a7], 0b10101111
+        and     byte [0x16f7], 0b10101111
+        and     byte [0x36f7], 0b10111111
+        and     byte [0x1747], 0b10111111
+        and     byte [0x3796], 0b10101011
+        and     byte [0x17e6], 0b10101011
+        and     byte [0x37e6], 0b10101111
+        and     byte [0x1836], 0b10101111
+        and     byte [0x3836], 0b10111111
+        and     byte [0x1886], 0b10111111
+        and     byte [0x38d5], 0b10101011
+        and     byte [0x1925], 0b10101011
+        and     byte [0x3925], 0b10101111
+        and     byte [0x1975], 0b10101111
+        and     byte [0x3975], 0b10111111
+        and     byte [0x19c5], 0b10111111
+        and     byte [0x3a14], 0b10101011
+        and     byte [0x1a64], 0b10101011
+        and     byte [0x3a64], 0b10101111
+        and     byte [0x1ab4], 0b10101111
+        and     byte [0x3ab4], 0b10111111
+        and     byte [0x1b04], 0b10111111
+        and     byte [0x1b52], 0b11101010
+        and     byte [0x3b52], 0b11111010
+        and     byte [0x3b53], 0b10101011
+        and     byte [0x1ba2], 0b11111110
+        and     byte [0x1ba3], 0b10101011
+        and     byte [0x3ba3], 0b11101111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_44_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_44_common:
 
         mov     di,0x3652
         mov     cx,2
         rep stosw
         mov     di,0x3656
         stosb
-        or      byte [0x3657], 0b1010100
         mov     di,0x16a2
         mov     cx,2
         rep stosw
         mov     di,0x16a6
         stosb
-        or      byte [0x16a7], 0b1010100
         mov     di,0x36a2
         mov     cx,2
         rep stosw
         mov     di,0x36a6
         stosb
-        or      byte [0x36a7], 0b1010000
         mov     di,0x16f2
         mov     cx,2
         rep stosw
         mov     di,0x16f6
         stosb
-        or      byte [0x16f7], 0b1010000
         mov     di,0x36f2
         mov     cx,2
         rep stosw
         mov     di,0x36f6
         stosb
-        or      byte [0x36f7], 0b1000000
         mov     di,0x1742
         mov     cx,2
         rep stosw
         mov     di,0x1746
         stosb
-        or      byte [0x1747], 0b1000000
         mov     di,0x3742
         mov     cx,2
         rep stosw
@@ -5476,27 +7852,21 @@ segment_44_on:
         mov     di,0x3792
         mov     cx,2
         rep stosw
-        or      byte [0x3796], 0b1010100
         mov     di,0x17e2
         mov     cx,2
         rep stosw
-        or      byte [0x17e6], 0b1010100
         mov     di,0x37e2
         mov     cx,2
         rep stosw
-        or      byte [0x37e6], 0b1010000
         mov     di,0x1832
         mov     cx,2
         rep stosw
-        or      byte [0x1836], 0b1010000
         mov     di,0x3832
         mov     cx,2
         rep stosw
-        or      byte [0x3836], 0b1000000
         mov     di,0x1882
         mov     cx,2
         rep stosw
-        or      byte [0x1886], 0b1000000
         mov     di,0x3882
         mov     cx,2
         rep stosw
@@ -5507,32 +7877,26 @@ segment_44_on:
         stosw
         mov     di,0x38d4
         stosb
-        or      byte [0x38d5], 0b1010100
         mov     di,0x1922
         stosw
         mov     di,0x1924
         stosb
-        or      byte [0x1925], 0b1010100
         mov     di,0x3922
         stosw
         mov     di,0x3924
         stosb
-        or      byte [0x3925], 0b1010000
         mov     di,0x1972
         stosw
         mov     di,0x1974
         stosb
-        or      byte [0x1975], 0b1010000
         mov     di,0x3972
         stosw
         mov     di,0x3974
         stosb
-        or      byte [0x3975], 0b1000000
         mov     di,0x19c2
         stosw
         mov     di,0x19c4
         stosb
-        or      byte [0x19c5], 0b1000000
         mov     di,0x39c2
         stosw
         mov     di,0x39c4
@@ -5543,39 +7907,26 @@ segment_44_on:
         stosb
         mov     di,0x3a12
         stosw
-        or      byte [0x3a14], 0b1010100
         mov     di,0x1a62
         stosw
-        or      byte [0x1a64], 0b1010100
         mov     di,0x3a62
         stosw
-        or      byte [0x3a64], 0b1010000
         mov     di,0x1ab2
         stosw
-        or      byte [0x1ab4], 0b1010000
         mov     di,0x3ab2
         stosw
-        or      byte [0x3ab4], 0b1000000
         mov     di,0x1b02
         stosw
-        or      byte [0x1b04], 0b1000000
         mov     di,0x3b02
         stosw
-        or      byte [0x1b52], 0b10101
         mov     di,0x1b53
         stosb
-        or      byte [0x3b52], 0b101
-        or      byte [0x3b53], 0b1010100
-        or      byte [0x1ba2], 0b1
-        or      byte [0x1ba3], 0b1010100
-        or      byte [0x3ba3], 0b10000
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_45_on
 segment_45_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x3657], 0b1
         or      byte [0x16a7], 0b1
@@ -5587,138 +7938,236 @@ segment_45_on:
         or      byte [0x36f8], 0b1010000
         or      byte [0x1747], 0b10101
         or      byte [0x1748], 0b1010000
-        mov     di,0x3747
-        stosb
         or      byte [0x3748], 0b1010100
-        mov     di,0x1797
-        stosb
         or      byte [0x1798], 0b1010100
         or      byte [0x3796], 0b1
-        mov     di,0x3797
-        stosw
         or      byte [0x17e6], 0b1
-        mov     di,0x17e7
-        stosw
         or      byte [0x37e6], 0b101
-        mov     di,0x37e7
-        stosw
         or      byte [0x37e9], 0b1000000
         or      byte [0x1836], 0b101
-        mov     di,0x1837
-        stosw
         or      byte [0x1839], 0b1000000
         or      byte [0x3836], 0b10101
-        mov     di,0x3837
-        stosw
         or      byte [0x3839], 0b1010000
         or      byte [0x1886], 0b10101
+        or      byte [0x1889], 0b1010000
+        or      byte [0x3889], 0b1010100
+        or      byte [0x18d9], 0b1010100
+        or      byte [0x38d5], 0b1
+        or      byte [0x1925], 0b1
+        or      byte [0x3925], 0b101
+        or      byte [0x392a], 0b1000000
+        or      byte [0x1975], 0b101
+        or      byte [0x197a], 0b1000000
+        or      byte [0x3975], 0b10101
+        or      byte [0x397a], 0b1010000
+        or      byte [0x19c5], 0b10101
+        or      byte [0x19ca], 0b1010000
+        or      byte [0x39ca], 0b1010100
+        or      byte [0x1a1a], 0b1010100
+        or      byte [0x3a14], 0b1
+        or      byte [0x1a64], 0b1
+        or      byte [0x3a64], 0b101
+        or      byte [0x3a6b], 0b1000000
+        or      byte [0x1ab4], 0b101
+        or      byte [0x1abb], 0b1000000
+        or      byte [0x3ab4], 0b10101
+        or      byte [0x3abb], 0b1010000
+        or      byte [0x1b04], 0b10101
+        or      byte [0x1b0b], 0b1010000
+        or      byte [0x3b0b], 0b1010100
+        or      byte [0x1b5b], 0b1010100
+        or      byte [0x3b53], 0b1
+        or      byte [0x1ba3], 0b1
+        or      byte [0x3ba3], 0b101
+        or      byte [0x3bac], 0b1000000
+        or      byte [0x1bf3], 0b1
+        or      byte [0x3bfb], 0b1010100
+        or      byte [0x1c44], 0b101
+        or      byte [0x1c4b], 0b1000000
+        or      byte [0x3c4a], 0b1010100
+        or      byte [0x1c95], 0b10101
+        or      byte [0x1c9a], 0b1010000
+        or      byte [0x3c95], 0b1
+        or      byte [0x1ce9], 0b1010100
+        or      byte [0x3ce6], 0b10101
+        or      byte [0x3ce9], 0b1010000
+        or      byte [0x1d36], 0b1
+        or      byte [0x3d37], 0b10101
+        or      byte [0x3d38], 0b1010000
+        or      byte [0x1d87], 0b101
+        or      byte [0x1d88], 0b1000000
+        or      byte [0x3d87], 0b1
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_45_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_45_off
+segment_45_off:
+
+        and     byte [0x3657], 0b11111110
+        and     byte [0x16a7], 0b11111110
+        and     byte [0x36a7], 0b11111010
+        and     byte [0x36a8], 0b10111111
+        and     byte [0x16f7], 0b11111010
+        and     byte [0x16f8], 0b10111111
+        and     byte [0x36f7], 0b11101010
+        and     byte [0x36f8], 0b10101111
+        and     byte [0x1747], 0b11101010
+        and     byte [0x1748], 0b10101111
+        and     byte [0x3748], 0b10101011
+        and     byte [0x1798], 0b10101011
+        and     byte [0x3796], 0b11111110
+        and     byte [0x17e6], 0b11111110
+        and     byte [0x37e6], 0b11111010
+        and     byte [0x37e9], 0b10111111
+        and     byte [0x1836], 0b11111010
+        and     byte [0x1839], 0b10111111
+        and     byte [0x3836], 0b11101010
+        and     byte [0x3839], 0b10101111
+        and     byte [0x1886], 0b11101010
+        and     byte [0x1889], 0b10101111
+        and     byte [0x3889], 0b10101011
+        and     byte [0x18d9], 0b10101011
+        and     byte [0x38d5], 0b11111110
+        and     byte [0x1925], 0b11111110
+        and     byte [0x3925], 0b11111010
+        and     byte [0x392a], 0b10111111
+        and     byte [0x1975], 0b11111010
+        and     byte [0x197a], 0b10111111
+        and     byte [0x3975], 0b11101010
+        and     byte [0x397a], 0b10101111
+        and     byte [0x19c5], 0b11101010
+        and     byte [0x19ca], 0b10101111
+        and     byte [0x39ca], 0b10101011
+        and     byte [0x1a1a], 0b10101011
+        and     byte [0x3a14], 0b11111110
+        and     byte [0x1a64], 0b11111110
+        and     byte [0x3a64], 0b11111010
+        and     byte [0x3a6b], 0b10111111
+        and     byte [0x1ab4], 0b11111010
+        and     byte [0x1abb], 0b10111111
+        and     byte [0x3ab4], 0b11101010
+        and     byte [0x3abb], 0b10101111
+        and     byte [0x1b04], 0b11101010
+        and     byte [0x1b0b], 0b10101111
+        and     byte [0x3b0b], 0b10101011
+        and     byte [0x1b5b], 0b10101011
+        and     byte [0x3b53], 0b11111110
+        and     byte [0x1ba3], 0b11111110
+        and     byte [0x3ba3], 0b11111010
+        and     byte [0x3bac], 0b10111111
+        and     byte [0x1bf3], 0b11111110
+        and     byte [0x3bfb], 0b10101011
+        and     byte [0x1c44], 0b11111010
+        and     byte [0x1c4b], 0b10111111
+        and     byte [0x3c4a], 0b10101011
+        and     byte [0x1c95], 0b11101010
+        and     byte [0x1c9a], 0b10101111
+        and     byte [0x3c95], 0b11111110
+        and     byte [0x1ce9], 0b10101011
+        and     byte [0x3ce6], 0b11101010
+        and     byte [0x3ce9], 0b10101111
+        and     byte [0x1d36], 0b11111110
+        and     byte [0x3d37], 0b11101010
+        and     byte [0x3d38], 0b10101111
+        and     byte [0x1d87], 0b11111010
+        and     byte [0x1d88], 0b10111111
+        and     byte [0x3d87], 0b11111110
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_45_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_45_common:
+
+        mov     di,0x3747
+        stosb
+        mov     di,0x1797
+        stosb
+        mov     di,0x3797
+        stosw
+        mov     di,0x17e7
+        stosw
+        mov     di,0x37e7
+        stosw
+        mov     di,0x1837
+        stosw
+        mov     di,0x3837
+        stosw
         mov     di,0x1887
         stosw
-        or      byte [0x1889], 0b1010000
         mov     di,0x3886
         stosw
         mov     di,0x3888
         stosb
-        or      byte [0x3889], 0b1010100
         mov     di,0x18d6
         stosw
         mov     di,0x18d8
         stosb
-        or      byte [0x18d9], 0b1010100
-        or      byte [0x38d5], 0b1
         mov     di,0x38d6
         mov     cx,2
         rep stosw
-        or      byte [0x1925], 0b1
         mov     di,0x1926
         mov     cx,2
         rep stosw
-        or      byte [0x3925], 0b101
         mov     di,0x3926
         mov     cx,2
         rep stosw
-        or      byte [0x392a], 0b1000000
-        or      byte [0x1975], 0b101
         mov     di,0x1976
         mov     cx,2
         rep stosw
-        or      byte [0x197a], 0b1000000
-        or      byte [0x3975], 0b10101
         mov     di,0x3976
         mov     cx,2
         rep stosw
-        or      byte [0x397a], 0b1010000
-        or      byte [0x19c5], 0b10101
         mov     di,0x19c6
         mov     cx,2
         rep stosw
-        or      byte [0x19ca], 0b1010000
         mov     di,0x39c5
         mov     cx,2
         rep stosw
         mov     di,0x39c9
         stosb
-        or      byte [0x39ca], 0b1010100
         mov     di,0x1a15
         mov     cx,2
         rep stosw
         mov     di,0x1a19
         stosb
-        or      byte [0x1a1a], 0b1010100
-        or      byte [0x3a14], 0b1
         mov     di,0x3a15
         mov     cx,3
         rep stosw
-        or      byte [0x1a64], 0b1
         mov     di,0x1a65
         mov     cx,3
         rep stosw
-        or      byte [0x3a64], 0b101
         mov     di,0x3a65
         mov     cx,3
         rep stosw
-        or      byte [0x3a6b], 0b1000000
-        or      byte [0x1ab4], 0b101
         mov     di,0x1ab5
         mov     cx,3
         rep stosw
-        or      byte [0x1abb], 0b1000000
-        or      byte [0x3ab4], 0b10101
         mov     di,0x3ab5
         mov     cx,3
         rep stosw
-        or      byte [0x3abb], 0b1010000
-        or      byte [0x1b04], 0b10101
         mov     di,0x1b05
         mov     cx,3
         rep stosw
-        or      byte [0x1b0b], 0b1010000
         mov     di,0x3b04
         mov     cx,3
         rep stosw
         mov     di,0x3b0a
         stosb
-        or      byte [0x3b0b], 0b1010100
         mov     di,0x1b54
         mov     cx,3
         rep stosw
         mov     di,0x1b5a
         stosb
-        or      byte [0x1b5b], 0b1010100
-        or      byte [0x3b53], 0b1
         mov     di,0x3b54
         mov     cx,4
         rep stosw
-        or      byte [0x1ba3], 0b1
         mov     di,0x1ba4
         mov     cx,4
         rep stosw
-        or      byte [0x3ba3], 0b101
         mov     di,0x3ba4
         mov     cx,4
         rep stosw
-        or      byte [0x3bac], 0b1000000
-        or      byte [0x1bf3], 0b1
         mov     di,0x1bf4
         mov     cx,4
         rep stosw
@@ -5727,24 +8176,17 @@ segment_45_on:
         rep stosw
         mov     di,0x3bfa
         stosb
-        or      byte [0x3bfb], 0b1010100
-        or      byte [0x1c44], 0b101
         mov     di,0x1c45
         mov     cx,3
         rep stosw
-        or      byte [0x1c4b], 0b1000000
         mov     di,0x3c45
         mov     cx,2
         rep stosw
         mov     di,0x3c49
         stosb
-        or      byte [0x3c4a], 0b1010100
-        or      byte [0x1c95], 0b10101
         mov     di,0x1c96
         mov     cx,2
         rep stosw
-        or      byte [0x1c9a], 0b1010000
-        or      byte [0x3c95], 0b1
         mov     di,0x3c96
         mov     cx,2
         rep stosw
@@ -5752,398 +8194,672 @@ segment_45_on:
         stosw
         mov     di,0x1ce8
         stosb
-        or      byte [0x1ce9], 0b1010100
-        or      byte [0x3ce6], 0b10101
         mov     di,0x3ce7
         stosw
-        or      byte [0x3ce9], 0b1010000
-        or      byte [0x1d36], 0b1
         mov     di,0x1d37
         stosw
-        or      byte [0x3d37], 0b10101
-        or      byte [0x3d38], 0b1010000
-        or      byte [0x1d87], 0b101
-        or      byte [0x1d88], 0b1000000
-        or      byte [0x3d87], 0b1
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_46_on
 segment_46_on:
+
+        or      byte [0x365d], 0b1010100
+        or      byte [0x16ad], 0b1010100
+        or      byte [0x36a8], 0b10101
+        or      byte [0x36ad], 0b1010100
+        or      byte [0x16f8], 0b10101
+        or      byte [0x16fd], 0b1010100
+        or      byte [0x36f8], 0b101
+        or      byte [0x36fd], 0b1010100
+        or      byte [0x1748], 0b101
+        or      byte [0x174d], 0b1010100
+        or      byte [0x3748], 0b1
+        or      byte [0x374d], 0b1010100
+        or      byte [0x1798], 0b1
+        or      byte [0x179d], 0b1010100
+        or      byte [0x379d], 0b1010100
+        or      byte [0x17ed], 0b1010100
+        or      byte [0x37e9], 0b10101
+        or      byte [0x37ed], 0b1010100
+        or      byte [0x1839], 0b10101
+        or      byte [0x183d], 0b1010100
+        or      byte [0x3839], 0b101
+        or      byte [0x383d], 0b1010100
+        or      byte [0x1889], 0b101
+        or      byte [0x188d], 0b1010100
+        or      byte [0x3889], 0b1
+        or      byte [0x388d], 0b1010100
+        or      byte [0x18d9], 0b1
+        or      byte [0x18dd], 0b1010100
+        or      byte [0x38dd], 0b1010100
+        or      byte [0x192d], 0b1010100
+        or      byte [0x392a], 0b10101
+        or      byte [0x392d], 0b1010100
+        or      byte [0x197a], 0b10101
+        or      byte [0x197d], 0b1010100
+        or      byte [0x397a], 0b101
+        or      byte [0x397d], 0b1010100
+        or      byte [0x19ca], 0b101
+        or      byte [0x19cd], 0b1010100
+        or      byte [0x39ca], 0b1
+        or      byte [0x39cd], 0b1010100
+        or      byte [0x1a1a], 0b1
+        or      byte [0x1a1d], 0b1010100
+        or      byte [0x3a1d], 0b1010100
+        or      byte [0x1a6d], 0b1010100
+        or      byte [0x3a6b], 0b10101
+        or      byte [0x3a6d], 0b1010100
+        or      byte [0x1abb], 0b10101
+        or      byte [0x1abd], 0b1010100
+        or      byte [0x3abb], 0b101
+        or      byte [0x3abd], 0b1010100
+        or      byte [0x1b0b], 0b101
+        or      byte [0x1b0d], 0b1010100
+        or      byte [0x3b0b], 0b1
+        or      byte [0x3b0d], 0b1010100
+        or      byte [0x1b5b], 0b1
+        or      byte [0x1b5d], 0b1010000
+        or      byte [0x1bac], 0b1010100
+        or      byte [0x3bac], 0b10000
+
         mov     ax,0b01010101_01010101
+        jmp     segment_46_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_46_off
+segment_46_off:
+
+        and     byte [0x365d], 0b10101011
+        and     byte [0x16ad], 0b10101011
+        and     byte [0x36a8], 0b11101010
+        and     byte [0x36ad], 0b10101011
+        and     byte [0x16f8], 0b11101010
+        and     byte [0x16fd], 0b10101011
+        and     byte [0x36f8], 0b11111010
+        and     byte [0x36fd], 0b10101011
+        and     byte [0x1748], 0b11111010
+        and     byte [0x174d], 0b10101011
+        and     byte [0x3748], 0b11111110
+        and     byte [0x374d], 0b10101011
+        and     byte [0x1798], 0b11111110
+        and     byte [0x179d], 0b10101011
+        and     byte [0x379d], 0b10101011
+        and     byte [0x17ed], 0b10101011
+        and     byte [0x37e9], 0b11101010
+        and     byte [0x37ed], 0b10101011
+        and     byte [0x1839], 0b11101010
+        and     byte [0x183d], 0b10101011
+        and     byte [0x3839], 0b11111010
+        and     byte [0x383d], 0b10101011
+        and     byte [0x1889], 0b11111010
+        and     byte [0x188d], 0b10101011
+        and     byte [0x3889], 0b11111110
+        and     byte [0x388d], 0b10101011
+        and     byte [0x18d9], 0b11111110
+        and     byte [0x18dd], 0b10101011
+        and     byte [0x38dd], 0b10101011
+        and     byte [0x192d], 0b10101011
+        and     byte [0x392a], 0b11101010
+        and     byte [0x392d], 0b10101011
+        and     byte [0x197a], 0b11101010
+        and     byte [0x197d], 0b10101011
+        and     byte [0x397a], 0b11111010
+        and     byte [0x397d], 0b10101011
+        and     byte [0x19ca], 0b11111010
+        and     byte [0x19cd], 0b10101011
+        and     byte [0x39ca], 0b11111110
+        and     byte [0x39cd], 0b10101011
+        and     byte [0x1a1a], 0b11111110
+        and     byte [0x1a1d], 0b10101011
+        and     byte [0x3a1d], 0b10101011
+        and     byte [0x1a6d], 0b10101011
+        and     byte [0x3a6b], 0b11101010
+        and     byte [0x3a6d], 0b10101011
+        and     byte [0x1abb], 0b11101010
+        and     byte [0x1abd], 0b10101011
+        and     byte [0x3abb], 0b11111010
+        and     byte [0x3abd], 0b10101011
+        and     byte [0x1b0b], 0b11111010
+        and     byte [0x1b0d], 0b10101011
+        and     byte [0x3b0b], 0b11111110
+        and     byte [0x3b0d], 0b10101011
+        and     byte [0x1b5b], 0b11111110
+        and     byte [0x1b5d], 0b10101111
+        and     byte [0x1bac], 0b10101011
+        and     byte [0x3bac], 0b11101111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_46_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_46_common:
 
         mov     di,0x3658
         mov     cx,2
         rep stosw
         mov     di,0x365c
         stosb
-        or      byte [0x365d], 0b1010100
         mov     di,0x16a8
         mov     cx,2
         rep stosw
         mov     di,0x16ac
         stosb
-        or      byte [0x16ad], 0b1010100
-        or      byte [0x36a8], 0b10101
         mov     di,0x36a9
         mov     cx,2
         rep stosw
-        or      byte [0x36ad], 0b1010100
-        or      byte [0x16f8], 0b10101
         mov     di,0x16f9
         mov     cx,2
         rep stosw
-        or      byte [0x16fd], 0b1010100
-        or      byte [0x36f8], 0b101
         mov     di,0x36f9
         mov     cx,2
         rep stosw
-        or      byte [0x36fd], 0b1010100
-        or      byte [0x1748], 0b101
         mov     di,0x1749
         mov     cx,2
         rep stosw
-        or      byte [0x174d], 0b1010100
-        or      byte [0x3748], 0b1
         mov     di,0x3749
         mov     cx,2
         rep stosw
-        or      byte [0x374d], 0b1010100
-        or      byte [0x1798], 0b1
         mov     di,0x1799
         mov     cx,2
         rep stosw
-        or      byte [0x179d], 0b1010100
         mov     di,0x3799
         mov     cx,2
         rep stosw
-        or      byte [0x379d], 0b1010100
         mov     di,0x17e9
         mov     cx,2
         rep stosw
-        or      byte [0x17ed], 0b1010100
-        or      byte [0x37e9], 0b10101
         mov     di,0x37ea
         stosw
         mov     di,0x37ec
         stosb
-        or      byte [0x37ed], 0b1010100
-        or      byte [0x1839], 0b10101
         mov     di,0x183a
         stosw
         mov     di,0x183c
         stosb
-        or      byte [0x183d], 0b1010100
-        or      byte [0x3839], 0b101
         mov     di,0x383a
         stosw
         mov     di,0x383c
         stosb
-        or      byte [0x383d], 0b1010100
-        or      byte [0x1889], 0b101
         mov     di,0x188a
         stosw
         mov     di,0x188c
         stosb
-        or      byte [0x188d], 0b1010100
-        or      byte [0x3889], 0b1
         mov     di,0x388a
         stosw
         mov     di,0x388c
         stosb
-        or      byte [0x388d], 0b1010100
-        or      byte [0x18d9], 0b1
         mov     di,0x18da
         stosw
         mov     di,0x18dc
         stosb
-        or      byte [0x18dd], 0b1010100
         mov     di,0x38da
         stosw
         mov     di,0x38dc
         stosb
-        or      byte [0x38dd], 0b1010100
         mov     di,0x192a
         stosw
         mov     di,0x192c
         stosb
-        or      byte [0x192d], 0b1010100
-        or      byte [0x392a], 0b10101
         mov     di,0x392b
         stosw
-        or      byte [0x392d], 0b1010100
-        or      byte [0x197a], 0b10101
         mov     di,0x197b
         stosw
-        or      byte [0x197d], 0b1010100
-        or      byte [0x397a], 0b101
         mov     di,0x397b
         stosw
-        or      byte [0x397d], 0b1010100
-        or      byte [0x19ca], 0b101
         mov     di,0x19cb
         stosw
-        or      byte [0x19cd], 0b1010100
-        or      byte [0x39ca], 0b1
         mov     di,0x39cb
         stosw
-        or      byte [0x39cd], 0b1010100
-        or      byte [0x1a1a], 0b1
         mov     di,0x1a1b
         stosw
-        or      byte [0x1a1d], 0b1010100
         mov     di,0x3a1b
         stosw
-        or      byte [0x3a1d], 0b1010100
         mov     di,0x1a6b
         stosw
-        or      byte [0x1a6d], 0b1010100
-        or      byte [0x3a6b], 0b10101
         mov     di,0x3a6c
         stosb
-        or      byte [0x3a6d], 0b1010100
-        or      byte [0x1abb], 0b10101
         mov     di,0x1abc
         stosb
-        or      byte [0x1abd], 0b1010100
-        or      byte [0x3abb], 0b101
         mov     di,0x3abc
         stosb
-        or      byte [0x3abd], 0b1010100
-        or      byte [0x1b0b], 0b101
         mov     di,0x1b0c
         stosb
-        or      byte [0x1b0d], 0b1010100
-        or      byte [0x3b0b], 0b1
         mov     di,0x3b0c
         stosb
-        or      byte [0x3b0d], 0b1010100
-        or      byte [0x1b5b], 0b1
         mov     di,0x1b5c
         stosb
-        or      byte [0x1b5d], 0b1010000
         mov     di,0x3b5c
         stosb
-        or      byte [0x1bac], 0b1010100
-        or      byte [0x3bac], 0b10000
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_47_on
 segment_47_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x365d], 0b1
+        or      byte [0x3669], 0b1010000
+        or      byte [0x16ad], 0b1
+        or      byte [0x36ad], 0b1
+        or      byte [0x36b8], 0b1010000
+        or      byte [0x16fd], 0b1
+        or      byte [0x36fd], 0b1
+        or      byte [0x3707], 0b1010100
+        or      byte [0x174d], 0b1
+        or      byte [0x1757], 0b1000000
+        or      byte [0x374d], 0b1
+        or      byte [0x179d], 0b1
+        or      byte [0x17a6], 0b1010000
+        or      byte [0x379d], 0b1
+        or      byte [0x37a6], 0b1000000
+        or      byte [0x17ed], 0b1
+        or      byte [0x17f5], 0b1010100
+        or      byte [0x37ed], 0b1
+        or      byte [0x37f5], 0b1010000
+        or      byte [0x183d], 0b1
+        or      byte [0x383d], 0b1
+        or      byte [0x3844], 0b1010100
+        or      byte [0x188d], 0b1
+        or      byte [0x1894], 0b1000000
+        or      byte [0x388d], 0b1
+        or      byte [0x18dd], 0b1
+        or      byte [0x18e3], 0b1010000
+        or      byte [0x38dd], 0b1
+        or      byte [0x38e3], 0b1000000
+        or      byte [0x192d], 0b1
+        or      byte [0x1932], 0b1010100
+        or      byte [0x392d], 0b1
+        or      byte [0x3932], 0b1010000
+        or      byte [0x197d], 0b1
+        or      byte [0x397d], 0b1
+        or      byte [0x3981], 0b1010000
+        or      byte [0x19cd], 0b1
+        or      byte [0x19d1], 0b1000000
+        or      byte [0x39cd], 0b1
+        or      byte [0x1a1d], 0b1
+        or      byte [0x1a20], 0b1010000
+        or      byte [0x3a1d], 0b1
+        or      byte [0x3a20], 0b1000000
+        or      byte [0x1a6d], 0b1
+        or      byte [0x1a6f], 0b1010100
+        or      byte [0x3a6d], 0b1
+        or      byte [0x3a6f], 0b1000000
+        or      byte [0x1abd], 0b1
+        or      byte [0x3abd], 0b1
+        or      byte [0x3abe], 0b1010100
+        or      byte [0x1b0d], 0b1
+        or      byte [0x1b0e], 0b1000000
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_47_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_47_off
+segment_47_off:
+
+        and     byte [0x365d], 0b11111110
+        and     byte [0x3669], 0b10101111
+        and     byte [0x16ad], 0b11111110
+        and     byte [0x36ad], 0b11111110
+        and     byte [0x36b8], 0b10101111
+        and     byte [0x16fd], 0b11111110
+        and     byte [0x36fd], 0b11111110
+        and     byte [0x3707], 0b10101011
+        and     byte [0x174d], 0b11111110
+        and     byte [0x1757], 0b10111111
+        and     byte [0x374d], 0b11111110
+        and     byte [0x179d], 0b11111110
+        and     byte [0x17a6], 0b10101111
+        and     byte [0x379d], 0b11111110
+        and     byte [0x37a6], 0b10111111
+        and     byte [0x17ed], 0b11111110
+        and     byte [0x17f5], 0b10101011
+        and     byte [0x37ed], 0b11111110
+        and     byte [0x37f5], 0b10101111
+        and     byte [0x183d], 0b11111110
+        and     byte [0x383d], 0b11111110
+        and     byte [0x3844], 0b10101011
+        and     byte [0x188d], 0b11111110
+        and     byte [0x1894], 0b10111111
+        and     byte [0x388d], 0b11111110
+        and     byte [0x18dd], 0b11111110
+        and     byte [0x18e3], 0b10101111
+        and     byte [0x38dd], 0b11111110
+        and     byte [0x38e3], 0b10111111
+        and     byte [0x192d], 0b11111110
+        and     byte [0x1932], 0b10101011
+        and     byte [0x392d], 0b11111110
+        and     byte [0x3932], 0b10101111
+        and     byte [0x197d], 0b11111110
+        and     byte [0x397d], 0b11111110
+        and     byte [0x3981], 0b10101111
+        and     byte [0x19cd], 0b11111110
+        and     byte [0x19d1], 0b10111111
+        and     byte [0x39cd], 0b11111110
+        and     byte [0x1a1d], 0b11111110
+        and     byte [0x1a20], 0b10101111
+        and     byte [0x3a1d], 0b11111110
+        and     byte [0x3a20], 0b10111111
+        and     byte [0x1a6d], 0b11111110
+        and     byte [0x1a6f], 0b10101011
+        and     byte [0x3a6d], 0b11111110
+        and     byte [0x3a6f], 0b10111111
+        and     byte [0x1abd], 0b11111110
+        and     byte [0x3abd], 0b11111110
+        and     byte [0x3abe], 0b10101011
+        and     byte [0x1b0d], 0b11111110
+        and     byte [0x1b0e], 0b10111111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_47_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_47_common:
+
         mov     di,0x365e
         mov     cx,5
         rep stosw
         mov     di,0x3668
         stosb
-        or      byte [0x3669], 0b1010000
-        or      byte [0x16ad], 0b1
         mov     di,0x16ae
         mov     cx,5
         rep stosw
         mov     di,0x16b8
         stosb
-        or      byte [0x36ad], 0b1
         mov     di,0x36ae
         mov     cx,5
         rep stosw
-        or      byte [0x36b8], 0b1010000
-        or      byte [0x16fd], 0b1
         mov     di,0x16fe
         mov     cx,5
         rep stosw
-        or      byte [0x36fd], 0b1
         mov     di,0x36fe
         mov     cx,4
         rep stosw
         mov     di,0x3706
         stosb
-        or      byte [0x3707], 0b1010100
-        or      byte [0x174d], 0b1
         mov     di,0x174e
         mov     cx,4
         rep stosw
         mov     di,0x1756
         stosb
-        or      byte [0x1757], 0b1000000
-        or      byte [0x374d], 0b1
         mov     di,0x374e
         mov     cx,4
         rep stosw
         mov     di,0x3756
         stosb
-        or      byte [0x179d], 0b1
         mov     di,0x179e
         mov     cx,4
         rep stosw
-        or      byte [0x17a6], 0b1010000
-        or      byte [0x379d], 0b1
         mov     di,0x379e
         mov     cx,4
         rep stosw
-        or      byte [0x37a6], 0b1000000
-        or      byte [0x17ed], 0b1
         mov     di,0x17ee
         mov     cx,3
         rep stosw
         mov     di,0x17f4
         stosb
-        or      byte [0x17f5], 0b1010100
-        or      byte [0x37ed], 0b1
         mov     di,0x37ee
         mov     cx,3
         rep stosw
         mov     di,0x37f4
         stosb
-        or      byte [0x37f5], 0b1010000
-        or      byte [0x183d], 0b1
         mov     di,0x183e
         mov     cx,3
         rep stosw
         mov     di,0x1844
         stosb
-        or      byte [0x383d], 0b1
         mov     di,0x383e
         mov     cx,3
         rep stosw
-        or      byte [0x3844], 0b1010100
-        or      byte [0x188d], 0b1
         mov     di,0x188e
         mov     cx,3
         rep stosw
-        or      byte [0x1894], 0b1000000
-        or      byte [0x388d], 0b1
         mov     di,0x388e
         mov     cx,3
         rep stosw
-        or      byte [0x18dd], 0b1
         mov     di,0x18de
         mov     cx,2
         rep stosw
         mov     di,0x18e2
         stosb
-        or      byte [0x18e3], 0b1010000
-        or      byte [0x38dd], 0b1
         mov     di,0x38de
         mov     cx,2
         rep stosw
         mov     di,0x38e2
         stosb
-        or      byte [0x38e3], 0b1000000
-        or      byte [0x192d], 0b1
         mov     di,0x192e
         mov     cx,2
         rep stosw
-        or      byte [0x1932], 0b1010100
-        or      byte [0x392d], 0b1
         mov     di,0x392e
         mov     cx,2
         rep stosw
-        or      byte [0x3932], 0b1010000
-        or      byte [0x197d], 0b1
         mov     di,0x197e
         mov     cx,2
         rep stosw
-        or      byte [0x397d], 0b1
         mov     di,0x397e
         stosw
         mov     di,0x3980
         stosb
-        or      byte [0x3981], 0b1010000
-        or      byte [0x19cd], 0b1
         mov     di,0x19ce
         stosw
         mov     di,0x19d0
         stosb
-        or      byte [0x19d1], 0b1000000
-        or      byte [0x39cd], 0b1
         mov     di,0x39ce
         stosw
         mov     di,0x39d0
         stosb
-        or      byte [0x1a1d], 0b1
         mov     di,0x1a1e
         stosw
-        or      byte [0x1a20], 0b1010000
-        or      byte [0x3a1d], 0b1
         mov     di,0x3a1e
         stosw
-        or      byte [0x3a20], 0b1000000
-        or      byte [0x1a6d], 0b1
         mov     di,0x1a6e
         stosb
-        or      byte [0x1a6f], 0b1010100
-        or      byte [0x3a6d], 0b1
         mov     di,0x3a6e
         stosb
-        or      byte [0x3a6f], 0b1000000
-        or      byte [0x1abd], 0b1
         mov     di,0x1abe
         stosb
-        or      byte [0x3abd], 0b1
-        or      byte [0x3abe], 0b1010100
-        or      byte [0x1b0d], 0b1
-        or      byte [0x1b0e], 0b1000000
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_48_on
 segment_48_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x3669], 0b100
         or      byte [0x16b9], 0b1010100
         or      byte [0x36b8], 0b101
         or      byte [0x36b9], 0b1010100
-        mov     di,0x1708
-        stosb
         or      byte [0x1709], 0b1010000
         or      byte [0x3707], 0b1
-        mov     di,0x3708
-        stosb
         or      byte [0x3709], 0b1010000
         or      byte [0x1757], 0b10101
-        mov     di,0x1758
-        stosb
         or      byte [0x1759], 0b1010000
-        mov     di,0x3757
-        stosw
         or      byte [0x3759], 0b1010000
         or      byte [0x17a6], 0b101
-        mov     di,0x17a7
-        stosw
         or      byte [0x17a9], 0b1010000
         or      byte [0x37a6], 0b10101
-        mov     di,0x37a7
-        stosw
         or      byte [0x37a9], 0b1000000
         or      byte [0x17f5], 0b1
+        or      byte [0x17f9], 0b1000000
+        or      byte [0x37f5], 0b101
+        or      byte [0x37f9], 0b1000000
+        or      byte [0x1849], 0b1000000
+        or      byte [0x3844], 0b1
+        or      byte [0x1894], 0b10101
+        or      byte [0x18e3], 0b101
+        or      byte [0x18e8], 0b1010100
+        or      byte [0x38e3], 0b10101
+        or      byte [0x38e8], 0b1010100
+        or      byte [0x1932], 0b1
+        or      byte [0x1938], 0b1010000
+        or      byte [0x3932], 0b101
+        or      byte [0x3938], 0b1010000
+        or      byte [0x1988], 0b1010000
+        or      byte [0x3981], 0b101
+        or      byte [0x3988], 0b1000000
+        or      byte [0x19d1], 0b10101
+        or      byte [0x19d8], 0b1000000
+        or      byte [0x1a20], 0b101
+        or      byte [0x1a27], 0b1010100
+        or      byte [0x3a20], 0b10101
+        or      byte [0x3a27], 0b1010100
+        or      byte [0x1a6f], 0b1
+        or      byte [0x1a77], 0b1010000
+        or      byte [0x3a6f], 0b10101
+        or      byte [0x3a77], 0b1010000
+        or      byte [0x1ac7], 0b1000000
+        or      byte [0x3abe], 0b1
+        or      byte [0x1b0e], 0b10101
+        or      byte [0x1b16], 0b1010100
+        or      byte [0x3b0d], 0b1
+        or      byte [0x3b16], 0b1010000
+        or      byte [0x1b5d], 0b1
+        or      byte [0x1b66], 0b1000000
+        or      byte [0x3b5d], 0b1
+        or      byte [0x3b66], 0b1000000
+        or      byte [0x1bad], 0b1
+        or      byte [0x1bb5], 0b1010100
+        or      byte [0x3bad], 0b1
+        or      byte [0x3bb5], 0b1010000
+        or      byte [0x1bfd], 0b1
+        or      byte [0x1c05], 0b1000000
+        or      byte [0x3bfd], 0b1
+        or      byte [0x1c4d], 0b1
+        or      byte [0x1c54], 0b1010000
+        or      byte [0x3c4d], 0b1
+        or      byte [0x3c54], 0b1000000
+        or      byte [0x1c9d], 0b1
+        or      byte [0x1ca3], 0b1010100
+        or      byte [0x3c9d], 0b1
+        or      byte [0x3ca3], 0b1000000
+        or      byte [0x1ced], 0b1
+        or      byte [0x1cf2], 0b1010100
+        or      byte [0x3ced], 0b1
+        or      byte [0x3cf2], 0b1000000
+        or      byte [0x1d3d], 0b1
+        or      byte [0x1d41], 0b1010000
+        or      byte [0x3d3d], 0b1
+        or      byte [0x3d40], 0b1010100
+        or      byte [0x1d8d], 0b1
+        or      byte [0x1d8f], 0b1010100
+        or      byte [0x3d8d], 0b1
+        or      byte [0x3d8e], 0b1000000
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_48_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_48_off
+segment_48_off:
+
+        and     byte [0x3669], 0b11111011
+        and     byte [0x16b9], 0b10101011
+        and     byte [0x36b8], 0b11111010
+        and     byte [0x36b9], 0b10101011
+        and     byte [0x1709], 0b10101111
+        and     byte [0x3707], 0b11111110
+        and     byte [0x3709], 0b10101111
+        and     byte [0x1757], 0b11101010
+        and     byte [0x1759], 0b10101111
+        and     byte [0x3759], 0b10101111
+        and     byte [0x17a6], 0b11111010
+        and     byte [0x17a9], 0b10101111
+        and     byte [0x37a6], 0b11101010
+        and     byte [0x37a9], 0b10111111
+        and     byte [0x17f5], 0b11111110
+        and     byte [0x17f9], 0b10111111
+        and     byte [0x37f5], 0b11111010
+        and     byte [0x37f9], 0b10111111
+        and     byte [0x1849], 0b10111111
+        and     byte [0x3844], 0b11111110
+        and     byte [0x1894], 0b11101010
+        and     byte [0x18e3], 0b11111010
+        and     byte [0x18e8], 0b10101011
+        and     byte [0x38e3], 0b11101010
+        and     byte [0x38e8], 0b10101011
+        and     byte [0x1932], 0b11111110
+        and     byte [0x1938], 0b10101111
+        and     byte [0x3932], 0b11111010
+        and     byte [0x3938], 0b10101111
+        and     byte [0x1988], 0b10101111
+        and     byte [0x3981], 0b11111010
+        and     byte [0x3988], 0b10111111
+        and     byte [0x19d1], 0b11101010
+        and     byte [0x19d8], 0b10111111
+        and     byte [0x1a20], 0b11111010
+        and     byte [0x1a27], 0b10101011
+        and     byte [0x3a20], 0b11101010
+        and     byte [0x3a27], 0b10101011
+        and     byte [0x1a6f], 0b11111110
+        and     byte [0x1a77], 0b10101111
+        and     byte [0x3a6f], 0b11101010
+        and     byte [0x3a77], 0b10101111
+        and     byte [0x1ac7], 0b10111111
+        and     byte [0x3abe], 0b11111110
+        and     byte [0x1b0e], 0b11101010
+        and     byte [0x1b16], 0b10101011
+        and     byte [0x3b0d], 0b11111110
+        and     byte [0x3b16], 0b10101111
+        and     byte [0x1b5d], 0b11111110
+        and     byte [0x1b66], 0b10111111
+        and     byte [0x3b5d], 0b11111110
+        and     byte [0x3b66], 0b10111111
+        and     byte [0x1bad], 0b11111110
+        and     byte [0x1bb5], 0b10101011
+        and     byte [0x3bad], 0b11111110
+        and     byte [0x3bb5], 0b10101111
+        and     byte [0x1bfd], 0b11111110
+        and     byte [0x1c05], 0b10111111
+        and     byte [0x3bfd], 0b11111110
+        and     byte [0x1c4d], 0b11111110
+        and     byte [0x1c54], 0b10101111
+        and     byte [0x3c4d], 0b11111110
+        and     byte [0x3c54], 0b10111111
+        and     byte [0x1c9d], 0b11111110
+        and     byte [0x1ca3], 0b10101011
+        and     byte [0x3c9d], 0b11111110
+        and     byte [0x3ca3], 0b10111111
+        and     byte [0x1ced], 0b11111110
+        and     byte [0x1cf2], 0b10101011
+        and     byte [0x3ced], 0b11111110
+        and     byte [0x3cf2], 0b10111111
+        and     byte [0x1d3d], 0b11111110
+        and     byte [0x1d41], 0b10101111
+        and     byte [0x3d3d], 0b11111110
+        and     byte [0x3d40], 0b10101011
+        and     byte [0x1d8d], 0b11111110
+        and     byte [0x1d8f], 0b10101011
+        and     byte [0x3d8d], 0b11111110
+        and     byte [0x3d8e], 0b10111111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_48_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_48_common:
+
+        mov     di,0x1708
+        stosb
+        mov     di,0x3708
+        stosb
+        mov     di,0x1758
+        stosb
+        mov     di,0x3757
+        stosw
+        mov     di,0x17a7
+        stosw
+        mov     di,0x37a7
+        stosw
         mov     di,0x17f6
         stosw
         mov     di,0x17f8
         stosb
-        or      byte [0x17f9], 0b1000000
-        or      byte [0x37f5], 0b101
         mov     di,0x37f6
         stosw
         mov     di,0x37f8
         stosb
-        or      byte [0x37f9], 0b1000000
         mov     di,0x1845
         mov     cx,2
         rep stosw
-        or      byte [0x1849], 0b1000000
-        or      byte [0x3844], 0b1
         mov     di,0x3845
         mov     cx,2
         rep stosw
-        or      byte [0x1894], 0b10101
         mov     di,0x1895
         mov     cx,2
         rep stosw
@@ -6152,187 +8868,128 @@ segment_48_on:
         rep stosw
         mov     di,0x3898
         stosb
-        or      byte [0x18e3], 0b101
         mov     di,0x18e4
         mov     cx,2
         rep stosw
-        or      byte [0x18e8], 0b1010100
-        or      byte [0x38e3], 0b10101
         mov     di,0x38e4
         mov     cx,2
         rep stosw
-        or      byte [0x38e8], 0b1010100
-        or      byte [0x1932], 0b1
         mov     di,0x1933
         mov     cx,2
         rep stosw
         mov     di,0x1937
         stosb
-        or      byte [0x1938], 0b1010000
-        or      byte [0x3932], 0b101
         mov     di,0x3933
         mov     cx,2
         rep stosw
         mov     di,0x3937
         stosb
-        or      byte [0x3938], 0b1010000
         mov     di,0x1982
         mov     cx,3
         rep stosw
-        or      byte [0x1988], 0b1010000
-        or      byte [0x3981], 0b101
         mov     di,0x3982
         mov     cx,3
         rep stosw
-        or      byte [0x3988], 0b1000000
-        or      byte [0x19d1], 0b10101
         mov     di,0x19d2
         mov     cx,3
         rep stosw
-        or      byte [0x19d8], 0b1000000
         mov     di,0x39d1
         mov     cx,3
         rep stosw
         mov     di,0x39d7
         stosb
-        or      byte [0x1a20], 0b101
         mov     di,0x1a21
         mov     cx,3
         rep stosw
-        or      byte [0x1a27], 0b1010100
-        or      byte [0x3a20], 0b10101
         mov     di,0x3a21
         mov     cx,3
         rep stosw
-        or      byte [0x3a27], 0b1010100
-        or      byte [0x1a6f], 0b1
         mov     di,0x1a70
         mov     cx,3
         rep stosw
         mov     di,0x1a76
         stosb
-        or      byte [0x1a77], 0b1010000
-        or      byte [0x3a6f], 0b10101
         mov     di,0x3a70
         mov     cx,3
         rep stosw
         mov     di,0x3a76
         stosb
-        or      byte [0x3a77], 0b1010000
         mov     di,0x1abf
         mov     cx,4
         rep stosw
-        or      byte [0x1ac7], 0b1000000
-        or      byte [0x3abe], 0b1
         mov     di,0x3abf
         mov     cx,4
         rep stosw
-        or      byte [0x1b0e], 0b10101
         mov     di,0x1b0f
         mov     cx,3
         rep stosw
         mov     di,0x1b15
         stosb
-        or      byte [0x1b16], 0b1010100
-        or      byte [0x3b0d], 0b1
         mov     di,0x3b0e
         mov     cx,4
         rep stosw
-        or      byte [0x3b16], 0b1010000
-        or      byte [0x1b5d], 0b1
         mov     di,0x1b5e
         mov     cx,4
         rep stosw
-        or      byte [0x1b66], 0b1000000
-        or      byte [0x3b5d], 0b1
         mov     di,0x3b5e
         mov     cx,4
         rep stosw
-        or      byte [0x3b66], 0b1000000
-        or      byte [0x1bad], 0b1
         mov     di,0x1bae
         mov     cx,3
         rep stosw
         mov     di,0x1bb4
         stosb
-        or      byte [0x1bb5], 0b1010100
-        or      byte [0x3bad], 0b1
         mov     di,0x3bae
         mov     cx,3
         rep stosw
         mov     di,0x3bb4
         stosb
-        or      byte [0x3bb5], 0b1010000
-        or      byte [0x1bfd], 0b1
         mov     di,0x1bfe
         mov     cx,3
         rep stosw
         mov     di,0x1c04
         stosb
-        or      byte [0x1c05], 0b1000000
-        or      byte [0x3bfd], 0b1
         mov     di,0x3bfe
         mov     cx,3
         rep stosw
         mov     di,0x3c04
         stosb
-        or      byte [0x1c4d], 0b1
         mov     di,0x1c4e
         mov     cx,3
         rep stosw
-        or      byte [0x1c54], 0b1010000
-        or      byte [0x3c4d], 0b1
         mov     di,0x3c4e
         mov     cx,3
         rep stosw
-        or      byte [0x3c54], 0b1000000
-        or      byte [0x1c9d], 0b1
         mov     di,0x1c9e
         mov     cx,2
         rep stosw
         mov     di,0x1ca2
         stosb
-        or      byte [0x1ca3], 0b1010100
-        or      byte [0x3c9d], 0b1
         mov     di,0x3c9e
         mov     cx,2
         rep stosw
         mov     di,0x3ca2
         stosb
-        or      byte [0x3ca3], 0b1000000
-        or      byte [0x1ced], 0b1
         mov     di,0x1cee
         mov     cx,2
         rep stosw
-        or      byte [0x1cf2], 0b1010100
-        or      byte [0x3ced], 0b1
         mov     di,0x3cee
         mov     cx,2
         rep stosw
-        or      byte [0x3cf2], 0b1000000
-        or      byte [0x1d3d], 0b1
         mov     di,0x1d3e
         stosw
         mov     di,0x1d40
         stosb
-        or      byte [0x1d41], 0b1010000
-        or      byte [0x3d3d], 0b1
         mov     di,0x3d3e
         stosw
-        or      byte [0x3d40], 0b1010100
-        or      byte [0x1d8d], 0b1
         mov     di,0x1d8e
         stosb
-        or      byte [0x1d8f], 0b1010100
-        or      byte [0x3d8d], 0b1
-        or      byte [0x3d8e], 0b1000000
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_49_on
 segment_49_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x3696], 0b1000000
         or      byte [0x16e6], 0b1000000
@@ -6347,44 +9004,104 @@ segment_49_on:
         or      byte [0x3826], 0b1010100
         or      byte [0x1876], 0b1010100
         or      byte [0x3876], 0b1010100
+        or      byte [0x1917], 0b1000000
+        or      byte [0x3917], 0b1000000
+        or      byte [0x1967], 0b1010000
+        or      byte [0x3967], 0b1010000
+        or      byte [0x19b7], 0b1010000
+        or      byte [0x39b7], 0b1010100
+        or      byte [0x1a58], 0b1000000
+        or      byte [0x3a58], 0b1010000
+        or      byte [0x1aa8], 0b1010000
+        or      byte [0x3aa8], 0b1010100
+        or      byte [0x3af9], 0b1000000
+        or      byte [0x1b49], 0b1010000
+        or      byte [0x3b49], 0b1010000
+        or      byte [0x3b9a], 0b1000000
+        or      byte [0x1bea], 0b1010000
+        or      byte [0x3bea], 0b1010100
+        or      byte [0x1c3b], 0b1000000
+        or      byte [0x3c3b], 0b1010100
+        or      byte [0x3c8c], 0b1010000
+        or      byte [0x3cdd], 0b1010000
+        or      byte [0x1d2e], 0b1000000
+        or      byte [0x3d81], 0b1010000
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_49_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_49_off
+segment_49_off:
+
+        and     byte [0x3696], 0b10111111
+        and     byte [0x16e6], 0b10111111
+        and     byte [0x36e6], 0b10111111
+        and     byte [0x1736], 0b10111111
+        and     byte [0x3736], 0b10111111
+        and     byte [0x1786], 0b10101111
+        and     byte [0x3786], 0b10101111
+        and     byte [0x17d6], 0b10101111
+        and     byte [0x37d6], 0b10101111
+        and     byte [0x1826], 0b10101011
+        and     byte [0x3826], 0b10101011
+        and     byte [0x1876], 0b10101011
+        and     byte [0x3876], 0b10101011
+        and     byte [0x1917], 0b10111111
+        and     byte [0x3917], 0b10111111
+        and     byte [0x1967], 0b10101111
+        and     byte [0x3967], 0b10101111
+        and     byte [0x19b7], 0b10101111
+        and     byte [0x39b7], 0b10101011
+        and     byte [0x1a58], 0b10111111
+        and     byte [0x3a58], 0b10101111
+        and     byte [0x1aa8], 0b10101111
+        and     byte [0x3aa8], 0b10101011
+        and     byte [0x3af9], 0b10111111
+        and     byte [0x1b49], 0b10101111
+        and     byte [0x3b49], 0b10101111
+        and     byte [0x3b9a], 0b10111111
+        and     byte [0x1bea], 0b10101111
+        and     byte [0x3bea], 0b10101011
+        and     byte [0x1c3b], 0b10111111
+        and     byte [0x3c3b], 0b10101011
+        and     byte [0x3c8c], 0b10101111
+        and     byte [0x3cdd], 0b10101111
+        and     byte [0x1d2e], 0b10111111
+        and     byte [0x3d81], 0b10101111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_49_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_49_common:
+
         mov     di,0x18c6
         stosb
         mov     di,0x38c6
         stosb
         mov     di,0x1916
         stosb
-        or      byte [0x1917], 0b1000000
         mov     di,0x3916
         stosb
-        or      byte [0x3917], 0b1000000
         mov     di,0x1966
         stosb
-        or      byte [0x1967], 0b1010000
         mov     di,0x3966
         stosb
-        or      byte [0x3967], 0b1010000
         mov     di,0x19b6
         stosb
-        or      byte [0x19b7], 0b1010000
         mov     di,0x39b6
         stosb
-        or      byte [0x39b7], 0b1010100
         mov     di,0x1a06
         stosw
         mov     di,0x3a06
         stosw
         mov     di,0x1a56
         stosw
-        or      byte [0x1a58], 0b1000000
         mov     di,0x3a56
         stosw
-        or      byte [0x3a58], 0b1010000
         mov     di,0x1aa6
         stosw
-        or      byte [0x1aa8], 0b1010000
         mov     di,0x3aa6
         stosw
-        or      byte [0x3aa8], 0b1010100
         mov     di,0x1af6
         stosw
         mov     di,0x1af8
@@ -6393,51 +9110,42 @@ segment_49_on:
         stosw
         mov     di,0x3af8
         stosb
-        or      byte [0x3af9], 0b1000000
         mov     di,0x1b46
         stosw
         mov     di,0x1b48
         stosb
-        or      byte [0x1b49], 0b1010000
         mov     di,0x3b46
         stosw
         mov     di,0x3b48
         stosb
-        or      byte [0x3b49], 0b1010000
         mov     di,0x1b96
         mov     cx,2
         rep stosw
         mov     di,0x3b96
         mov     cx,2
         rep stosw
-        or      byte [0x3b9a], 0b1000000
         mov     di,0x1be6
         mov     cx,2
         rep stosw
-        or      byte [0x1bea], 0b1010000
         mov     di,0x3be6
         mov     cx,2
         rep stosw
-        or      byte [0x3bea], 0b1010100
         mov     di,0x1c36
         mov     cx,2
         rep stosw
         mov     di,0x1c3a
         stosb
-        or      byte [0x1c3b], 0b1000000
         mov     di,0x3c36
         mov     cx,2
         rep stosw
         mov     di,0x3c3a
         stosb
-        or      byte [0x3c3b], 0b1010100
         mov     di,0x1c86
         mov     cx,3
         rep stosw
         mov     di,0x3c86
         mov     cx,3
         rep stosw
-        or      byte [0x3c8c], 0b1010000
         mov     di,0x1cd6
         mov     cx,3
         rep stosw
@@ -6448,11 +9156,9 @@ segment_49_on:
         rep stosw
         mov     di,0x3cdc
         stosb
-        or      byte [0x3cdd], 0b1010000
         mov     di,0x1d26
         mov     cx,4
         rep stosw
-        or      byte [0x1d2e], 0b1000000
         mov     di,0x3d26
         mov     cx,4
         rep stosw
@@ -6466,14 +9172,12 @@ segment_49_on:
         rep stosw
         mov     di,0x3d80
         stosb
-        or      byte [0x3d81], 0b1010000
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_50_on
 segment_50_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x1709], 0b100
         or      byte [0x3709], 0b100
@@ -6501,155 +9205,228 @@ segment_50_on:
         or      byte [0x3989], 0b1010100
         or      byte [0x19d8], 0b10101
         or      byte [0x19d9], 0b1010100
-        mov     di,0x39d8
-        stosb
         or      byte [0x39d9], 0b1010100
         or      byte [0x1a27], 0b1
-        mov     di,0x1a28
-        stosb
         or      byte [0x1a29], 0b1010100
         or      byte [0x3a27], 0b1
-        mov     di,0x3a28
-        stosb
         or      byte [0x3a29], 0b1010100
         or      byte [0x1a77], 0b101
-        mov     di,0x1a78
-        stosb
         or      byte [0x1a79], 0b1010100
         or      byte [0x3a77], 0b101
-        mov     di,0x3a78
-        stosb
         or      byte [0x3a79], 0b1010100
         or      byte [0x1ac7], 0b10101
-        mov     di,0x1ac8
-        stosb
         or      byte [0x1ac9], 0b1010100
-        mov     di,0x3ac7
-        stosw
         or      byte [0x3ac9], 0b1010100
         or      byte [0x1b16], 0b1
-        mov     di,0x1b17
-        stosw
         or      byte [0x1b19], 0b1010100
         or      byte [0x3b16], 0b101
-        mov     di,0x3b17
-        stosw
         or      byte [0x3b19], 0b1010100
         or      byte [0x1b66], 0b10101
-        mov     di,0x1b67
-        stosw
         or      byte [0x1b69], 0b1010100
         or      byte [0x3b66], 0b10101
-        mov     di,0x3b67
-        stosw
         or      byte [0x3b69], 0b1010100
         or      byte [0x1bb5], 0b1
+        or      byte [0x1bb9], 0b1010100
+        or      byte [0x3bb5], 0b101
+        or      byte [0x3bb9], 0b1010100
+        or      byte [0x1c05], 0b10101
+        or      byte [0x1c09], 0b1010100
+        or      byte [0x3c09], 0b1010100
+        or      byte [0x1c54], 0b101
+        or      byte [0x1c59], 0b1010100
+        or      byte [0x3c54], 0b10101
+        or      byte [0x3c59], 0b1010100
+        or      byte [0x1ca3], 0b1
+        or      byte [0x1ca9], 0b1010100
+        or      byte [0x3ca3], 0b10101
+        or      byte [0x3ca9], 0b1010100
+        or      byte [0x1cf2], 0b1
+        or      byte [0x1cf9], 0b1010100
+        or      byte [0x3cf2], 0b10101
+        or      byte [0x3cf9], 0b1010100
+        or      byte [0x1d41], 0b101
+        or      byte [0x1d49], 0b1010100
+        or      byte [0x3d40], 0b1
+        or      byte [0x3d49], 0b1010100
+        or      byte [0x1d8f], 0b1
+        or      byte [0x1d99], 0b1010100
+        or      byte [0x3d8e], 0b10101
+        or      byte [0x3d99], 0b1010100
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_50_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_50_off
+segment_50_off:
+
+        and     byte [0x1709], 0b11111011
+        and     byte [0x3709], 0b11111011
+        and     byte [0x1759], 0b11111011
+        and     byte [0x3759], 0b11111011
+        and     byte [0x17a9], 0b11111011
+        and     byte [0x37a9], 0b11101011
+        and     byte [0x17f9], 0b11101011
+        and     byte [0x37f9], 0b11101011
+        and     byte [0x1849], 0b11101011
+        and     byte [0x3849], 0b10101011
+        and     byte [0x1899], 0b10101011
+        and     byte [0x3899], 0b10101011
+        and     byte [0x18e8], 0b11111110
+        and     byte [0x18e9], 0b10101011
+        and     byte [0x38e8], 0b11111110
+        and     byte [0x38e9], 0b10101011
+        and     byte [0x1938], 0b11111010
+        and     byte [0x1939], 0b10101011
+        and     byte [0x3938], 0b11111010
+        and     byte [0x3939], 0b10101011
+        and     byte [0x1988], 0b11111010
+        and     byte [0x1989], 0b10101011
+        and     byte [0x3988], 0b11101010
+        and     byte [0x3989], 0b10101011
+        and     byte [0x19d8], 0b11101010
+        and     byte [0x19d9], 0b10101011
+        and     byte [0x39d9], 0b10101011
+        and     byte [0x1a27], 0b11111110
+        and     byte [0x1a29], 0b10101011
+        and     byte [0x3a27], 0b11111110
+        and     byte [0x3a29], 0b10101011
+        and     byte [0x1a77], 0b11111010
+        and     byte [0x1a79], 0b10101011
+        and     byte [0x3a77], 0b11111010
+        and     byte [0x3a79], 0b10101011
+        and     byte [0x1ac7], 0b11101010
+        and     byte [0x1ac9], 0b10101011
+        and     byte [0x3ac9], 0b10101011
+        and     byte [0x1b16], 0b11111110
+        and     byte [0x1b19], 0b10101011
+        and     byte [0x3b16], 0b11111010
+        and     byte [0x3b19], 0b10101011
+        and     byte [0x1b66], 0b11101010
+        and     byte [0x1b69], 0b10101011
+        and     byte [0x3b66], 0b11101010
+        and     byte [0x3b69], 0b10101011
+        and     byte [0x1bb5], 0b11111110
+        and     byte [0x1bb9], 0b10101011
+        and     byte [0x3bb5], 0b11111010
+        and     byte [0x3bb9], 0b10101011
+        and     byte [0x1c05], 0b11101010
+        and     byte [0x1c09], 0b10101011
+        and     byte [0x3c09], 0b10101011
+        and     byte [0x1c54], 0b11111010
+        and     byte [0x1c59], 0b10101011
+        and     byte [0x3c54], 0b11101010
+        and     byte [0x3c59], 0b10101011
+        and     byte [0x1ca3], 0b11111110
+        and     byte [0x1ca9], 0b10101011
+        and     byte [0x3ca3], 0b11101010
+        and     byte [0x3ca9], 0b10101011
+        and     byte [0x1cf2], 0b11111110
+        and     byte [0x1cf9], 0b10101011
+        and     byte [0x3cf2], 0b11101010
+        and     byte [0x3cf9], 0b10101011
+        and     byte [0x1d41], 0b11111010
+        and     byte [0x1d49], 0b10101011
+        and     byte [0x3d40], 0b11111110
+        and     byte [0x3d49], 0b10101011
+        and     byte [0x1d8f], 0b11111110
+        and     byte [0x1d99], 0b10101011
+        and     byte [0x3d8e], 0b11101010
+        and     byte [0x3d99], 0b10101011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_50_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_50_common:
+
+        mov     di,0x39d8
+        stosb
+        mov     di,0x1a28
+        stosb
+        mov     di,0x3a28
+        stosb
+        mov     di,0x1a78
+        stosb
+        mov     di,0x3a78
+        stosb
+        mov     di,0x1ac8
+        stosb
+        mov     di,0x3ac7
+        stosw
+        mov     di,0x1b17
+        stosw
+        mov     di,0x3b17
+        stosw
+        mov     di,0x1b67
+        stosw
+        mov     di,0x3b67
+        stosw
         mov     di,0x1bb6
         stosw
         mov     di,0x1bb8
         stosb
-        or      byte [0x1bb9], 0b1010100
-        or      byte [0x3bb5], 0b101
         mov     di,0x3bb6
         stosw
         mov     di,0x3bb8
         stosb
-        or      byte [0x3bb9], 0b1010100
-        or      byte [0x1c05], 0b10101
         mov     di,0x1c06
         stosw
         mov     di,0x1c08
         stosb
-        or      byte [0x1c09], 0b1010100
         mov     di,0x3c05
         mov     cx,2
         rep stosw
-        or      byte [0x3c09], 0b1010100
-        or      byte [0x1c54], 0b101
         mov     di,0x1c55
         mov     cx,2
         rep stosw
-        or      byte [0x1c59], 0b1010100
-        or      byte [0x3c54], 0b10101
         mov     di,0x3c55
         mov     cx,2
         rep stosw
-        or      byte [0x3c59], 0b1010100
-        or      byte [0x1ca3], 0b1
         mov     di,0x1ca4
         mov     cx,2
         rep stosw
         mov     di,0x1ca8
         stosb
-        or      byte [0x1ca9], 0b1010100
-        or      byte [0x3ca3], 0b10101
         mov     di,0x3ca4
         mov     cx,2
         rep stosw
         mov     di,0x3ca8
         stosb
-        or      byte [0x3ca9], 0b1010100
-        or      byte [0x1cf2], 0b1
         mov     di,0x1cf3
         mov     cx,3
         rep stosw
-        or      byte [0x1cf9], 0b1010100
-        or      byte [0x3cf2], 0b10101
         mov     di,0x3cf3
         mov     cx,3
         rep stosw
-        or      byte [0x3cf9], 0b1010100
-        or      byte [0x1d41], 0b101
         mov     di,0x1d42
         mov     cx,3
         rep stosw
         mov     di,0x1d48
         stosb
-        or      byte [0x1d49], 0b1010100
-        or      byte [0x3d40], 0b1
         mov     di,0x3d41
         mov     cx,4
         rep stosw
-        or      byte [0x3d49], 0b1010100
-        or      byte [0x1d8f], 0b1
         mov     di,0x1d90
         mov     cx,4
         rep stosw
         mov     di,0x1d98
         stosb
-        or      byte [0x1d99], 0b1010100
-        or      byte [0x3d8e], 0b10101
         mov     di,0x3d8f
         mov     cx,5
         rep stosw
-        or      byte [0x3d99], 0b1010100
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_51_on
 segment_51_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x1b52], 0b1000000
         or      byte [0x3b52], 0b1010000
         or      byte [0x1ba2], 0b1010100
-        mov     di,0x3ba2
-        stosb
         or      byte [0x3ba3], 0b1000000
-        mov     di,0x1bf2
-        stosb
         or      byte [0x1bf3], 0b1010000
-        mov     di,0x3bf2
-        stosb
         or      byte [0x3bf3], 0b1000000
-        mov     di,0x1c42
-        stosb
         or      byte [0x1c43], 0b1000000
-        mov     di,0x3c42
-        stosb
-        mov     di,0x1c92
-        stosb
         or      byte [0x3c92], 0b1010100
         or      byte [0x1ce2], 0b1010100
         or      byte [0x3ce2], 0b1010000
@@ -6657,12 +9434,49 @@ segment_51_on:
         or      byte [0x3d32], 0b1000000
         or      byte [0x1d82], 0b1000000
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_51_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_51_off
+segment_51_off:
+
+        and     byte [0x1b52], 0b10111111
+        and     byte [0x3b52], 0b10101111
+        and     byte [0x1ba2], 0b10101011
+        and     byte [0x3ba3], 0b10111111
+        and     byte [0x1bf3], 0b10101111
+        and     byte [0x3bf3], 0b10111111
+        and     byte [0x1c43], 0b10111111
+        and     byte [0x3c92], 0b10101011
+        and     byte [0x1ce2], 0b10101011
+        and     byte [0x3ce2], 0b10101111
+        and     byte [0x1d32], 0b10101111
+        and     byte [0x3d32], 0b10111111
+        and     byte [0x1d82], 0b10111111
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_51_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_51_common:
+
+        mov     di,0x3ba2
+        stosb
+        mov     di,0x1bf2
+        stosb
+        mov     di,0x3bf2
+        stosb
+        mov     di,0x1c42
+        stosb
+        mov     di,0x3c42
+        stosb
+        mov     di,0x1c92
+        stosb
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_52_on
 segment_52_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x1b5d], 0b100
         or      byte [0x3b5d], 0b1010100
@@ -6687,66 +9501,129 @@ segment_52_on:
         or      byte [0x3d3d], 0b100
         or      byte [0x1d8d], 0b100
 
+        mov     ax,0b01010101_01010101
+        jmp     segment_52_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_52_off
+segment_52_off:
+
+        and     byte [0x1b5d], 0b11111011
+        and     byte [0x3b5d], 0b10101011
+        and     byte [0x1bac], 0b11111110
+        and     byte [0x1bad], 0b10101011
+        and     byte [0x3bac], 0b11111010
+        and     byte [0x3bad], 0b10101011
+        and     byte [0x1bfc], 0b11101010
+        and     byte [0x1bfd], 0b10101011
+        and     byte [0x3bfc], 0b11111010
+        and     byte [0x3bfd], 0b10101011
+        and     byte [0x1c4c], 0b11111010
+        and     byte [0x1c4d], 0b10101011
+        and     byte [0x3c4c], 0b11111110
+        and     byte [0x3c4d], 0b10101011
+        and     byte [0x1c9c], 0b11111110
+        and     byte [0x1c9d], 0b10101011
+        and     byte [0x3c9d], 0b10101011
+        and     byte [0x1ced], 0b10101011
+        and     byte [0x3ced], 0b11101011
+        and     byte [0x1d3d], 0b11101011
+        and     byte [0x3d3d], 0b11111011
+        and     byte [0x1d8d], 0b11111011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_52_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_52_common:
+
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_53_on
 segment_53_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x1bf3], 0b100
         or      byte [0x3bf3], 0b10101
         or      byte [0x1c43], 0b10101
         or      byte [0x1c44], 0b1010000
+        or      byte [0x1c95], 0b1000000
+        or      byte [0x3c92], 0b1
+        or      byte [0x3c95], 0b1010100
+        or      byte [0x1ce2], 0b1
+        or      byte [0x3ce2], 0b101
+        or      byte [0x3ce6], 0b1000000
+        or      byte [0x1d32], 0b101
+        or      byte [0x1d36], 0b1010100
+        or      byte [0x3d32], 0b10101
+        or      byte [0x3d37], 0b1000000
+        or      byte [0x1d82], 0b10101
+        or      byte [0x1d87], 0b1010000
+        or      byte [0x3d87], 0b1010100
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_53_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_53_off
+segment_53_off:
+
+        and     byte [0x1bf3], 0b11111011
+        and     byte [0x3bf3], 0b11101010
+        and     byte [0x1c43], 0b11101010
+        and     byte [0x1c44], 0b10101111
+        and     byte [0x1c95], 0b10111111
+        and     byte [0x3c92], 0b11111110
+        and     byte [0x3c95], 0b10101011
+        and     byte [0x1ce2], 0b11111110
+        and     byte [0x3ce2], 0b11111010
+        and     byte [0x3ce6], 0b10111111
+        and     byte [0x1d32], 0b11111010
+        and     byte [0x1d36], 0b10101011
+        and     byte [0x3d32], 0b11101010
+        and     byte [0x3d37], 0b10111111
+        and     byte [0x1d82], 0b11101010
+        and     byte [0x1d87], 0b10101111
+        and     byte [0x3d87], 0b10101011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_53_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_53_common:
+
         mov     di,0x3c43
         stosw
         mov     di,0x1c93
         stosw
-        or      byte [0x1c95], 0b1000000
-        or      byte [0x3c92], 0b1
         mov     di,0x3c93
         stosw
-        or      byte [0x3c95], 0b1010100
-        or      byte [0x1ce2], 0b1
         mov     di,0x1ce3
         stosw
         mov     di,0x1ce5
         stosb
-        or      byte [0x3ce2], 0b101
         mov     di,0x3ce3
         stosw
         mov     di,0x3ce5
         stosb
-        or      byte [0x3ce6], 0b1000000
-        or      byte [0x1d32], 0b101
         mov     di,0x1d33
         stosw
         mov     di,0x1d35
         stosb
-        or      byte [0x1d36], 0b1010100
-        or      byte [0x3d32], 0b10101
         mov     di,0x3d33
         mov     cx,2
         rep stosw
-        or      byte [0x3d37], 0b1000000
-        or      byte [0x1d82], 0b10101
         mov     di,0x1d83
         mov     cx,2
         rep stosw
-        or      byte [0x1d87], 0b1010000
         mov     di,0x3d82
         mov     cx,2
         rep stosw
         mov     di,0x3d86
         stosb
-        or      byte [0x3d87], 0b1010100
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global segment_54_on
 segment_54_on:
-        mov     ax,0b01010101_01010101
 
         or      byte [0x1bfc], 0b1000000
         or      byte [0x3bfb], 0b1
@@ -6754,47 +9631,78 @@ segment_54_on:
         or      byte [0x1c4b], 0b10101
         or      byte [0x1c4c], 0b1010000
         or      byte [0x3c4a], 0b1
-        mov     di,0x3c4b
-        stosb
         or      byte [0x3c4c], 0b1010100
         or      byte [0x1c9a], 0b101
+        or      byte [0x1c9c], 0b1010100
+        or      byte [0x1ce9], 0b1
+        or      byte [0x3ce9], 0b101
+        or      byte [0x3ced], 0b1000000
+        or      byte [0x1d3d], 0b1000000
+        or      byte [0x3d38], 0b101
+        or      byte [0x3d3d], 0b1010000
+        or      byte [0x1d88], 0b10101
+        or      byte [0x1d8d], 0b1010000
+        or      byte [0x3d8d], 0b1010100
+
+        mov     ax,0b01010101_01010101
+        jmp     segment_54_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+global segment_54_off
+segment_54_off:
+
+        and     byte [0x1bfc], 0b10111111
+        and     byte [0x3bfb], 0b11111110
+        and     byte [0x3bfc], 0b10101111
+        and     byte [0x1c4b], 0b11101010
+        and     byte [0x1c4c], 0b10101111
+        and     byte [0x3c4a], 0b11111110
+        and     byte [0x3c4c], 0b10101011
+        and     byte [0x1c9a], 0b11111010
+        and     byte [0x1c9c], 0b10101011
+        and     byte [0x1ce9], 0b11111110
+        and     byte [0x3ce9], 0b11111010
+        and     byte [0x3ced], 0b10111111
+        and     byte [0x1d3d], 0b10111111
+        and     byte [0x3d38], 0b11111010
+        and     byte [0x3d3d], 0b10101111
+        and     byte [0x1d88], 0b11101010
+        and     byte [0x1d8d], 0b10101111
+        and     byte [0x3d8d], 0b10101011
+
+        mov     ax,0b00000000_00000000
+        jmp     segment_54_common
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+segment_54_common:
+
+        mov     di,0x3c4b
+        stosb
         mov     di,0x1c9b
         stosb
-        or      byte [0x1c9c], 0b1010100
         mov     di,0x3c9a
         stosw
         mov     di,0x3c9c
         stosb
-        or      byte [0x1ce9], 0b1
         mov     di,0x1cea
         stosw
         mov     di,0x1cec
         stosb
-        or      byte [0x3ce9], 0b101
         mov     di,0x3cea
         stosw
         mov     di,0x3cec
         stosb
-        or      byte [0x3ced], 0b1000000
         mov     di,0x1d39
         mov     cx,2
         rep stosw
-        or      byte [0x1d3d], 0b1000000
-        or      byte [0x3d38], 0b101
         mov     di,0x3d39
         mov     cx,2
         rep stosw
-        or      byte [0x3d3d], 0b1010000
-        or      byte [0x1d88], 0b10101
         mov     di,0x1d89
         mov     cx,2
         rep stosw
-        or      byte [0x1d8d], 0b1010000
         mov     di,0x3d88
         mov     cx,2
         rep stosw
         mov     di,0x3d8c
         stosb
-        or      byte [0x3d8d], 0b1010100
 
         ret
