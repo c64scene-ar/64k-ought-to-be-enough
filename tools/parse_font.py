@@ -275,11 +275,11 @@ segment_%d_common:
         self._common_stos.append(out)
 
     def do_and(self, offset, mask):
-        out = '        and     byte [0x%04x], %s\n' % (offset, bin(mask))
+        out = '        and     byte [{:#06x}], {:#010b}\n'.format(offset, mask)
         self._output_fd.write(out)
 
     def do_or(self, offset, mask):
-        out = '        or      byte [0x%04x], %s\n' % (offset, bin(mask))
+        out = '        or      byte [{:#06x}], {:#010b}\n'.format(offset, mask)
         self._output_fd.write(out)
         self._common_and.append((offset,mask))
 
