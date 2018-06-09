@@ -2276,24 +2276,22 @@ segment_9_on:
 
         or      byte [0x2757], 0b00000001
         or      byte [0x275d], 0b01010100
-        or      byte [0x07ad], 0b01010100
+        or      byte [0x07ad], 0b01010000
         or      byte [0x27a8], 0b00010101
-        or      byte [0x27ad], 0b01010000
+        or      byte [0x27ad], 0b01000000
         or      byte [0x07f8], 0b00000101
-        or      byte [0x07fd], 0b01000000
         or      byte [0x27f8], 0b00000001
-        or      byte [0x084c], 0b01010100
+        or      byte [0x27fc], 0b01010100
+        or      byte [0x084c], 0b01010000
         or      byte [0x2849], 0b00010101
-        or      byte [0x284c], 0b01010000
+        or      byte [0x284c], 0b01000000
         or      byte [0x0899], 0b00000101
-        or      byte [0x089c], 0b01000000
         or      byte [0x2899], 0b00000001
-        or      byte [0x08eb], 0b01010100
+        or      byte [0x289b], 0b01010100
+        or      byte [0x08eb], 0b01010000
         or      byte [0x28ea], 0b00010101
-        or      byte [0x28eb], 0b01010000
+        or      byte [0x28eb], 0b01000000
         or      byte [0x093a], 0b00000101
-        or      byte [0x093b], 0b01000000
-        or      byte [0x293a], 0b00000001
 
         mov     ax,0b01010101_01010101
         jmp     segment_9_common
@@ -2303,24 +2301,22 @@ segment_9_off:
 
         and     byte [0x2757], 0b11111110
         and     byte [0x275d], 0b10101011
-        and     byte [0x07ad], 0b10101011
+        and     byte [0x07ad], 0b10101111
         and     byte [0x27a8], 0b11101010
-        and     byte [0x27ad], 0b10101111
+        and     byte [0x27ad], 0b10111111
         and     byte [0x07f8], 0b11111010
-        and     byte [0x07fd], 0b10111111
         and     byte [0x27f8], 0b11111110
-        and     byte [0x084c], 0b10101011
+        and     byte [0x27fc], 0b10101011
+        and     byte [0x084c], 0b10101111
         and     byte [0x2849], 0b11101010
-        and     byte [0x284c], 0b10101111
+        and     byte [0x284c], 0b10111111
         and     byte [0x0899], 0b11111010
-        and     byte [0x089c], 0b10111111
         and     byte [0x2899], 0b11111110
-        and     byte [0x08eb], 0b10101011
+        and     byte [0x289b], 0b10101011
+        and     byte [0x08eb], 0b10101111
         and     byte [0x28ea], 0b11101010
-        and     byte [0x28eb], 0b10101111
+        and     byte [0x28eb], 0b10111111
         and     byte [0x093a], 0b11111010
-        and     byte [0x093b], 0b10111111
-        and     byte [0x293a], 0b11111110
 
         mov     ax,0b00000000_00000000
         jmp     segment_9_common
@@ -2344,8 +2340,9 @@ segment_9_common:
         mov     cx,2
         rep stosw
         mov     di,0x27f9
-        mov     cx,2
-        rep stosw
+        stosw
+        mov     di,0x27fb
+        stosb
         mov     di,0x0849
         stosw
         mov     di,0x084b
@@ -2355,7 +2352,7 @@ segment_9_common:
         mov     di,0x089a
         stosw
         mov     di,0x289a
-        stosw
+        stosb
         mov     di,0x08ea
         stosb
 
@@ -2775,22 +2772,24 @@ segment_11_common:
 global segment_12_on
 segment_12_on:
 
-        or      byte [0x27ad], 0b00000100
-        or      byte [0x07fd], 0b00010100
+        or      byte [0x07ad], 0b00000100
+        or      byte [0x27ad], 0b00010100
+        or      byte [0x07fd], 0b01010100
+        or      byte [0x27fc], 0b00000001
         or      byte [0x27fd], 0b01010100
-        or      byte [0x084c], 0b00000001
+        or      byte [0x084c], 0b00000101
         or      byte [0x084d], 0b01010100
-        or      byte [0x284c], 0b00000101
+        or      byte [0x284c], 0b00010101
         or      byte [0x284d], 0b01010100
-        or      byte [0x089c], 0b00010101
         or      byte [0x089d], 0b01010100
+        or      byte [0x289b], 0b00000001
         or      byte [0x289d], 0b01010100
-        or      byte [0x08eb], 0b00000001
+        or      byte [0x08eb], 0b00000101
         or      byte [0x08ed], 0b01010100
-        or      byte [0x28eb], 0b00000101
+        or      byte [0x28eb], 0b00010101
         or      byte [0x28ed], 0b01010100
-        or      byte [0x093b], 0b00010101
         or      byte [0x093d], 0b01010100
+        or      byte [0x293a], 0b00000001
         or      byte [0x293d], 0b01010100
         or      byte [0x098d], 0b01010100
         or      byte [0x298b], 0b00010101
@@ -2816,22 +2815,24 @@ segment_12_on:
 global segment_12_off
 segment_12_off:
 
-        and     byte [0x27ad], 0b11111011
-        and     byte [0x07fd], 0b11101011
+        and     byte [0x07ad], 0b11111011
+        and     byte [0x27ad], 0b11101011
+        and     byte [0x07fd], 0b10101011
+        and     byte [0x27fc], 0b11111110
         and     byte [0x27fd], 0b10101011
-        and     byte [0x084c], 0b11111110
+        and     byte [0x084c], 0b11111010
         and     byte [0x084d], 0b10101011
-        and     byte [0x284c], 0b11111010
+        and     byte [0x284c], 0b11101010
         and     byte [0x284d], 0b10101011
-        and     byte [0x089c], 0b11101010
         and     byte [0x089d], 0b10101011
+        and     byte [0x289b], 0b11111110
         and     byte [0x289d], 0b10101011
-        and     byte [0x08eb], 0b11111110
+        and     byte [0x08eb], 0b11111010
         and     byte [0x08ed], 0b10101011
-        and     byte [0x28eb], 0b11111010
+        and     byte [0x28eb], 0b11101010
         and     byte [0x28ed], 0b10101011
-        and     byte [0x093b], 0b11101010
         and     byte [0x093d], 0b10101011
+        and     byte [0x293a], 0b11111110
         and     byte [0x293d], 0b10101011
         and     byte [0x098d], 0b10101011
         and     byte [0x298b], 0b11101010
@@ -2856,14 +2857,16 @@ segment_12_off:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 segment_12_common:
 
+        mov     di,0x089c
+        stosb
         mov     di,0x289c
         stosb
         mov     di,0x08ec
         stosb
         mov     di,0x28ec
         stosb
-        mov     di,0x093c
-        stosb
+        mov     di,0x093b
+        stosw
         mov     di,0x293b
         stosw
         mov     di,0x098b

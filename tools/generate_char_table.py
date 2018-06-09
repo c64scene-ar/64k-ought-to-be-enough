@@ -91,9 +91,9 @@ BIT_TRANS = {
   15:7,  # center-right
   16:18, # or [27] center-left
   17:25, # center-left
-  18:13, # or [15], center-left
+  18:15, # center-left
   19:26, # center-left
-  20:15, # or [13], center-left
+  20:13, # center-left
   21:36, # center-left
   22:37, # center-left
   23:38, # center-left

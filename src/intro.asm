@@ -80,7 +80,7 @@ draw_big_char:
         mov     ds,ax
 
         sub     bx,bx
-        mov     si,table_m
+        mov     si,table_w
         mov     cx,4
 .outloop:
         mov     dx,[cs:si]
