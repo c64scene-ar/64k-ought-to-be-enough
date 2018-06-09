@@ -51,73 +51,60 @@ banner_start:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 banner_init:
+        jmp     draw_big_char
 
         call    command_next                    ;initialize next command
 
-        ;mov     ax,banner_irq_8
-        ;call    irq_8_init
-        ;call    music_init
+        mov     ax,banner_irq_8
+        call    irq_8_init
+        call    music_init
 
+        mov     ax,0x0004                       ;320x200 4 colors
+        int     0x10
+
+        mov     ax,1
+        int     0x16
+
+        ret
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+draw_big_char:
         mov     ax,0x0004                       ;320x200 4 colors
         int     0x10
 
         int 3
 
-        push    ds
-        push    es
         mov     ax,0x1c00
-        mov     ds,ax
         mov     es,ax
+        mov     ds,ax
 
-        ;                          1                   2                   3                   4                   5
-        ;      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4
-        ;'a': [O,o,O,O,O,O,o,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,o,o,o,O,O,O,o,o,o,o,O,O,o,o,o,o,o,o,o,o,o,O,O,O,O,O,O,O,O,O,O],
+        sub     bx,bx
+        mov     si,table_m
+        mov     cx,4
+.outloop:
+        mov     dx,[cs:si]
+        push    cx
+        mov     cx,16
+.loop:
+        shr     dx,1
+        jnc     .skip
 
-        call    segment_1_on
-        call    segment_2_on
-        call    segment_3_on
-        call    segment_5_on
-        call    segment_6_on
+        push    cx
+        call    [cs:seg_on_call_table + bx]     ;call segment on
+        pop     cx
 
-        call    segment_7_on
-        call    segment_10_on
-        call    segment_13_on
-        call    segment_14_on
-        call    segment_15_on
-        call    segment_16_on
-        call    segment_18_on
-        call    segment_22_on
-        call    segment_24_on
-        call    segment_25_on
-        call    segment_26_on
-        call    segment_27_on
-        call    segment_28_on
-        call    segment_29_on
-        call    segment_30_on
-        call    segment_31_on
-        call    segment_32_on
-        call    segment_33_on
-        call    segment_34_on
-        call    segment_35_on
-        call    segment_36_on
-        call    segment_37_on
-        call    segment_38_on
-        call    segment_39_on
-        call    segment_40_on
-        call    segment_41_on
+.skip:
+        inc     bx
+        inc     bx
+        dec     cx
+        jne     .loop
 
-        call    segment_43_on
-        call    segment_42_on
-        call    segment_49_on
-        call    segment_47_on
-        call    segment_48_on
-        call    segment_50_on
-
-        pop     es
-        pop     ds
-
-        mov     ax,1
-        int     0x16
+        inc     si
+        inc     si
+        pop     cx
+        dec     cx
+        jne     .outloop
 
         ret
 
@@ -418,7 +405,65 @@ command_init_end:
 command_update_end:
         ret
 
+segments_to_draw:
+        dw 0,0,0,0
 
+seg_on_call_table:
+        dw segment_0_on
+        dw segment_1_on
+        dw segment_2_on
+        dw segment_3_on
+        dw segment_4_on
+        dw segment_5_on
+        dw segment_6_on
+        dw segment_7_on
+        dw segment_8_on
+        dw segment_9_on
+        dw segment_10_on
+        dw segment_11_on
+        dw segment_12_on
+        dw segment_13_on
+        dw segment_14_on
+        dw segment_15_on
+        dw segment_16_on
+        dw segment_17_on
+        dw segment_18_on
+        dw segment_19_on
+        dw segment_20_on
+        dw segment_21_on
+        dw segment_22_on
+        dw segment_23_on
+        dw segment_24_on
+        dw segment_25_on
+        dw segment_26_on
+        dw segment_27_on
+        dw segment_28_on
+        dw segment_29_on
+        dw segment_30_on
+        dw segment_31_on
+        dw segment_32_on
+        dw segment_33_on
+        dw segment_34_on
+        dw segment_35_on
+        dw segment_36_on
+        dw segment_37_on
+        dw segment_38_on
+        dw segment_39_on
+        dw segment_40_on
+        dw segment_41_on
+        dw segment_42_on
+        dw segment_43_on
+        dw segment_44_on
+        dw segment_45_on
+        dw segment_46_on
+        dw segment_47_on
+        dw segment_48_on
+        dw segment_49_on
+        dw segment_50_on
+        dw segment_51_on
+        dw segment_52_on
+        dw segment_53_on
+        dw segment_54_on
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
@@ -429,26 +474,26 @@ section .banner_data data
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; compress data
-letter_p_lz4:
-        incbin 'src/p.raw.lz4'
-letter_v_lz4:
-        incbin 'src/v.raw.lz4'
-letter_m_lz4:
-        incbin 'src/m.raw.lz4'
-letter_invites_lz4:
-        incbin 'src/invites.raw.lz4'
-letter_you_lz4:
-        incbin 'src/you.raw.lz4'
-letter_to_lz4:
-        incbin 'src/to.raw.lz4'
-letter_flashparty_lz4:
-        incbin 'src/fp.raw.lz4'
-letter_2018_lz4:
-        incbin 'src/2018.raw.lz4'
-letter_tango_lz4:
-        incbin 'src/tango_silueta.raw.lz4'
-letter_satelite_lz4:
-        incbin 'src/satelite.raw.lz4'
+;letter_p_lz4:
+;        incbin 'src/p.raw.lz4'
+;letter_v_lz4:
+;        incbin 'src/v.raw.lz4'
+;letter_m_lz4:
+;        incbin 'src/m.raw.lz4'
+;letter_invites_lz4:
+;        incbin 'src/invites.raw.lz4'
+;letter_you_lz4:
+;        incbin 'src/you.raw.lz4'
+;letter_to_lz4:
+;        incbin 'src/to.raw.lz4'
+;letter_flashparty_lz4:
+;        incbin 'src/fp.raw.lz4'
+;letter_2018_lz4:
+;        incbin 'src/2018.raw.lz4'
+;letter_tango_lz4:
+;        incbin 'src/tango_silueta.raw.lz4'
+;letter_satelite_lz4:
+;        incbin 'src/satelite.raw.lz4'
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; song related
@@ -483,16 +528,16 @@ end_condition:          db 0                    ;when 1, banner animation sequen
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; pointers to the data. each one has its own index
 letter_idx:
-        dw letter_p_lz4                         ;0
-        dw letter_v_lz4                         ;1
-        dw letter_m_lz4                         ;2
-        dw letter_invites_lz4                   ;3
-        dw letter_you_lz4                       ;4
-        dw letter_to_lz4                        ;5
-        dw letter_flashparty_lz4                ;6
-        dw letter_2018_lz4                      ;7
-        dw letter_tango_lz4                     ;8
-        dw letter_satelite_lz4                  ;9
+;        dw letter_p_lz4                         ;0
+;        dw letter_v_lz4                         ;1
+;        dw letter_m_lz4                         ;2
+;        dw letter_invites_lz4                   ;3
+;        dw letter_you_lz4                       ;4
+;        dw letter_to_lz4                        ;5
+;        dw letter_flashparty_lz4                ;6
+;        dw letter_2018_lz4                      ;7
+;        dw letter_tango_lz4                     ;8
+;        dw letter_satelite_lz4                  ;9
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -602,3 +647,5 @@ commands:
         db TOKEN_DELAY,150
 
         db TOKEN_END
+
+

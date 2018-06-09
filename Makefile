@@ -10,7 +10,7 @@ LDFLAGS = -oEXE -m
 default: $(TARGET)
 all: res default
 
-OBJECTS = main.o detect_card.o pztimer.o lz4_8088.o zx7_8086.o intro.o utils.o segment55.o
+OBJECTS = main.o detect_card.o pztimer.o lz4_8088.o zx7_8086.o intro.o utils.o segment55_table.o segment55_data.o
 
 %.o: src/%.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
@@ -51,6 +51,8 @@ res:
 	python3 ~/progs/pc-8088-misc/pvmplay/convert_vgm_to_pvm.py res/cumparchiptune.vgm
 	mv res/cumparchiptune.pvm src/uctumi-song.pvm
 	echo "Converting graphics..."
+	python3 tools/parse_font.py res/55-segment.png -o src/segment55_data.asm
+	python3 tools/generate_char_table.py -o src/segment55_table.asm
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 10 -o src/flashparty.bin res/flashparty.data
 	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/p.raw res/p.data
 	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/v.raw res/v.data

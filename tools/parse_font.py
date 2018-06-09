@@ -6,8 +6,8 @@
 Tool to convert a font-file to .asm code
 """
 import argparse
-import sys
 import queue
+import sys
 from PIL import Image
 
 
@@ -38,6 +38,7 @@ class Parser:
         self._width = im.width
         self._height = im.height
 
+        print('Generating segments...')
         segment = 0
         for y in range(self._height):
             for x in range(self._width):
@@ -76,7 +77,6 @@ class Parser:
     def start_segment(self, segment, x, y, color, depth):
         # non recursive "visit" algorithm since to avoid recursion exception
 
-        print('Starting segment: %d - color: %d (%d,%d)' % (segment, color, x, y))
         q = queue.Queue()
         q.put((x, y))
         while not q.empty():
@@ -135,6 +135,7 @@ bits    16
 cpu     8086
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+section .text
 
 """)
 
