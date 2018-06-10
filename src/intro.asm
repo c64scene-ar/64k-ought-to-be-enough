@@ -43,38 +43,29 @@ banner_start:
 
         call    banner_init
 
-        ;call    banner_main_loop
-        ;call    banner_cleanup
+        call    banner_main_loop
+        call    banner_cleanup
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 banner_init:
-        mov     ax,0x0004                       ;320x200 4 colors
-        int     0x10
+;        mov     si,table_a
+;        call    draw_big_char
+;
+;        mov     si,table_e
+;        call    draw_big_char
+;
+;        mov     si,table_i
+;        call    draw_big_char
+;
+;        mov     si,table_o
+;        call    draw_big_char
+;
+;        mov     si,table_u
+;        call    draw_big_char
 
-.forever:
-        mov     si,table_a
-        call    draw_big_char
 
-        mov     si,table_e
-        call    draw_big_char
-
-        mov     si,table_i
-        call    draw_big_char
-
-        mov     si,table_o
-        call    draw_big_char
-
-        mov     si,table_u
-        call    draw_big_char
-
-        jmp     .forever
-
-        mov     ax,1
-        int     0x16
-
-        ret
 
         call    command_next                    ;initialize next command
 
@@ -84,9 +75,6 @@ banner_init:
 
         mov     ax,0x0004                       ;320x200 4 colors
         int     0x10
-
-        mov     ax,1
-        int     0x16
 
         ret
 
@@ -224,11 +212,13 @@ banner_irq_8:
 
         mov     ax,banner_data                  ;update segments
         mov     ds,ax
-        mov     ax,0x1800
+        mov     ax,GFX_SEG
         mov     es,ax
 
         call    music_play
         call    update_state_machine
+
+        mov     byte [vert_retrace],1
 
         mov     al,0x20                         ;send the EOI signal
         out     0x20,al                         ; to the IRQ controller
@@ -473,9 +463,12 @@ delay_cnt:              db 0                    ;when 0, delay is over. tick onc
 
 end_condition:          db 0                    ;when 1, banner animation sequence finishes
 
+vert_retrace:           db 0                    ;when 1, a vertical retrace have just ocurred
+
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; available tokens
+TOKEN_DELAY     equ 3
 TOKEN_END       equ 4
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -496,6 +489,11 @@ command_updates:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; available tokens
 commands:
+        db TOKEN_DELAY,5
+        db TOKEN_DELAY,5
+        db TOKEN_DELAY,5
+        db TOKEN_DELAY,5
+        db TOKEN_DELAY,5
         db TOKEN_END
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
