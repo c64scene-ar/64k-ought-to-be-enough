@@ -13,6 +13,8 @@ section .text
 global segment_0_on
 segment_0_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x0021], 0b01010000
         or      byte [0x206e], 0b01000000
         or      byte [0x00bd], 0b01010000
@@ -55,6 +57,8 @@ segment_0_on:
 global segment_0_off
 segment_0_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x0021], 0b10101111
         and     byte [0x206e], 0b10111111
         and     byte [0x00bd], 0b10101111
@@ -202,6 +206,8 @@ segment_0_common:
 global segment_1_on
 segment_1_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x0021], 0b00000101
         or      byte [0x206e], 0b00010101
         or      byte [0x00bd], 0b00000101
@@ -244,6 +250,8 @@ segment_1_on:
 global segment_1_off
 segment_1_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x0021], 0b11111010
         and     byte [0x206e], 0b11101010
         and     byte [0x00bd], 0b11111010
@@ -479,6 +487,8 @@ segment_1_common:
 global segment_2_on
 segment_2_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x002d], 0b01010100
         or      byte [0x2022], 0b00010101
         or      byte [0x202d], 0b01010000
@@ -557,6 +567,8 @@ segment_2_on:
 global segment_2_off
 segment_2_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x002d], 0b10101011
         and     byte [0x2022], 0b11101010
         and     byte [0x202d], 0b10101111
@@ -772,6 +784,8 @@ segment_2_common:
 global segment_3_on
 segment_3_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x002d], 0b00000001
         or      byte [0x002e], 0b01000000
         or      byte [0x202d], 0b00000001
@@ -864,6 +878,8 @@ segment_3_on:
 global segment_3_off
 segment_3_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x002d], 0b11111110
         and     byte [0x002e], 0b10111111
         and     byte [0x202d], 0b11111110
@@ -1149,6 +1165,8 @@ segment_3_common:
 global segment_4_on
 segment_4_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x002e], 0b00010101
         or      byte [0x0039], 0b01010100
         or      byte [0x2039], 0b01010100
@@ -1226,6 +1244,8 @@ segment_4_on:
 global segment_4_off
 segment_4_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x002e], 0b11101010
         and     byte [0x0039], 0b10101011
         and     byte [0x2039], 0b10101011
@@ -1384,6 +1404,8 @@ segment_4_common:
 global segment_5_on
 segment_5_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2022], 0b01000000
         or      byte [0x0072], 0b01000000
         or      byte [0x2072], 0b01010000
@@ -1427,6 +1449,8 @@ segment_5_on:
 global segment_5_off
 segment_5_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2022], 0b10111111
         and     byte [0x0072], 0b10111111
         and     byte [0x2072], 0b10101111
@@ -1604,6 +1628,8 @@ segment_5_common:
 global segment_6_on
 segment_6_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x202d], 0b00000100
         or      byte [0x007d], 0b00000100
         or      byte [0x207d], 0b00010100
@@ -1687,6 +1713,8 @@ segment_6_on:
 global segment_6_off
 segment_6_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x202d], 0b11111011
         and     byte [0x007d], 0b11111011
         and     byte [0x207d], 0b11101011
@@ -1874,6 +1902,8 @@ segment_6_common:
 global segment_7_on
 segment_7_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x27e6], 0b00010101
         or      byte [0x0836], 0b00010101
         or      byte [0x2836], 0b00010101
@@ -1918,6 +1948,8 @@ segment_7_on:
 global segment_7_off
 segment_7_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x27e6], 0b11101010
         and     byte [0x0836], 0b11101010
         and     byte [0x2836], 0b11101010
@@ -2096,6 +2128,8 @@ segment_7_common:
 global segment_8_on
 segment_8_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2757], 0b01010100
         or      byte [0x07a2], 0b00010101
         or      byte [0x27a2], 0b00000101
@@ -2139,6 +2173,8 @@ segment_8_on:
 global segment_8_off
 segment_8_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2757], 0b10101011
         and     byte [0x07a2], 0b11101010
         and     byte [0x27a2], 0b11111010
@@ -2274,6 +2310,8 @@ segment_8_common:
 global segment_9_on
 segment_9_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2757], 0b00000001
         or      byte [0x275d], 0b01010100
         or      byte [0x07ad], 0b01010000
@@ -2299,6 +2337,8 @@ segment_9_on:
 global segment_9_off
 segment_9_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2757], 0b11111110
         and     byte [0x275d], 0b10101011
         and     byte [0x07ad], 0b10101111
@@ -2362,6 +2402,8 @@ segment_9_common:
 global segment_10_on
 segment_10_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x275d], 0b00000001
         or      byte [0x2769], 0b01010100
         or      byte [0x07ad], 0b00000001
@@ -2434,6 +2476,8 @@ segment_10_on:
 global segment_10_off
 segment_10_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x275d], 0b11111110
         and     byte [0x2769], 0b10101011
         and     byte [0x07ad], 0b11111110
@@ -2652,6 +2696,8 @@ segment_10_common:
 global segment_11_on
 segment_11_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x07a2], 0b01000000
         or      byte [0x27a2], 0b01010000
         or      byte [0x07f2], 0b01010100
@@ -2677,6 +2723,8 @@ segment_11_on:
 global segment_11_off
 segment_11_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x07a2], 0b10111111
         and     byte [0x27a2], 0b10101111
         and     byte [0x07f2], 0b10101011
@@ -2772,6 +2820,8 @@ segment_11_common:
 global segment_12_on
 segment_12_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x07ad], 0b00000100
         or      byte [0x27ad], 0b00010100
         or      byte [0x07fd], 0b01010100
@@ -2815,6 +2865,8 @@ segment_12_on:
 global segment_12_off
 segment_12_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x07ad], 0b11111011
         and     byte [0x27ad], 0b11101011
         and     byte [0x07fd], 0b10101011
@@ -2886,6 +2938,8 @@ segment_12_common:
 global segment_13_on
 segment_13_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x27e6], 0b01000000
         or      byte [0x0836], 0b01000000
         or      byte [0x2836], 0b01000000
@@ -2949,6 +3003,8 @@ segment_13_on:
 global segment_13_off
 segment_13_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x27e6], 0b10111111
         and     byte [0x0836], 0b10111111
         and     byte [0x2836], 0b10111111
@@ -3104,6 +3160,8 @@ segment_13_common:
 global segment_14_on
 segment_14_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2809], 0b00000100
         or      byte [0x0859], 0b00000100
         or      byte [0x2859], 0b00000100
@@ -3226,6 +3284,8 @@ segment_14_on:
 global segment_14_off
 segment_14_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2809], 0b11111011
         and     byte [0x0859], 0b11111011
         and     byte [0x2859], 0b11111011
@@ -3402,6 +3462,8 @@ segment_14_common:
 global segment_15_on
 segment_15_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2886], 0b00010000
         or      byte [0x08d6], 0b00010000
         or      byte [0x28d6], 0b00010000
@@ -3466,6 +3528,8 @@ segment_15_on:
 global segment_15_off
 segment_15_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2886], 0b11101111
         and     byte [0x08d6], 0b11101111
         and     byte [0x28d6], 0b11101111
@@ -3574,6 +3638,8 @@ segment_15_common:
 global segment_16_on
 segment_16_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x28f9], 0b00010000
         or      byte [0x0949], 0b00010000
         or      byte [0x2949], 0b00010000
@@ -3635,6 +3701,8 @@ segment_16_on:
 global segment_16_off
 segment_16_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x28f9], 0b11101111
         and     byte [0x0949], 0b11101111
         and     byte [0x2949], 0b11101111
@@ -3738,6 +3806,8 @@ segment_16_common:
 global segment_17_on
 segment_17_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x098a], 0b00000101
         or      byte [0x298a], 0b00010101
         or      byte [0x298b], 0b01000000
@@ -3761,6 +3831,8 @@ segment_17_on:
 global segment_17_off
 segment_17_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x098a], 0b11111010
         and     byte [0x298a], 0b11101010
         and     byte [0x298b], 0b10111111
@@ -3817,6 +3889,8 @@ segment_17_common:
 global segment_18_on
 segment_18_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2b10], 0b00000101
         or      byte [0x0b5f], 0b00000101
         or      byte [0x2b5e], 0b00000001
@@ -3841,6 +3915,8 @@ segment_18_on:
 global segment_18_off
 segment_18_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2b10], 0b11111010
         and     byte [0x0b5f], 0b11111010
         and     byte [0x2b5e], 0b11111110
@@ -3954,6 +4030,8 @@ segment_18_common:
 global segment_19_on
 segment_19_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2b17], 0b01010100
         or      byte [0x0b67], 0b01010000
         or      byte [0x2b67], 0b01000000
@@ -3979,6 +4057,8 @@ segment_19_on:
 global segment_19_off
 segment_19_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2b17], 0b10101011
         and     byte [0x0b67], 0b10101111
         and     byte [0x2b67], 0b10111111
@@ -4074,6 +4154,8 @@ segment_19_common:
 global segment_20_on
 segment_20_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2b17], 0b00000001
         or      byte [0x0b67], 0b00000001
         or      byte [0x0b68], 0b01000000
@@ -4123,6 +4205,8 @@ segment_20_on:
 global segment_20_off
 segment_20_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2b17], 0b11111110
         and     byte [0x0b67], 0b11111110
         and     byte [0x0b68], 0b10111111
@@ -4242,6 +4326,8 @@ segment_20_common:
 global segment_21_on
 segment_21_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2b1d], 0b01010100
         or      byte [0x0b68], 0b00010101
         or      byte [0x0b6d], 0b01010100
@@ -4287,6 +4373,8 @@ segment_21_on:
 global segment_21_off
 segment_21_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2b1d], 0b10101011
         and     byte [0x0b68], 0b11101010
         and     byte [0x0b6d], 0b10101011
@@ -4387,6 +4475,8 @@ segment_21_common:
 global segment_22_on
 segment_22_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2b1d], 0b00000001
         or      byte [0x2b1e], 0b01010000
         or      byte [0x0b6d], 0b00000001
@@ -4435,6 +4525,8 @@ segment_22_on:
 global segment_22_off
 segment_22_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2b1d], 0b11111110
         and     byte [0x2b1e], 0b10101111
         and     byte [0x0b6d], 0b11111110
@@ -4561,6 +4653,8 @@ segment_22_common:
 global segment_23_on
 segment_23_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x0b67], 0b00000100
         or      byte [0x2b67], 0b00010100
         or      byte [0x0bb7], 0b01010100
@@ -4606,6 +4700,8 @@ segment_23_on:
 global segment_23_off
 segment_23_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x0b67], 0b11111011
         and     byte [0x2b67], 0b11101011
         and     byte [0x0bb7], 0b10101011
@@ -4706,6 +4802,8 @@ segment_23_common:
 global segment_24_on
 segment_24_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x0d54], 0b00000001
         or      byte [0x2d54], 0b00010101
         or      byte [0x2d55], 0b01000000
@@ -4743,6 +4841,8 @@ segment_24_on:
 global segment_24_off
 segment_24_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x0d54], 0b11111110
         and     byte [0x2d54], 0b11101010
         and     byte [0x2d55], 0b10111111
@@ -4841,6 +4941,8 @@ segment_24_common:
 global segment_25_on
 segment_25_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2d3a], 0b00000101
         or      byte [0x2d3b], 0b01000000
         or      byte [0x0d8a], 0b00010101
@@ -4878,6 +4980,8 @@ segment_25_on:
 global segment_25_off
 segment_25_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2d3a], 0b11111010
         and     byte [0x2d3b], 0b10111111
         and     byte [0x0d8a], 0b11101010
@@ -4969,6 +5073,8 @@ segment_25_common:
 global segment_26_on
 segment_26_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2ec8], 0b00000001
         or      byte [0x0f18], 0b00000001
         or      byte [0x0f19], 0b01000000
@@ -5012,6 +5118,8 @@ segment_26_on:
 global segment_26_off
 segment_26_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2ec8], 0b11111110
         and     byte [0x0f18], 0b11111110
         and     byte [0x0f19], 0b10111111
@@ -5095,6 +5203,8 @@ segment_26_common:
 global segment_27_on
 segment_27_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x0f1f], 0b00000001
         or      byte [0x2f1e], 0b00000001
         or      byte [0x0f6e], 0b00010101
@@ -5123,6 +5233,8 @@ segment_27_on:
 global segment_27_off
 segment_27_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x0f1f], 0b11111110
         and     byte [0x2f1e], 0b11111110
         and     byte [0x0f6e], 0b11101010
@@ -5238,6 +5350,8 @@ segment_27_common:
 global segment_28_on
 segment_28_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2ed7], 0b01010100
         or      byte [0x0f22], 0b00010101
         or      byte [0x0f27], 0b01010100
@@ -5283,6 +5397,8 @@ segment_28_on:
 global segment_28_off
 segment_28_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2ed7], 0b10101011
         and     byte [0x0f22], 0b11101010
         and     byte [0x0f27], 0b10101011
@@ -5383,6 +5499,8 @@ segment_28_common:
 global segment_29_on
 segment_29_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2ed7], 0b00000001
         or      byte [0x2edd], 0b01010100
         or      byte [0x0f27], 0b00000001
@@ -5432,6 +5550,8 @@ segment_29_on:
 global segment_29_off
 segment_29_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2ed7], 0b11111110
         and     byte [0x2edd], 0b10101011
         and     byte [0x0f27], 0b11111110
@@ -5551,6 +5671,8 @@ segment_29_common:
 global segment_30_on
 segment_30_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2edd], 0b00000001
         or      byte [0x2ede], 0b01010000
         or      byte [0x0f2d], 0b00000001
@@ -5599,6 +5721,8 @@ segment_30_on:
 global segment_30_off
 segment_30_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2edd], 0b11111110
         and     byte [0x2ede], 0b10101111
         and     byte [0x0f2d], 0b11111110
@@ -5732,6 +5856,8 @@ segment_30_common:
 global segment_31_on
 segment_31_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x2ee6], 0b00000001
         or      byte [0x0f36], 0b00000101
         or      byte [0x2f36], 0b00010101
@@ -5795,6 +5921,8 @@ segment_31_on:
 global segment_31_off
 segment_31_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x2ee6], 0b11111110
         and     byte [0x0f36], 0b11111010
         and     byte [0x2f36], 0b11101010
@@ -5904,6 +6032,8 @@ segment_31_common:
 global segment_32_on
 segment_32_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x0f22], 0b01000000
         or      byte [0x2f22], 0b01010000
         or      byte [0x0f72], 0b01010100
@@ -5929,6 +6059,8 @@ segment_32_on:
 global segment_32_off
 segment_32_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x0f22], 0b10111111
         and     byte [0x2f22], 0b10101111
         and     byte [0x0f72], 0b10101011
@@ -6024,6 +6156,8 @@ segment_32_common:
 global segment_33_on
 segment_33_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x0f2d], 0b00000100
         or      byte [0x2f2d], 0b00010100
         or      byte [0x0f7d], 0b01010100
@@ -6069,6 +6203,8 @@ segment_33_on:
 global segment_33_off
 segment_33_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x0f2d], 0b11111011
         and     byte [0x2f2d], 0b11101011
         and     byte [0x0f7d], 0b10101011
@@ -6169,6 +6305,8 @@ segment_33_common:
 global segment_34_on
 segment_34_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x305a], 0b00000101
         or      byte [0x10aa], 0b00010101
         or      byte [0x10ab], 0b01000000
@@ -6199,6 +6337,8 @@ segment_34_on:
 global segment_34_off
 segment_34_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x305a], 0b11111010
         and     byte [0x10aa], 0b11101010
         and     byte [0x10ab], 0b10111111
@@ -6276,6 +6416,8 @@ segment_34_common:
 global segment_35_on
 segment_35_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x10c4], 0b00000001
         or      byte [0x10c5], 0b01010000
         or      byte [0x30c4], 0b00000101
@@ -6347,6 +6489,8 @@ segment_35_on:
 global segment_35_off
 segment_35_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x10c4], 0b11111110
         and     byte [0x10c5], 0b10101111
         and     byte [0x30c4], 0b11111010
@@ -6567,6 +6711,8 @@ segment_35_common:
 global segment_36_on
 segment_36_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x3286], 0b01010100
         or      byte [0x12d6], 0b01010100
         or      byte [0x32d6], 0b01010000
@@ -6588,6 +6734,8 @@ segment_36_on:
 global segment_36_off
 segment_36_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x3286], 0b10101011
         and     byte [0x12d6], 0b10101011
         and     byte [0x32d6], 0b10101111
@@ -6615,6 +6763,8 @@ segment_36_common:
 global segment_37_on
 segment_37_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x3286], 0b00000001
         or      byte [0x3287], 0b01010100
         or      byte [0x12d6], 0b00000001
@@ -6650,6 +6800,8 @@ segment_37_on:
 global segment_37_off
 segment_37_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x3286], 0b11111110
         and     byte [0x3287], 0b10101011
         and     byte [0x12d6], 0b11111110
@@ -6691,6 +6843,8 @@ segment_37_common:
 global segment_38_on
 segment_38_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x3287], 0b00000001
         or      byte [0x12d7], 0b00000101
         or      byte [0x32d7], 0b00000101
@@ -6718,6 +6872,8 @@ segment_38_on:
 global segment_38_off
 segment_38_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x3287], 0b11111110
         and     byte [0x12d7], 0b11111010
         and     byte [0x32d7], 0b11111010
@@ -6855,6 +7011,8 @@ segment_38_common:
 global segment_39_on
 segment_39_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x3297], 0b01010100
         or      byte [0x12e7], 0b01010000
         or      byte [0x32e7], 0b01000000
@@ -6880,6 +7038,8 @@ segment_39_on:
 global segment_39_off
 segment_39_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x3297], 0b10101011
         and     byte [0x12e7], 0b10101111
         and     byte [0x32e7], 0b10111111
@@ -6975,6 +7135,8 @@ segment_39_common:
 global segment_40_on
 segment_40_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x3297], 0b00000001
         or      byte [0x12e7], 0b00000101
         or      byte [0x12e8], 0b01000000
@@ -7018,6 +7180,8 @@ segment_40_on:
 global segment_40_off
 segment_40_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x3297], 0b11111110
         and     byte [0x12e7], 0b11111010
         and     byte [0x12e8], 0b10111111
@@ -7135,6 +7299,8 @@ segment_40_common:
 global segment_41_on
 segment_41_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x329d], 0b01010100
         or      byte [0x12e8], 0b00010101
         or      byte [0x12ed], 0b01010100
@@ -7180,6 +7346,8 @@ segment_41_on:
 global segment_41_off
 segment_41_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x329d], 0b10101011
         and     byte [0x12e8], 0b11101010
         and     byte [0x12ed], 0b10101011
@@ -7280,6 +7448,8 @@ segment_41_common:
 global segment_42_on
 segment_42_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x3646], 0b01000000
         or      byte [0x1696], 0b01010100
         or      byte [0x3696], 0b00010101
@@ -7345,6 +7515,8 @@ segment_42_on:
 global segment_42_off
 segment_42_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x3646], 0b10111111
         and     byte [0x1696], 0b10101011
         and     byte [0x3696], 0b11101010
@@ -7567,6 +7739,8 @@ segment_42_common:
 global segment_43_on
 segment_43_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x3646], 0b00010101
         or      byte [0x1696], 0b00000001
         or      byte [0x16e7], 0b00000101
@@ -7597,6 +7771,8 @@ segment_43_on:
 global segment_43_off
 segment_43_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x3646], 0b11101010
         and     byte [0x1696], 0b11111110
         and     byte [0x16e7], 0b11111010
@@ -7740,6 +7916,8 @@ segment_43_common:
 global segment_44_on
 segment_44_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x3657], 0b01010100
         or      byte [0x16a7], 0b01010100
         or      byte [0x36a7], 0b01010000
@@ -7777,6 +7955,8 @@ segment_44_on:
 global segment_44_off
 segment_44_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x3657], 0b10101011
         and     byte [0x16a7], 0b10101011
         and     byte [0x36a7], 0b10101111
@@ -7932,6 +8112,8 @@ segment_44_common:
 global segment_45_on
 segment_45_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x3657], 0b00000001
         or      byte [0x16a7], 0b00000001
         or      byte [0x36a7], 0b00000101
@@ -8008,6 +8190,8 @@ segment_45_on:
 global segment_45_off
 segment_45_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x3657], 0b11111110
         and     byte [0x16a7], 0b11111110
         and     byte [0x36a7], 0b11111010
@@ -8209,6 +8393,8 @@ segment_45_common:
 global segment_46_on
 segment_46_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x365d], 0b01010100
         or      byte [0x16ad], 0b01010100
         or      byte [0x36a8], 0b00010101
@@ -8274,6 +8460,8 @@ segment_46_on:
 global segment_46_off
 segment_46_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x365d], 0b10101011
         and     byte [0x16ad], 0b10101011
         and     byte [0x36a8], 0b11101010
@@ -8441,6 +8629,8 @@ segment_46_common:
 global segment_47_on
 segment_47_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x365d], 0b00000001
         or      byte [0x3669], 0b01010000
         or      byte [0x16ad], 0b00000001
@@ -8500,6 +8690,8 @@ segment_47_on:
 global segment_47_off
 segment_47_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x365d], 0b11111110
         and     byte [0x3669], 0b10101111
         and     byte [0x16ad], 0b11111110
@@ -8667,6 +8859,8 @@ segment_47_common:
 global segment_48_on
 segment_48_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x3669], 0b00000100
         or      byte [0x16b9], 0b01010100
         or      byte [0x36b8], 0b00000101
@@ -8753,6 +8947,8 @@ segment_48_on:
 global segment_48_off
 segment_48_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x3669], 0b11111011
         and     byte [0x16b9], 0b10101011
         and     byte [0x36b8], 0b11111010
@@ -8995,6 +9191,8 @@ segment_48_common:
 global segment_49_on
 segment_49_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x3696], 0b01000000
         or      byte [0x16e6], 0b01000000
         or      byte [0x36e6], 0b01000000
@@ -9037,6 +9235,8 @@ segment_49_on:
 global segment_49_off
 segment_49_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x3696], 0b10111111
         and     byte [0x16e6], 0b10111111
         and     byte [0x36e6], 0b10111111
@@ -9183,6 +9383,8 @@ segment_49_common:
 global segment_50_on
 segment_50_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x1709], 0b00000100
         or      byte [0x3709], 0b00000100
         or      byte [0x1759], 0b00000100
@@ -9263,6 +9465,8 @@ segment_50_on:
 global segment_50_off
 segment_50_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x1709], 0b11111011
         and     byte [0x3709], 0b11111011
         and     byte [0x1759], 0b11111011
@@ -9424,6 +9628,8 @@ segment_50_common:
 global segment_51_on
 segment_51_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x1b52], 0b01000000
         or      byte [0x3b52], 0b01010000
         or      byte [0x1ba2], 0b01010100
@@ -9444,6 +9650,8 @@ segment_51_on:
 global segment_51_off
 segment_51_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x1b52], 0b10111111
         and     byte [0x3b52], 0b10101111
         and     byte [0x1ba2], 0b10101011
@@ -9482,6 +9690,8 @@ segment_51_common:
 global segment_52_on
 segment_52_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x1b5d], 0b00000100
         or      byte [0x3b5d], 0b01010100
         or      byte [0x1bac], 0b00000001
@@ -9511,6 +9721,8 @@ segment_52_on:
 global segment_52_off
 segment_52_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x1b5d], 0b11111011
         and     byte [0x3b5d], 0b10101011
         and     byte [0x1bac], 0b11111110
@@ -9546,6 +9758,8 @@ segment_52_common:
 global segment_53_on
 segment_53_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x1bf3], 0b00000100
         or      byte [0x3bf3], 0b00010101
         or      byte [0x1c43], 0b00010101
@@ -9570,6 +9784,8 @@ segment_53_on:
 global segment_53_off
 segment_53_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x1bf3], 0b11111011
         and     byte [0x3bf3], 0b11101010
         and     byte [0x1c43], 0b11101010
@@ -9629,6 +9845,8 @@ segment_53_common:
 global segment_54_on
 segment_54_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         or      byte [0x1bfc], 0b01000000
         or      byte [0x3bfb], 0b00000001
         or      byte [0x3bfc], 0b01010000
@@ -9654,6 +9872,8 @@ segment_54_on:
 global segment_54_off
 segment_54_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
         and     byte [0x1bfc], 0b10111111
         and     byte [0x3bfb], 0b11111110
         and     byte [0x3bfc], 0b10101111

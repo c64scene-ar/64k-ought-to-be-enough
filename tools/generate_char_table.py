@@ -145,7 +145,7 @@ bits    16
 cpu     8086
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-section .text
+section .banner_data data
 
 """)
         for key, val in FONT.items():

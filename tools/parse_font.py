@@ -152,6 +152,8 @@ section .text
 global segment_%d_on
 segment_%d_on:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
 """ % (seg_key, seg_key)
         self._output_fd.write(out)
 
@@ -209,6 +211,8 @@ segment_%d_on:
 global segment_%d_off
 segment_%d_off:
 
+        mov     ax,0xb800               ;ds points to graphics segment
+        mov     ds,ax
 """ % (seg_key, seg_key)
         self._output_fd.write(out)
 

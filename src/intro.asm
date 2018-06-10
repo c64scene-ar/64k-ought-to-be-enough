@@ -19,7 +19,7 @@ extern irq_8_cleanup, irq_8_init
 %define DEBUG 0                                 ;0=diabled, 1=enabled
 %define EMULATOR 1                              ;1=run on emulator
 
-GFX_SEG         equ     0x1800                  ;0x1800 for PCJr with 32k video ram
+GFX_SEG         equ     0xb800                  ;0x1800 for PCJr with 32k video ram
                                                 ;0xb800 for Tandy
 VGA_ADDRESS     equ     0x03da                  ;Tandy == PCJr.
 VGA_DATA        equ     0x03da                  ;Tandy = 0x03de. PCJr. 0x03da
@@ -52,10 +52,6 @@ banner_start:
 banner_init:
         mov     ax,0x0004                       ;320x200 4 colors
         int     0x10
-
-        mov     ax,0xb800
-        mov     es,ax
-        mov     ds,ax
 
 .forever:
         mov     si,table_a
@@ -96,62 +92,68 @@ banner_init:
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; draw a big char in the screen.
+; only draws the segments that are needed: will turn on/off only the needed
+; segments by doing a "diff" (simple xoring masks) of the previous char
+;
 ; IN:
 ;       si = pointer to table of char to draw
 draw_big_char:
 
         int 3
-
-        push    si                              ;save si for later
+        push    si                                      ;save si for later
 
         %assign XX 0
         %rep 4
-                mov     ax,[cs:old_segments + XX]       ;read mask of 16-bit
-                xor     ax,[cs:si + XX]                 ;xor-it with prev mask
-                mov     [cs:segments_to_draw + XX],ax   ;bits that are 'on' are the ones that need to be updated
+                mov     ax,[old_segments + XX]          ;read mask of 16-bit
+                xor     ax,[si + XX]                    ;xor-it with prev mask
+                mov     [segments_to_draw + XX],ax      ;bits that are 'on' are the ones that need to be updated
         %assign XX XX+2
         %endrep
 
 
-        sub     bx,bx                           ;index for call table
+        sub     bx,bx                                   ;index for call table
 
         %assign XX 0
         %rep 4
-        %push repeat
-                mov     dx,[cs:segments_to_draw + XX]   ;get mask bit (64-bits mask. 16 at a time)
-                mov     ax,[cs:old_segments + XX]       ;whether to call seg_on or seg_off
+        %push repeat                                    ;push nasm context, needed for local labels
+                mov     dx,[segments_to_draw + XX]      ;get mask bit (64-bits mask. 16 at a time)
+                mov     ax,[old_segments + XX]          ;whether to call seg_on or seg_off
                 mov     cx,16                           ;inner loop: 16 bits
         %$l_inner:
                 shr     ax,1                            ;old segs: mask >> 1.
                 rcr     dx,1                            ;to draw segs: mask >> 1 (save last previous state in MSB)
                 jnc     %$do_nothing                    ; if 0, skip, do nothing
 
-                push    cx
+                push    cx                              ;save cx/ax, since they are used in the draw routines
                 push    ax
+                push    ds
+
                 test    dx,0b10000000_00000000          ;MSB from old_segments
                 jnz     %$turn_off                      ;do the opposite: if old was on, turn it off
-                call    [cs:seg_on_call_table + bx]     ;turn segment on
+                call    [seg_on_call_table + bx]        ;turn segment on
                 jmp     %$l0
         %$turn_off:
-                call    [cs:seg_off_call_table + bx]    ;turn segment off
+                call    [seg_off_call_table + bx]       ;turn segment off
         %$l0:
-                pop     ax
+                pop     ds
+                pop     ax                              ;restore cx/ax
                 pop     cx
 
         %$do_nothing:
                 inc     bx                              ;update pointer to next segment to call
                 inc     bx
                 loop    %$l_inner
-        %pop
+        %pop                                            ;pop context
         %assign XX XX+2
         %endrep
 
-        pop     si                              ;contains ponter to char to draw
+        pop     si                                      ;contains pointer to char to draw
 
         %assign XX 0
         %rep 4
-                mov     ax,[cs:si + XX]                 ;update old_segments
-                mov     [cs:old_segments + XX],ax
+                mov     ax,[si + XX]                    ;update old_segments
+                mov     [old_segments + XX],ax
         %assign XX XX+2
         %endrep
 
@@ -182,18 +184,6 @@ banner_main_loop:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 .decompress_letter:
-        sub     ax,ax
-        mov     al,[letter_to_decompress]
-        shl     ax,1                            ;each address takes 2 bytes
-        mov     bx,ax                           ;uses bx for index
-        mov     si,[letter_idx + bx]            ;ds:si: compressed data
-
-        mov     ax,0x1800                       ;es:di (destination)
-        mov     es,ax
-        mov     di,0x4000
-
-        call    lz4_decompress
-
         dec     byte [should_decompress]        ;flag that decompress finished
         jmp     .main_loop                      ;return to main loop
 
@@ -387,12 +377,6 @@ command_next:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 command_init_display:
-        mov     bx,[command_idx]
-        mov     al,[commands + bx]
-
-        inc     word [command_idx]
-
-        mov     [letter_to_decompress],al
         mov     byte [should_decompress],1
         ret
 
@@ -454,6 +438,67 @@ command_init_end:
 command_update_end:
         ret
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+;
+; DATA GFX
+;
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+section .banner_data data
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; song related
+pvm_song:
+        incbin 'src/uctumi-song.pvm'
+pvm_wait:                                       ;cycles to read divided 0x2df
+        db 0
+pvm_offset:                                     ;pointer to next byte to read
+        dw 0
+volume_0:
+        db      0b1001_1111                     ;vol 0 channel 0
+        db      0b1011_1111                     ;vol 0 channel 1
+        db      0b1101_1111                     ;vol 0 channel 2
+        db      0b1111_1111                     ;vol 0 channel 3
+VOLUME_0_MAX equ $ - volume_0
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; vars
+should_decompress:      db 0                    ;0 when no decompress is needed, nor in progress
+                                                ; 1 when decompress is requested or in progress
+command_idx:            dw 0                    ;index of current command. index in the
+                                                ; 'command' variable. [command + command_idx] gives
+                                                ; you the current command
+command_current_fn:     dw 0                    ; current command function. address of the function to call
+
+delay_cnt:              db 0                    ;when 0, delay is over. tick once per frame
+
+end_condition:          db 0                    ;when 1, banner animation sequence finishes
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; available tokens
+TOKEN_END       equ 4
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+command_inits:
+        dw      command_init_display
+        dw      command_init_flash
+        dw      command_init_delay
+        dw      command_init_black
+        dw      command_init_end
+
+command_updates:
+        dw      command_update_display
+        dw      command_update_flash
+        dw      command_update_delay
+        dw      command_update_black
+        dw      command_update_end
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; available tokens
+commands:
+        db TOKEN_END
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 old_segments:
         dw 0,0,0,0
 
@@ -574,187 +619,5 @@ seg_off_call_table:
         dw segment_53_off
         dw segment_54_off
 
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-;
-; DATA GFX
-;
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-section .banner_data data
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; compress data
-;letter_p_lz4:
-;        incbin 'src/p.raw.lz4'
-;letter_v_lz4:
-;        incbin 'src/v.raw.lz4'
-;letter_m_lz4:
-;        incbin 'src/m.raw.lz4'
-;letter_invites_lz4:
-;        incbin 'src/invites.raw.lz4'
-;letter_you_lz4:
-;        incbin 'src/you.raw.lz4'
-;letter_to_lz4:
-;        incbin 'src/to.raw.lz4'
-;letter_flashparty_lz4:
-;        incbin 'src/fp.raw.lz4'
-;letter_2018_lz4:
-;        incbin 'src/2018.raw.lz4'
-;letter_tango_lz4:
-;        incbin 'src/tango_silueta.raw.lz4'
-;letter_satelite_lz4:
-;        incbin 'src/satelite.raw.lz4'
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; song related
-pvm_song:
-        incbin 'src/uctumi-song.pvm'
-pvm_wait:                                       ;cycles to read divided 0x2df
-        db 0
-pvm_offset:                                     ;pointer to next byte to read
-        dw 0
-volume_0:
-        db      0b1001_1111                     ;vol 0 channel 0
-        db      0b1011_1111                     ;vol 0 channel 1
-        db      0b1101_1111                     ;vol 0 channel 2
-        db      0b1111_1111                     ;vol 0 channel 3
-VOLUME_0_MAX equ $ - volume_0
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; vars
-should_decompress:      db 0                    ;0 when no decompress is needed, nor in progress
-                                                ; 1 when decompress is requested or in progress
-letter_to_decompress:   db 0                    ;idx of the image to decompress
-
-command_idx:            dw 0                    ;index of current command. index in the
-                                                ; 'command' variable. [command + command_idx] gives
-                                                ; you the current command
-command_current_fn:     dw 0                    ; current command function. address of the function to call
-
-delay_cnt:              db 0                    ;when 0, delay is over. tick once per frame
-
-end_condition:          db 0                    ;when 1, banner animation sequence finishes
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; pointers to the data. each one has its own index
-letter_idx:
-;        dw letter_p_lz4                         ;0
-;        dw letter_v_lz4                         ;1
-;        dw letter_m_lz4                         ;2
-;        dw letter_invites_lz4                   ;3
-;        dw letter_you_lz4                       ;4
-;        dw letter_to_lz4                        ;5
-;        dw letter_flashparty_lz4                ;6
-;        dw letter_2018_lz4                      ;7
-;        dw letter_tango_lz4                     ;8
-;        dw letter_satelite_lz4                  ;9
-
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; available tokens
-TOKEN_DISPLAY   equ 0                             ;letter to display
-TOKEN_FLASH     equ 1
-TOKEN_DELAY     equ 2
-TOKEN_BLACK     equ 3
-TOKEN_END       equ 4
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-command_inits:
-        dw      command_init_display
-        dw      command_init_flash
-        dw      command_init_delay
-        dw      command_init_black
-        dw      command_init_end
-
-command_updates:
-        dw      command_update_display
-        dw      command_update_flash
-        dw      command_update_delay
-        dw      command_update_black
-        dw      command_update_end
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; available tokens
-commands:
-        db TOKEN_DISPLAY,0                            ;p
-        db TOKEN_DELAY,75
-        db TOKEN_DISPLAY,1                            ;v
-        db TOKEN_DELAY,75
-        db TOKEN_DISPLAY,2                            ;m
-        db TOKEN_DELAY,75
-        db TOKEN_BLACK
-        db TOKEN_DELAY,100
-
-        db TOKEN_DISPLAY,0                            ;p
-        db TOKEN_DELAY,75
-        db TOKEN_DISPLAY,1                            ;v
-        db TOKEN_DELAY,75
-        db TOKEN_DISPLAY,2                            ;m
-        db TOKEN_BLACK
-        db TOKEN_DELAY,75
-
-        db TOKEN_DISPLAY,0                            ;p
-        db TOKEN_DELAY,50
-        db TOKEN_DISPLAY,1                            ;v
-        db TOKEN_DELAY,50
-        db TOKEN_DISPLAY,2                            ;m
-        db TOKEN_BLACK
-        db TOKEN_DELAY,50
-
-        db TOKEN_DISPLAY,0                            ;p
-        db TOKEN_DELAY,25
-        db TOKEN_DISPLAY,1                            ;v
-        db TOKEN_DELAY,25
-        db TOKEN_DISPLAY,2                            ;m
-        db TOKEN_BLACK
-        db TOKEN_DELAY,25
-
-        db TOKEN_DISPLAY,0                            ;p
-        db TOKEN_DELAY,5
-        db TOKEN_DISPLAY,1                            ;v
-        db TOKEN_DELAY,5
-        db TOKEN_DISPLAY,2                            ;m
-        db TOKEN_BLACK
-        db TOKEN_DELAY,5
-
-        db TOKEN_DISPLAY,0                            ;p
-        db TOKEN_DELAY,5
-        db TOKEN_DISPLAY,1                            ;v
-        db TOKEN_DELAY,5
-        db TOKEN_DISPLAY,2                            ;m
-        db TOKEN_BLACK
-        db TOKEN_DELAY,5
-
-        db TOKEN_DISPLAY,3                            ;invites
-        db TOKEN_DELAY,30
-        db TOKEN_DISPLAY,4                            ;you
-        db TOKEN_DELAY,30
-        db TOKEN_DISPLAY,5                            ;to
-        db TOKEN_DELAY,30
-
-        db TOKEN_DISPLAY,6                            ;flash party
-        db TOKEN_DELAY,30
-        db TOKEN_FLASH
-        db TOKEN_DELAY,5
-        db TOKEN_FLASH
-        db TOKEN_DELAY,5
-        db TOKEN_FLASH
-        db TOKEN_DELAY,5
-        db TOKEN_FLASH
-        db TOKEN_DELAY,5
-        db TOKEN_FLASH
-        db TOKEN_DELAY,5
-        db TOKEN_FLASH
-        db TOKEN_DELAY,30
-
-        db TOKEN_DISPLAY,7                            ;2018
-        db TOKEN_DELAY,150
-
-        db TOKEN_DISPLAY,8                            ;tango
-        db TOKEN_DELAY,150
-
-        db TOKEN_DISPLAY,9                            ;satelite
-        db TOKEN_DELAY,150
-
-        db TOKEN_END
 
 
