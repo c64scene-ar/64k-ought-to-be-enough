@@ -43,15 +43,30 @@ banner_start:
 
         call    banner_init
 
-        call    banner_main_loop
-
-        call    banner_cleanup
+        ;call    banner_main_loop
+        ;call    banner_cleanup
 
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 banner_init:
-        jmp     draw_big_char
+        mov     ax,0x0004                       ;320x200 4 colors
+        int     0x10
+
+        mov     ax,0x1c00
+        mov     es,ax
+        mov     ds,ax
+
+        mov     si,table_a
+        call    draw_big_char
+
+        mov     si,table_b
+        call    draw_big_char
+
+        mov     ax,1
+        int     0x16
+
+        ret
 
         call    command_next                    ;initialize next command
 
@@ -69,42 +84,64 @@ banner_init:
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; IN:
+;       si = pointer to table of char to draw
 draw_big_char:
-        mov     ax,0x0004                       ;320x200 4 colors
-        int     0x10
 
         int 3
 
-        mov     ax,0x1c00
-        mov     es,ax
-        mov     ds,ax
+        push    si                              ;save si for later
 
-        sub     bx,bx
-        mov     si,table_w
-        mov     cx,4
-.outloop:
-        mov     dx,[cs:si]
-        push    cx
-        mov     cx,16
-.loop:
-        shr     dx,1
-        jnc     .skip
+        %assign XX 0
+        %rep 4
+                mov     ax,[cs:old_segments + XX]       ;read mask of 16-bit
+                xor     ax,[cs:si + XX]                 ;xor-it with prev mask
+                mov     [cs:segments_to_draw + XX],ax   ;bits that are 'on' are the ones that need to be updated
+        %assign XX XX+2
+        %endrep
 
-        push    cx
-        call    [cs:seg_on_call_table + bx]     ;call segment on
-        pop     cx
 
-.skip:
-        inc     bx
-        inc     bx
-        dec     cx
-        jne     .loop
+        sub     bx,bx                           ;index for call table
 
-        inc     si
-        inc     si
-        pop     cx
-        dec     cx
-        jne     .outloop
+        %assign XX 0
+        %rep 4
+        %push repeat
+                mov     dx,[cs:segments_to_draw + XX]   ;get mask bit (64-bits mask. 16 at a time)
+                mov     ax,[cs:old_segments + XX]       ;whether to call seg_on or seg_off
+                mov     cx,16                           ;inner loop: 16 bits
+        %$l_inner:
+                shr     ax,1                            ;old segs: mask >> 1.
+                rcr     dx,1                            ;to draw segs: mask >> 1 (save last previous state in MSB)
+                jnc     %$do_nothing                    ; if 0, skip, do nothing
+
+                push    cx
+                push    ax
+                test    dx,0b10000000_00000000          ;MSB from old_segments
+                jnz     %$turn_off                      ;do the opposite: if old was on, turn it off
+                call    [cs:seg_on_call_table + bx]     ;turn segment on
+                jmp     %$l0
+        %$turn_off:
+                call    [cs:seg_off_call_table + bx]    ;turn segment off
+        %$l0:
+                pop     ax
+                pop     cx
+
+        %$do_nothing:
+                inc     bx                              ;update pointer to next segment to call
+                inc     bx
+                loop    %$l_inner
+        %pop
+        %assign XX XX+2
+        %endrep
+
+        pop     si                              ;contains ponter to char to draw
+
+        %assign XX 0
+        %rep 4
+                mov     ax,[cs:si + XX]                 ;update old_segments
+                mov     [cs:old_segments + XX],ax
+        %assign XX XX+2
+        %endrep
 
         ret
 
@@ -405,6 +442,9 @@ command_init_end:
 command_update_end:
         ret
 
+old_segments:
+        dw 0,0,0,0
+
 segments_to_draw:
         dw 0,0,0,0
 
@@ -464,6 +504,63 @@ seg_on_call_table:
         dw segment_52_on
         dw segment_53_on
         dw segment_54_on
+
+seg_off_call_table:
+        dw segment_0_off
+        dw segment_1_off
+        dw segment_2_off
+        dw segment_3_off
+        dw segment_4_off
+        dw segment_5_off
+        dw segment_6_off
+        dw segment_7_off
+        dw segment_8_off
+        dw segment_9_off
+        dw segment_10_off
+        dw segment_11_off
+        dw segment_12_off
+        dw segment_13_off
+        dw segment_14_off
+        dw segment_15_off
+        dw segment_16_off
+        dw segment_17_off
+        dw segment_18_off
+        dw segment_19_off
+        dw segment_20_off
+        dw segment_21_off
+        dw segment_22_off
+        dw segment_23_off
+        dw segment_24_off
+        dw segment_25_off
+        dw segment_26_off
+        dw segment_27_off
+        dw segment_28_off
+        dw segment_29_off
+        dw segment_30_off
+        dw segment_31_off
+        dw segment_32_off
+        dw segment_33_off
+        dw segment_34_off
+        dw segment_35_off
+        dw segment_36_off
+        dw segment_37_off
+        dw segment_38_off
+        dw segment_39_off
+        dw segment_40_off
+        dw segment_41_off
+        dw segment_42_off
+        dw segment_43_off
+        dw segment_44_off
+        dw segment_45_off
+        dw segment_46_off
+        dw segment_47_off
+        dw segment_48_off
+        dw segment_49_off
+        dw segment_50_off
+        dw segment_51_off
+        dw segment_52_off
+        dw segment_53_off
+        dw segment_54_off
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
