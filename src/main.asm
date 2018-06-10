@@ -29,8 +29,8 @@ section .text
         cmp     al,2
         jnz     not_pcjr
 
-        call    detect_mem_128kb
-        jc      not_128k
+;        call    detect_mem_128kb
+;        jc      not_128k
 
 ;        call    detect_8088
 ;        jb      not_8088

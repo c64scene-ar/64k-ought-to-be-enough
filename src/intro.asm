@@ -53,15 +53,27 @@ banner_init:
         mov     ax,0x0004                       ;320x200 4 colors
         int     0x10
 
-        mov     ax,0x1c00
+        mov     ax,0xb800
         mov     es,ax
         mov     ds,ax
 
+.forever:
         mov     si,table_a
         call    draw_big_char
 
-        mov     si,table_b
+        mov     si,table_e
         call    draw_big_char
+
+        mov     si,table_i
+        call    draw_big_char
+
+        mov     si,table_o
+        call    draw_big_char
+
+        mov     si,table_u
+        call    draw_big_char
+
+        jmp     .forever
 
         mov     ax,1
         int     0x16
