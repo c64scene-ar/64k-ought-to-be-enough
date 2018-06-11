@@ -10,6 +10,7 @@ extern label_model
 extern lz4_decompress, lz4_decompress_small
 extern dzx7_speed, dzx7_size, dzx7_original
 extern irq_8_cleanup, irq_8_init
+extern wait_vertical_retrace
 
 %include 'src/externs.inc'
 
@@ -20,11 +21,30 @@ extern irq_8_cleanup, irq_8_init
 %define EMULATOR 1                              ;1=run on emulator
 
 GFX_SEG         equ     0xb800                  ;0x1800 for PCJr with 32k video ram
-                                                ;0xb800 for Tandy
-VGA_ADDRESS     equ     0x03da                  ;Tandy == PCJr.
-VGA_DATA        equ     0x03da                  ;Tandy = 0x03de. PCJr. 0x03da
+                                                ;0xb800 for 16k modes
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; refreshes the palette. used as a macro, and not function, since it is being
+; called from time-critical sections
+;
+; Args:
+;       #1:     -> color to use
+%macro SET_PALETTE 1
+        call    wait_vertical_retrace
+        sub     bx,bx                   ;bx=0 (to be used in xchg later)
+        mov     cx,%1                   ;cx=new color (to be used in xchg later)
+        ;mov     dx,0x03da               ;address
+        mov     al,0x11                 ;color index = 1
+        out     dx,al                   ;dx=0x03da (register)
 
+        xchg    ax,cx                   ;fast way to set al with new color
+        out     dx,al                   ;set new color (data)
+
+        xchg    ax,bx                   ;fast way to set al to zero
+        out     dx,al                   ;update color (register)
+
+        in      al,dx                   ;reset to register again
+%endmacro
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
 ; CODE
@@ -71,6 +91,8 @@ banner_init:
 ; IN:
 ;       si = pointer to table of char to draw
 draw_bigchar:
+
+        SET_PALETTE 0
 
         push    si                                      ;save si for later
 
@@ -127,6 +149,8 @@ draw_bigchar:
                 mov     [old_segments + XX],ax
         %assign XX XX+2
         %endrep
+
+        SET_PALETTE 15
 
         ret
 
@@ -504,25 +528,25 @@ command_updates:
 ; available tokens
 commands:
         db TOKEN_BIGCHAR,'9'
-        db TOKEN_DELAY,5
+        db TOKEN_DELAY,25
         db TOKEN_BIGCHAR,'8'
-        db TOKEN_DELAY,5
+        db TOKEN_DELAY,25
         db TOKEN_BIGCHAR,'7'
-        db TOKEN_DELAY,5
+        db TOKEN_DELAY,25
         db TOKEN_BIGCHAR,'6'
-        db TOKEN_DELAY,5
+        db TOKEN_DELAY,25
         db TOKEN_BIGCHAR,'5'
-        db TOKEN_DELAY,5
+        db TOKEN_DELAY,25
         db TOKEN_BIGCHAR,'4'
-        db TOKEN_DELAY,5
+        db TOKEN_DELAY,25
         db TOKEN_BIGCHAR,'3'
-        db TOKEN_DELAY,5
+        db TOKEN_DELAY,25
         db TOKEN_BIGCHAR,'2'
-        db TOKEN_DELAY,5
+        db TOKEN_DELAY,25
         db TOKEN_BIGCHAR,'1'
-        db TOKEN_DELAY,5
+        db TOKEN_DELAY,25
         db TOKEN_BIGCHAR,'0'
-        db TOKEN_DELAY,5
+        db TOKEN_DELAY,25
         db TOKEN_BIGCHAR,'A'
         db TOKEN_DELAY,5
         db TOKEN_BIGCHAR,'E'
@@ -539,6 +563,16 @@ commands:
         db TOKEN_DELAY,5
         db TOKEN_BIGCHAR,'M'
         db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'9'
+        db TOKEN_BIGCHAR,'8'
+        db TOKEN_BIGCHAR,'7'
+        db TOKEN_BIGCHAR,'6'
+        db TOKEN_BIGCHAR,'5'
+        db TOKEN_BIGCHAR,'4'
+        db TOKEN_BIGCHAR,'3'
+        db TOKEN_BIGCHAR,'2'
+        db TOKEN_BIGCHAR,'1'
+        db TOKEN_BIGCHAR,'0'
         db TOKEN_END
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -661,6 +695,4 @@ seg_off_call_table:
         dw segment_52_off
         dw segment_53_off
         dw segment_54_off
-
-
 
