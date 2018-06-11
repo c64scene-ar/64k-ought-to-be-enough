@@ -50,22 +50,6 @@ banner_start:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 banner_init:
-;        mov     si,table_a
-;        call    draw_big_char
-;
-;        mov     si,table_e
-;        call    draw_big_char
-;
-;        mov     si,table_i
-;        call    draw_big_char
-;
-;        mov     si,table_o
-;        call    draw_big_char
-;
-;        mov     si,table_u
-;        call    draw_big_char
-
-
 
         call    command_next                    ;initialize next command
 
@@ -86,9 +70,8 @@ banner_init:
 ;
 ; IN:
 ;       si = pointer to table of char to draw
-draw_big_char:
+draw_bigchar:
 
-        int 3
         push    si                                      ;save si for later
 
         %assign XX 0
@@ -161,6 +144,9 @@ banner_main_loop:
         cmp     byte [should_decompress],1      ;should decompress image?
         jz      .decompress_letter              ; yes, decompress it
 
+        cmp     byte [bigchar_to_render],0      ;is there any bigchar to render?
+        jnz     .render_bigchar
+
         cmp     byte [end_condition],0          ;animation finished?
         jnz     .exit                           ; yes, end
 
@@ -174,6 +160,23 @@ banner_main_loop:
 .decompress_letter:
         dec     byte [should_decompress]        ;flag that decompress finished
         jmp     .main_loop                      ;return to main loop
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+.render_bigchar:
+        int 3
+        sub     ah,ah                           ;ah = 0. ax will be used
+        mov     al,byte [bigchar_to_render]
+        sub     al,0x20                         ;char table starts at 0x20 (ascii fo space)
+
+        mov     bx,ax                           ;each entry takes 8 bytes
+        shl     ax,1                            ; pow(ax,3) == ax * 8
+        shl     ax,1
+        shl     ax,1
+        mov     si,table_space                  ;si contains the base for the table
+        add     si,ax                           ;si contains the base + offset
+        call    draw_bigchar
+        mov     byte [bigchar_to_render],0
+        jmp     .main_loop
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 key_pressed:
@@ -408,12 +411,20 @@ command_update_delay:
         jmp     command_next
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-command_init_black:
+command_init_bigchar:
+        mov     bx,[command_idx]
+        mov     al,[commands + bx]
+        mov     [bigchar_to_render],al
+        inc     word [command_idx]
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-command_update_black:
-        call    command_next
+command_update_bigchar:
+        cmp     byte [bigchar_to_render],0
+        jnz     .exit
+
+        jmp     command_next
+.exit
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -465,10 +476,13 @@ end_condition:          db 0                    ;when 1, banner animation sequen
 
 vert_retrace:           db 0                    ;when 1, a vertical retrace have just ocurred
 
+bigchar_to_render:      db 0                    ;when 0, render finished/not needed. else, contains the ASCII to be rendered
+
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; available tokens
-TOKEN_DELAY     equ 3
+TOKEN_DELAY     equ 2
+TOKEN_BIGCHAR   equ 3
 TOKEN_END       equ 4
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -476,23 +490,54 @@ command_inits:
         dw      command_init_display
         dw      command_init_flash
         dw      command_init_delay
-        dw      command_init_black
+        dw      command_init_bigchar
         dw      command_init_end
 
 command_updates:
         dw      command_update_display
         dw      command_update_flash
         dw      command_update_delay
-        dw      command_update_black
+        dw      command_update_bigchar
         dw      command_update_end
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; available tokens
 commands:
+        db TOKEN_BIGCHAR,'9'
         db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'8'
         db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'7'
         db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'6'
         db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'5'
+        db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'4'
+        db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'3'
+        db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'2'
+        db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'1'
+        db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'0'
+        db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'A'
+        db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'E'
+        db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'I'
+        db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'O'
+        db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'U'
+        db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'P'
+        db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'V'
+        db TOKEN_DELAY,5
+        db TOKEN_BIGCHAR,'M'
         db TOKEN_DELAY,5
         db TOKEN_END
 

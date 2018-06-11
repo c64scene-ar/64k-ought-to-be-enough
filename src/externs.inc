@@ -37,6 +37,7 @@ extern segment_50_off, segment_51_off, segment_52_off, segment_53_off, segment_5
 
 
 ; tables
+extern table_space
 extern table_a, table_b, table_c, table_d, table_e, table_f, table_g, table_h, table_i
 extern table_j, table_k, table_l, table_m, table_n, table_o, table_p, table_q, table_r
 extern table_s, table_t, table_u, table_v, table_w, table_x, table_y, table_z
