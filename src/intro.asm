@@ -7,8 +7,6 @@ bits    16
 cpu     8086
 
 extern label_model
-extern lz4_decompress, lz4_decompress_small
-extern dzx7_speed, dzx7_size, dzx7_original
 extern irq_8_cleanup, irq_8_init
 extern wait_vertical_retrace
 
