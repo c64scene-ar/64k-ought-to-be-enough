@@ -20,6 +20,7 @@ extern wait_vertical_retrace
 
 GFX_SEG         equ     0xb800                  ;0x1800 for PCJr with 32k video ram
                                                 ;0xb800 for 16k modes
+CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; refreshes the palette. used as a macro, and not function, since it is being
@@ -77,6 +78,8 @@ banner_init:
 
         mov     ax,0x0004                       ;320x200 4 colors
         int     0x10
+
+        mov     word [char_offset],CHAR_OFFSET  ;start drawing at row 24
 
         ret
 
@@ -185,7 +188,6 @@ banner_main_loop:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 .render_bigchar:
-        int 3
         sub     ah,ah                           ;ah = 0. ax will be used
         mov     al,byte [bigchar_to_render]
         sub     al,0x20                         ;char table starts at 0x20 (ascii fo space)
@@ -199,6 +201,44 @@ banner_main_loop:
         call    draw_bigchar
         mov     byte [bigchar_to_render],0
         jmp     .main_loop
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; IN:
+;    al = char to render
+render_smallchar:
+        mov     bl,al                           ;move al into bl
+        sub     bh,bh
+        sub     bl,0x20                         ;reset offset to 0, since charset starts at 0x20
+        shl     bx,1
+        shl     bx,1
+        shl     bx,1
+        shl     bx,1                            ;multiply by 16, since each char takes 16 bytes
+
+        mov     ax,8192-2                       ;constant used for "add" (reg faster than imm)
+        mov     cx,8192+2-80                    ;constant used for "sub" (reg faster than imm)
+
+        lea     si,[charset + bx]               ;calculate source
+        mov     di,[char_offset]                ;get destintation
+        movsw                                   ;copy 1st row (2 bytes)
+        add     di,ax
+        movsw                                   ;copy 2nd row (2 bytes)
+        sub     di,cx
+        movsw                                   ;copy 3rd row (2 bytes)
+        add     di,ax
+        movsw                                   ;copy 4th row (2 bytes)
+        sub     di,cx
+        movsw                                   ;copy 5th row (2 bytes)
+        add     di,ax
+        movsw                                   ;copy 6th row (2 bytes)
+        sub     di,cx
+        movsw                                   ;copy 7th row (2 bytes)
+        add     di,ax
+        movsw                                   ;copy 8th row (2 bytes)
+
+        add     word [char_offset],2            ;update cursor for next char
+
+        ret
+
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 key_pressed:
@@ -233,6 +273,7 @@ banner_irq_8:
         push    cx
         push    bx
         push    ax
+        push    bp
         pushf
 
         mov     ax,banner_data                  ;update segments
@@ -241,14 +282,16 @@ banner_irq_8:
         mov     es,ax
 
         call    music_play
-        call    update_state_machine
+        call    text_writer_update
+        ;call    state_machine_update
 
-        mov     byte [vert_retrace],1
+        inc     byte [vert_retrace]
 
         mov     al,0x20                         ;send the EOI signal
         out     0x20,al                         ; to the IRQ controller
 
         popf
+        pop     bp
         pop     ax
         pop     bx
         pop     cx
@@ -357,7 +400,6 @@ MUSIC_END               equ 0b1000_0000
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 .is_end:
-        int 3
         mov     ax,[pvm_song + 0xc]             ;offset loop relative to start of data
         add     ax,pvm_song + 0x10              ;add header size
         mov     word [pvm_offset],ax            ;update new offset with loop data
@@ -365,7 +407,7 @@ MUSIC_END               equ 0b1000_0000
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-update_state_machine:
+state_machine_update:
         cmp     byte [should_decompress],0      ;is decompressing?
         jnz     .exit                           ; if so, exit
 
@@ -446,7 +488,7 @@ command_update_bigchar:
         jnz     .exit
 
         jmp     command_next
-.exit
+.exit:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -460,6 +502,42 @@ command_init_end:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 command_update_end:
         ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+text_writer_update:
+        dec     byte [text_writer_delay]
+        jz      .l0
+        ret
+.l0:
+        int 3
+        mov     byte [text_writer_delay],7      ;wait a few cycles
+        mov     bx, word [text_writer_offset]
+        inc     word [text_writer_offset]
+        mov     al, [text_writer_msg + bx]
+        or      al,al                           ;last char ?
+        jz      .start_again
+        cmp     al,1
+        jz      .clean_line
+
+.write:
+        mov     [bigchar_to_render],al
+        jmp     render_smallchar
+
+.start_again:
+        mov     word [text_writer_offset],0     ;reset offset
+
+.clean_line:
+        mov     di,CHAR_OFFSET
+        mov     word [char_offset],di           ;reset destination for char
+        mov     cx,40*4
+        sub     ax,ax
+        rep stosw
+
+        mov     di,CHAR_OFFSET + 8192
+        mov     cx,40*4
+        rep stosw
+        ret
+
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
@@ -694,3 +772,29 @@ seg_off_call_table:
         dw segment_53_off
         dw segment_54_off
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+char_offset:
+        dw 0                                    ;offset used to render a char
+                                                ; from the charset
+charset:
+        incbin 'src/charset_0x20_0x60.bin'      ;the charset already expanded for mode 320x200 @ 4 colors
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+text_writer_delay:
+        db 1                                    ;ticks to wait until next char it written
+text_writer_offset:
+        dw 0                                    ;offset in the text. next char to be written
+text_writer_msg:
+           ;0123456789012345678901234567890123456789
+        db '        PUNGAS DE VILLA MARTELLI        ',1
+        db '                PRESENTS                ',1
+        db 'AN INVITE INTRO FOR PCJR AND TANDY 1000.',1
+        db '  WE INVITE YOU TO THE FLASHPARTY 2018  ',1
+        db '            SEPTEMBER 21,22,23          ',1
+        db 'TO BE HOSTED IN BUENOS AIRES, ARGENTINA.',1
+        db '         (SOUTH OF SOUTH AMERICA)       ',1
+        db '        REMOTE ENTRIES ARE WELCOME!     ',1
+        db 'GREETINGS TO: XXX,YYY,ZZZ,AAA,BBB,CCC   ',1
+        db 'DID WE MENTION THIS INVITE-INTRO RUNS IN',1
+        db '       UNEXPANDED PCJR (128KB) ?        ',1
+        db 0

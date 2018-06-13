@@ -53,6 +53,7 @@ res:
 	echo "Converting graphics..."
 	python3 tools/parse_55_segment_data.py res/55-segment.png -o src/segment55_data.asm
 	python3 tools/parse_55_segment_font.py -o src/segment55_table.asm
+	python3 tools/parse_ibm_charset.py res/tandy_1000_hx_charset-charset.bin -o src/charset_0x20_0x60.bin
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 10 -o src/flashparty.bin res/flashparty.data
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/p.raw res/p.data
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/v.raw res/v.data

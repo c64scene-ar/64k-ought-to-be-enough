@@ -25,8 +25,26 @@ class Parser:
         with open(self._input_file,'rb') as fd:
             buff = fd.read()
             # only care about the chars 0x20 - 0x60
-            chars = buff[32:32+64]
-            print(len(chars))
+            chars = buff[32*8:32*8+64*8]
+            out = bytearray()
+            for byte in chars:
+                b = self.parse_half_byte(byte>>4)
+                out.append(b)
+                b = self.parse_half_byte(byte)
+                out.append(b)
+
+        self._output_fd.write(out)
+
+    def parse_half_byte(self, byte):
+        masks = [0b0001, 0b0010, 0b0100, 0b1000]
+        out = 0
+        for bit in range(4):
+            mask = byte & masks[bit]
+            if mask != 0:
+                # 0b11 is the color used for the charset
+                out |= 0b11 << (bit * 2)
+        return out
+
 
 def parse_args():
     """Parse the arguments."""
@@ -47,7 +65,7 @@ $ %(prog)s charset.bin -o new_charset.bin
 def main():
     args = parse_args()
     if args.output_file is not None:
-        with open(args.output_file, 'w+') as fd:
+        with open(args.output_file, 'wb') as fd:
             Parser(args.filename, fd).run()
     else:
         Parser(args.filename, sys.stdout).run()
