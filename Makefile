@@ -1,16 +1,16 @@
 .PHONY: res
 
-TARGET_NAME = invitro.exe
+TARGET_NAME = invitro.com
 TARGET = bin/${TARGET_NAME}
 ASM = nasm
 ASMFLAGS = -fobj -Wall
 LD = alink
-LDFLAGS = -oEXE -m
+LDFLAGS = -oCOM -m
 
 default: $(TARGET)
 all: res default
 
-OBJECTS = main.o detect_card.o pztimer.o intro.o utils.o segment55_table.o segment55_data.o
+OBJECTS = intro.o utils.o segment55_table.o segment55_data.o
 
 %.o: src/%.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
@@ -41,8 +41,8 @@ runx: x
 dist: x
 	echo "Generating distribution .zip"
 	-rm invitro.zip
-	-rm invitro/invitro.exe
-	cp bin/invitro.exe invitro/
+	-rm invitro/invitro.com
+	cp bin/invitro.com invitro/
 	zip invitro.zip -r invitro
 
 res:

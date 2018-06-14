@@ -6,7 +6,6 @@
 bits    16
 cpu     8086
 
-extern label_model
 extern irq_8_cleanup, irq_8_init
 extern wait_vertical_retrace
 
@@ -49,14 +48,12 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
 ; CODE
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-section .text
-
-global banner_start
-banner_start:
+..start:
+        resb    0x100
         cld
 
-        mov     ax,banner_data                  ;init segments
-        mov     ds,ax                           ;these values must always be true
+        push    cs
+        pop     ds
         mov     ax,GFX_SEG                      ; through the whole intro.
         mov     es,ax                           ; push/pop otherwise
 
@@ -65,12 +62,10 @@ banner_start:
         call    banner_main_loop
         call    banner_cleanup
 
-        ret
+        int     0x20                            ;exit to DOS
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 banner_init:
-
-        call    command_next                    ;initialize next command
 
         mov     ax,banner_irq_8
         call    irq_8_init
@@ -166,9 +161,6 @@ banner_cleanup:
 banner_main_loop:
 
 .main_loop:
-        cmp     byte [should_decompress],1      ;should decompress image?
-        jz      .decompress_letter              ; yes, decompress it
-
         cmp     byte [bigchar_to_render],0      ;is there any bigchar to render?
         jnz     .render_bigchar
 
@@ -180,11 +172,6 @@ banner_main_loop:
 
 .exit:
         ret                                     ;exit main loop.
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-.decompress_letter:
-        dec     byte [should_decompress]        ;flag that decompress finished
-        jmp     .main_loop                      ;return to main loop
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 .render_bigchar:
@@ -276,8 +263,8 @@ banner_irq_8:
         push    bp
         pushf
 
-        mov     ax,banner_data                  ;update segments
-        mov     ds,ax
+        push    cs
+        pop     ds
         mov     ax,GFX_SEG
         mov     es,ax
 
@@ -407,103 +394,6 @@ MUSIC_END               equ 0b1000_0000
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-state_machine_update:
-        cmp     byte [should_decompress],0      ;is decompressing?
-        jnz     .exit                           ; if so, exit
-
-        call    [command_current_fn]            ;call current command
-
-.exit:
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-command_next:
-        sub     ax,ax                           ;ax = 0
-        mov     bx,[command_idx]
-        mov     al,[commands + bx]              ;command to initialize
-        shl     al,1                            ;each address takes 2 bytes
-        xchg    bx,ax                           ;bx = ax
-
-        inc     word [command_idx]
-
-        mov     ax,[command_updates + bx]       ;cache current update function
-        mov     [command_current_fn],ax         ; for future use
-
-        jmp     [command_inits + bx]            ;call correct init function
-
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-command_init_display:
-        mov     byte [should_decompress],1
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; do nothing. wait until decompress finishes (from main loop) and
-; execute next command when that happens
-command_update_display:
-        cmp     byte [should_decompress],0
-        jnz     .exit
-
-        jmp     command_next
-
-.exit:
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-command_init_flash:
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-command_update_flash:
-        call    command_next
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-command_init_delay:
-        mov     bx,[command_idx]
-        mov     al,[commands + bx]
-        mov     [delay_cnt],al
-        inc     word [command_idx]
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-command_update_delay:
-        dec     byte [delay_cnt]
-        jz      .exit
-        ret
-.exit:
-        jmp     command_next
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-command_init_bigchar:
-        mov     bx,[command_idx]
-        mov     al,[commands + bx]
-        mov     [bigchar_to_render],al
-        inc     word [command_idx]
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-command_update_bigchar:
-        cmp     byte [bigchar_to_render],0
-        jnz     .exit
-
-        jmp     command_next
-.exit:
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-command_init_end:
-        ;mov     byte [end_condition],1
-
-        ;repeat forever
-        mov     word [command_idx],0
-        jmp     command_next
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-command_update_end:
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 text_writer_update:
         dec     byte [text_writer_delay]
         jz      .l0
@@ -544,7 +434,6 @@ text_writer_update:
 ; DATA GFX
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-section .banner_data data
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; song related
@@ -563,93 +452,12 @@ VOLUME_0_MAX equ $ - volume_0
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; vars
-should_decompress:      db 0                    ;0 when no decompress is needed, nor in progress
-                                                ; 1 when decompress is requested or in progress
-command_idx:            dw 0                    ;index of current command. index in the
-                                                ; 'command' variable. [command + command_idx] gives
-                                                ; you the current command
-command_current_fn:     dw 0                    ; current command function. address of the function to call
-
-delay_cnt:              db 0                    ;when 0, delay is over. tick once per frame
-
 end_condition:          db 0                    ;when 1, banner animation sequence finishes
 
 vert_retrace:           db 0                    ;when 1, a vertical retrace have just ocurred
 
 bigchar_to_render:      db 0                    ;when 0, render finished/not needed. else, contains the ASCII to be rendered
 
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; available tokens
-TOKEN_DELAY     equ 2
-TOKEN_BIGCHAR   equ 3
-TOKEN_END       equ 4
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-command_inits:
-        dw      command_init_display
-        dw      command_init_flash
-        dw      command_init_delay
-        dw      command_init_bigchar
-        dw      command_init_end
-
-command_updates:
-        dw      command_update_display
-        dw      command_update_flash
-        dw      command_update_delay
-        dw      command_update_bigchar
-        dw      command_update_end
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; available tokens
-commands:
-        db TOKEN_BIGCHAR,'9'
-        db TOKEN_DELAY,25
-        db TOKEN_BIGCHAR,'8'
-        db TOKEN_DELAY,25
-        db TOKEN_BIGCHAR,'7'
-        db TOKEN_DELAY,25
-        db TOKEN_BIGCHAR,'6'
-        db TOKEN_DELAY,25
-        db TOKEN_BIGCHAR,'5'
-        db TOKEN_DELAY,25
-        db TOKEN_BIGCHAR,'4'
-        db TOKEN_DELAY,25
-        db TOKEN_BIGCHAR,'3'
-        db TOKEN_DELAY,25
-        db TOKEN_BIGCHAR,'2'
-        db TOKEN_DELAY,25
-        db TOKEN_BIGCHAR,'1'
-        db TOKEN_DELAY,25
-        db TOKEN_BIGCHAR,'0'
-        db TOKEN_DELAY,25
-        db TOKEN_BIGCHAR,'A'
-        db TOKEN_DELAY,5
-        db TOKEN_BIGCHAR,'E'
-        db TOKEN_DELAY,5
-        db TOKEN_BIGCHAR,'I'
-        db TOKEN_DELAY,5
-        db TOKEN_BIGCHAR,'O'
-        db TOKEN_DELAY,5
-        db TOKEN_BIGCHAR,'U'
-        db TOKEN_DELAY,5
-        db TOKEN_BIGCHAR,'P'
-        db TOKEN_DELAY,5
-        db TOKEN_BIGCHAR,'V'
-        db TOKEN_DELAY,5
-        db TOKEN_BIGCHAR,'M'
-        db TOKEN_DELAY,5
-        db TOKEN_BIGCHAR,'9'
-        db TOKEN_BIGCHAR,'8'
-        db TOKEN_BIGCHAR,'7'
-        db TOKEN_BIGCHAR,'6'
-        db TOKEN_BIGCHAR,'5'
-        db TOKEN_BIGCHAR,'4'
-        db TOKEN_BIGCHAR,'3'
-        db TOKEN_BIGCHAR,'2'
-        db TOKEN_BIGCHAR,'1'
-        db TOKEN_BIGCHAR,'0'
-        db TOKEN_END
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 old_segments:

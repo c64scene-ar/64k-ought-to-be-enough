@@ -6,7 +6,6 @@ bits    16
 cpu     8086
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-section .banner_data data
 
 ;ASCII: 0x20
 global table_space
