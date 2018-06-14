@@ -29,19 +29,19 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
 ;       #1:     -> color to use
 %macro SET_PALETTE 1
         call    wait_vertical_retrace
-        sub     bx,bx                   ;bx=0 (to be used in xchg later)
-        mov     cx,%1                   ;cx=new color (to be used in xchg later)
-        ;mov     dx,0x03da               ;address
-        mov     al,0x11                 ;color index = 1
-        out     dx,al                   ;dx=0x03da (register)
+        sub     bx,bx                           ;bx=0 (to be used in xchg later)
+        mov     cx,%1                           ;cx=new color (to be used in xchg later)
+        ;mov     dx,0x03da                      ;address
+        mov     al,0x11                         ;color index = 1
+        out     dx,al                           ;dx=0x03da (register)
 
-        xchg    ax,cx                   ;fast way to set al with new color
-        out     dx,al                   ;set new color (data)
+        xchg    ax,cx                           ;fast way to set al with new color
+        out     dx,al                           ;set new color (data)
 
-        xchg    ax,bx                   ;fast way to set al to zero
-        out     dx,al                   ;update color (register)
+        xchg    ax,bx                           ;fast way to set al to zero
+        out     dx,al                           ;update color (register)
 
-        in      al,dx                   ;reset to register again
+        in      al,dx                           ;reset to register again
 %endmacro
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
@@ -49,7 +49,7 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ..start:
-        resb    0x100
+        resb    0x100                           ;cannot use "org 0x100" when using multiple .o files
         cld
 
         push    cs
@@ -270,7 +270,6 @@ banner_irq_8:
 
         call    music_play
         call    text_writer_update
-        ;call    state_machine_update
 
         inc     byte [vert_retrace]
 
