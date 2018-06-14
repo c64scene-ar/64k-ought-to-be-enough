@@ -77,3 +77,7 @@ res:
 	#lz4 -9 -f res/tango_silueta.raw src/tango_silueta.raw.lz4
 	#lz4 -9 -f res/satelite.raw src/satelite.raw.lz4
 	echo "Done"
+
+dis:
+	echo "Dissassembling..."
+	ndisasm -b 16 -o 100h bin/${TARGET_NAME} | gvim -
