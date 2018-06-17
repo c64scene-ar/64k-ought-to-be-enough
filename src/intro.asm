@@ -60,8 +60,8 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
         mov     ds,ax
         mov     sp,ax
 
-        mov     ax,GFX_SEG                      ; through the whole intro.
-        mov     es,ax                           ; push/pop otherwise
+        mov     ax,GFX_SEG                      ;through the whole intro.
+        mov     es,ax                           ;push/pop otherwise
 
         call    banner_init
 
@@ -99,7 +99,7 @@ draw_bigchar:
         push    si                                      ;save si for later
 
         %assign XX 0
-        %rep 4
+        %rep 4                                          ;do it 4 times: 55 segments fit into 64 bits
                 mov     ax,[old_segments + XX]          ;read mask of 16-bit
                 xor     ax,[si + XX]                    ;xor-it with prev mask
                 mov     [segments_to_draw + XX],ax      ;bits that are 'on' are the ones that need to be updated
@@ -110,7 +110,7 @@ draw_bigchar:
         sub     bx,bx                                   ;index for call table
 
         %assign XX 0
-        %rep 4
+        %rep 4                                          ;do it 4 times: 55 segments fit in 64 bits
         %push repeat                                    ;push nasm context, needed for local labels
                 mov     dx,[segments_to_draw + XX]      ;get mask bit (64-bits mask. 16 at a time)
                 mov     ax,[old_segments + XX]          ;whether to call seg_on or seg_off
@@ -146,7 +146,7 @@ draw_bigchar:
         pop     si                                      ;contains pointer to char to draw
 
         %assign XX 0
-        %rep 4
+        %rep 4                                          ;do it 4 times: 55 segments fit in 64 bits
                 mov     ax,[si + XX]                    ;update old_segments
                 mov     [old_segments + XX],ax
         %assign XX XX+2
@@ -202,10 +202,8 @@ render_smallchar:
         mov     bl,al                           ;move al into bl
         sub     bh,bh
         sub     bl,0x20                         ;reset offset to 0, since charset starts at 0x20
-        shl     bx,1
-        shl     bx,1
-        shl     bx,1
-        shl     bx,1                            ;multiply by 16, since each char takes 16 bytes
+        mov     cl,4
+        shl     bx,cl                           ;multiply by 16, since each char takes 16 bytes
 
         mov     ax,8192-2                       ;constant used for "add" (reg faster than imm)
         mov     cx,8192+2-80                    ;constant used for "sub" (reg faster than imm)
@@ -436,7 +434,7 @@ text_writer_update:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
-; DATA GFX
+; DATA
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 
