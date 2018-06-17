@@ -50,10 +50,16 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ..start:
         resb    0x100                           ;cannot use "org 0x100" when using multiple .o files
-        cld
+        cld                                     ;forward direction
 
-        push    cs
-        pop     ds
+        cli                                     ;disable interrupt while changing the stack
+        mov     ax,0x100
+        mov     sp,ax                           ;stack starts at 0x100
+
+        mov     ax,cs                           ;ds,sp = cs
+        mov     ds,ax
+        mov     sp,ax
+
         mov     ax,GFX_SEG                      ; through the whole intro.
         mov     es,ax                           ; push/pop otherwise
 
