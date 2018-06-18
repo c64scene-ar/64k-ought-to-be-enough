@@ -45,6 +45,9 @@ dist: x
 	cp bin/invitro.com invitro/
 	zip invitro.zip -r invitro
 
+boot:
+	nasm -Wall boot_loader/boot_loader.asm -fbin -o boot_loader/boot.bin
+
 res:
 	echo "Generating resources..."
 	echo "Compressing music..."
