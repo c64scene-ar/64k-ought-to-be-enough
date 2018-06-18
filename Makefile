@@ -47,10 +47,10 @@ dist: x
 
 boot:
 	nasm -Wall boot_loader/boot_loader.asm -fbin -o boot_loader/boot.bin
-	cat boot_loader/boot.bin boot_loader/zero.bin > boot_loader/boot.360
+	python3 tools/create_360_img.py -o boot_loader/boot.360 bin/invitro.com
 
 test_boot:
-	qemu-system-i386 -s -S -m 512 -fda boot_loader/boot.360
+	dosbox-x -conf conf/dosbox-x_pcjr.conf
 
 res:
 	echo "Generating resources..."

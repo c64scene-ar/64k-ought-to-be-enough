@@ -56,17 +56,17 @@ new_start:
         call    print_msg
 
 .l1:
-        mov     ax,0x0209               ;read 9 sectors
-        mov     cx,0x0001               ;cylender = 0, sector = 1
+        mov     ax,0x0205               ;read 5 sectors
+        mov     cx,0x0002               ;track = 0, sector = 2
         mov     dx,0x0000               ;head = 0, drive = 0
-        mov     ax,NEW_CS
+        mov     ax,NEW_CS + 0x20        ;512 bytes from here (1 sector size)
         mov     es,ax                   ;es:bx = dst
-        mov     bx,0x200                ;load 512 bytes after this
+        sub     bx,bx
         int     0x13
         jc      .error
         mov     si,ok_msg
         call    print_msg
-        jmp     0x300                   ;512 (sector size) + 0x100 (.com offset)
+        jmp     NEW_CS+0x20:0x100       ;512 (0x20 * 16) (sector size) + 0x100 (.com offset)
 
 .error:
         mov     si,error_msg            ;offset to msg
