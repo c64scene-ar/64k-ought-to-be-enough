@@ -56,12 +56,12 @@ new_start:
         call    print_msg
 
 .l1:
-        mov     ax,0x0205               ;read 5 sectors
-        mov     cx,0x0002               ;track = 0, sector = 2
-        mov     dx,0x0000               ;head = 0, drive = 0
         mov     ax,NEW_CS + 0x20        ;512 bytes from here (1 sector size)
-        mov     es,ax                   ;es:bx = dst
-        sub     bx,bx
+        mov     es,ax
+        mov     bx,0x100                ;dst  = es:bx (0x100 because we are loading a .com)
+        mov     ax,0x0220               ;read 5 sectors
+        mov     cx,0x0003               ;track = 0, sector = 3
+        mov     dx,0x0000               ;head = 0, drive = 0
         int     0x13
         jc      .error
         mov     si,ok_msg

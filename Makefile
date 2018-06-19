@@ -49,7 +49,7 @@ boot:
 	nasm -Wall boot_loader/boot_loader.asm -fbin -o boot_loader/boot.bin
 	python3 tools/create_360_img.py -o boot_loader/boot.360 bin/invitro.com
 
-test_boot:
+test_boot: boot
 	dosbox-x -conf conf/dosbox-x_pcjr.conf
 
 res:

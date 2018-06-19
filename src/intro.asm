@@ -58,7 +58,7 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
 
         mov     ax,cs                           ;ds,sp = cs
         mov     ds,ax
-        mov     sp,ax
+        mov     ss,ax
 
         mov     ax,GFX_SEG                      ;through the whole intro.
         mov     es,ax                           ;push/pop otherwise
