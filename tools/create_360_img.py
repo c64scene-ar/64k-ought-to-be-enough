@@ -23,30 +23,23 @@ class Parser:
 
     def run(self):
         """Execute the conversor."""
-        with open(self._input_file,'rb') as fd:
-            fa = open('boot_loader/boot.bin', 'rb')
-            fb = open('boot_loader/fake_fat.bin', 'rb')
+        with open(self._input_file, 'rb') as fd, \
+                open('boot_loader/boot.bin', 'rb') as fa:
             boot_data = fa.read()
-            fake_fat_data = fb.read()
             intro_data = fd.read()
 
             fd.seek(0, os.SEEK_END)         # intro size
             intro_size = fd.tell()
 
             self._output_fd.write(boot_data)
-            self._output_fd.write(fake_fat_data)
             self._output_fd.write(intro_data)
 
             total_size = 360 * 1024         # 360 floppy image
-            total_size -= 512               # boot_data (1 sector)
-            total_size -= 512               # fake_fat (1 sector)
+            total_size -= 1024              # boot_data (2 sector)
             total_size -= intro_size        # intro size
 
             zeroes = bytearray(total_size)
             self._output_fd.write(zeroes)
-
-            fa.close()
-            fb.close()
 
 
 def parse_args():
