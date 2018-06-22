@@ -53,18 +53,17 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
         cld                                     ;forward direction
 
         cli                                     ;disable interrupt while changing the stack
-        mov     ax,0x100
-        mov     sp,ax                           ;stack starts at 0x100
-
         mov     ax,cs                           ;ds,sp = cs
         mov     ds,ax
+
         mov     ss,ax
+        mov     ax,0x100
+        mov     sp,ax                           ;stack starts at cs:0x100
 
         mov     ax,GFX_SEG                      ;through the whole intro.
         mov     es,ax                           ;push/pop otherwise
 
         call    banner_init
-
         call    banner_main_loop
         call    banner_cleanup
 
@@ -72,13 +71,13 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 banner_init:
+        mov     ax,0x0004                       ;320x200 4 colors
+        int     0x10
 
         mov     ax,banner_irq_8
         call    irq_8_init
-        call    music_init
 
-        mov     ax,0x0004                       ;320x200 4 colors
-        int     0x10
+        call    music_init
 
         mov     word [char_offset],CHAR_OFFSET  ;start drawing at row 24
 
@@ -335,6 +334,7 @@ MUSIC_END               equ 0b1000_0000
         ret
 
 .l0:
+        int 3
         lodsb                                   ;fetch command byte
         mov     ah,al
         and     al,0b1110_0000                  ;al=command only
@@ -402,7 +402,6 @@ text_writer_update:
         jz      .l0
         ret
 .l0:
-        int 3
         mov     byte [text_writer_delay],7      ;wait a few cycles
         mov     bx, word [text_writer_offset]
         inc     word [text_writer_offset]
@@ -609,3 +608,4 @@ text_writer_msg:
         db 'DID WE MENTION THIS INVITE-INTRO RUNS IN',1
         db '       UNEXPANDED PCJR (128KB) ?        ',1
         db 0
+

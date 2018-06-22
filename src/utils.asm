@@ -74,6 +74,9 @@ PIT_DIVIDER equ (262*76)                        ;262 lines * 76 PIT cycles each
 
         cli                                     ;disable interrupts
 
+        push    es
+        push    ds
+
         mov     bp,es                           ;save es
         sub     bx,bx
         mov     es,bx                           ;es = page 0
@@ -107,6 +110,9 @@ PIT_DIVIDER equ (262*76)                        ;262 lines * 76 PIT cycles each
         sub     al,al
         out     0xa0,al
         sti                                     ;enable interrupts
+
+        pop     ds
+        pop     es
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;

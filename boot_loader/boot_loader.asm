@@ -82,6 +82,11 @@ read_sectors:
         inc     bh
         jc      .error
 
+        push    bx
+        mov     si,in_progress_msg
+        call    print_msg
+        pop     bx
+
         inc     byte [f_sector]         ;next sector
         cmp     byte [f_sector],9       ;end of max sectors?
         jbe     .cont                   ;no, continue
@@ -101,6 +106,9 @@ read_sectors:
 .cont:
         pop     cx
         loop    .l1
+
+        mov     si,ok_msg
+        call    print_msg
         ret
 
 .error:
@@ -144,7 +152,7 @@ in_progress_msg:
 error_msg:
         db 'Could not load intro. Trying again.',13,10,0
 ok_msg:
-        db 'Ok.',13,10,0                ;booting msg
+        db 13,10,'Ok.',13,10,0                ;booting msg
 f_drive:
         db 0                            ;initial drive to read
 f_head:

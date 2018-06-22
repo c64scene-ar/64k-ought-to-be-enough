@@ -1,6 +1,6 @@
 .PHONY: res
 
-TARGET_NAME = invitro.com
+TARGET_NAME = intro.com
 TARGET = bin/${TARGET_NAME}
 ASM = nasm
 ASMFLAGS = -fobj -Wall
@@ -40,14 +40,14 @@ runx: x
 
 dist: x
 	echo "Generating distribution .zip"
-	-rm invitro.zip
-	-rm invitro/invitro.com
-	cp bin/invitro.com invitro/
-	zip invitro.zip -r invitro
+	-rm intro.zip
+	-rm intro/intro.com
+	cp bin/intro.com intro/
+	zip intro.zip -r intro
 
-boot:
+boot: default
 	nasm -Wall boot_loader/boot_loader.asm -fbin -o boot_loader/boot.bin
-	python3 tools/create_360_img.py -o boot_loader/boot.360 bin/invitro.com
+	python3 tools/create_360_img.py -o boot_loader/boot.360 bin/intro.com
 
 test_boot: boot
 	dosbox-x -conf conf/dosbox-x_pcjr.conf
