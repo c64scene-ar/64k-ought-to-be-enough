@@ -59,6 +59,8 @@ new_start:
         mov     byte [f_sector],3       ;initial sector
         mov     byte [f_total_sectors],92       ;how many sectors to read
         call    read_sectors
+        int 3
+
         jmp     INTRO_CS:0x100          ;512 (0x20 * 16) (sector size) + 0x100 (.com offset)
 
 
@@ -76,8 +78,8 @@ read_sectors:
         push    cx
 
         call    read_sector             ;read one sector at the time
-        mov     cl,9
-        shl     bx,cl                   ;bx += 512
+        inc     bh                      ;bx += 512
+        inc     bh
         jc      .error
 
         inc     byte [f_sector]         ;next sector
