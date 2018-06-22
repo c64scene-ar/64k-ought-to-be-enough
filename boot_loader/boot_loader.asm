@@ -22,7 +22,6 @@ disk_params:                            ;taken from KingQuest PCjr boot sector
         db 0xdf, 0x02, 0x25, 0x02, 0x09, 0x2a, 0xff, 0x50, 0xf6, 0x00, 0x02
 
 _start:
-        int 3
         ;Don't use stack yet. SP not set correctly
         cli                             ;disable the interrupts
         sub     di,di
@@ -46,9 +45,13 @@ new_start:
         mov     ax,cs                   ;ax = cs
         mov     [0x7a],ax               ;set Disk param interrupt
         mov     word [0x78],disk_params
-        sti                             ;enable interrupts
 
         mov     ds,ax                   ;restor ds
+
+        sti                             ;enable interrupts
+
+        mov     ax,0x0001               ;video mode: 40x25 color
+        int     0x10
 
         mov     si,boot_msg             ;offset to msg
         call    print_msg
@@ -57,9 +60,12 @@ new_start:
         mov     byte [f_head],0         ;initial head
         mov     byte [f_track],0        ;initial track (cylinder)
         mov     byte [f_sector],3       ;initial sector
-        mov     byte [f_total_sectors],92       ;how many sectors to read
+        mov     byte [f_total_sectors],100       ;how many sectors to read
         call    read_sectors
-        int 3
+
+        mov     cx,0
+.delay:
+        loop    .delay
 
         jmp     INTRO_CS:0x100          ;512 (0x20 * 16) (sector size) + 0x100 (.com offset)
 
@@ -101,6 +107,8 @@ read_sectors:
         cmp     byte [f_track],39       ;already reached last track
         jbe     .cont                   ;no, continue
 
+        mov     si,error_msg
+        call    print_msg
         int 3                           ;should not happen
 
 .cont:
@@ -150,7 +158,7 @@ in_progress_msg:
         db '.',0
 
 error_msg:
-        db 'Could not load intro. Trying again.',13,10,0
+        db 13,10,'Error. Could not load intro. Trying again.',13,10,0
 ok_msg:
         db 13,10,'Ok.',13,10,0                ;booting msg
 f_drive:

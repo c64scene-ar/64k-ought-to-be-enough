@@ -334,7 +334,6 @@ MUSIC_END               equ 0b1000_0000
         ret
 
 .l0:
-        int 3
         lodsb                                   ;fetch command byte
         mov     ah,al
         and     al,0b1110_0000                  ;al=command only
