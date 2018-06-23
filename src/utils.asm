@@ -161,6 +161,7 @@ setup_pit:
 
         ret
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 old_i08:                                        ;segment + offset to old int 8 (timer)
         dd      0
 old_pic_imr:                                    ;PIC IMR original value

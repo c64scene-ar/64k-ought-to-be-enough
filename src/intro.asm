@@ -266,8 +266,8 @@ banner_irq_8:
         push    bp
         pushf
 
-        push    cs
-        pop     ds
+        mov     ax,cs
+        mov     ds,ax
         mov     ax,GFX_SEG
         mov     es,ax
 
