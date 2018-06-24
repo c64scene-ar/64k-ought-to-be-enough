@@ -75,7 +75,6 @@ PIT_DIVIDER equ (262*76)                        ;262 lines * 76 PIT cycles each
         cli                                     ;disable interrupts
 
         push    es
-        push    ds
 
         mov     bp,es                           ;save es
         sub     bx,bx
@@ -85,8 +84,8 @@ PIT_DIVIDER equ (262*76)                        ;262 lines * 76 PIT cycles each
         mov     dx,cs
         xchg    ax,[es:8*4]                     ;new/old IRQ 8: offset
         xchg    dx,[es:8*4+2]                   ;new/old IRQ 8: segment
-        mov     [cs:old_i08],ax
-        mov     [cs:old_i08+2],dx
+        mov     [old_i08],ax                    ;save old offset
+        mov     [old_i08+2],dx                  ;save old segment
 
         mov     es,bp                           ;restore es
 
@@ -102,17 +101,16 @@ PIT_DIVIDER equ (262*76)                        ;262 lines * 76 PIT cycles each
         call    setup_pit                       ;setup PIT
 
         in      al,0x21                         ;Read primary PIC Interrupt Mask Register
-        mov     [cs:old_pic_imr],al             ;Store it for later
+        mov     [old_pic_imr],al                ;Store it for later
         mov     al,0b1111_1110                  ;Mask off everything except IRQ0 (timer)
         out     0x21,al
 
         in      al,0xa0                         ;clear nmi latch
         sub     al,al
         out     0xa0,al
-        sti                                     ;enable interrupts
 
-        pop     ds
         pop     es
+        sti                                     ;enable interrupts
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -124,24 +122,22 @@ irq_8_cleanup:
         mov     al,0b1000_0000                  ;enable nmi
         out     0xa0,al
 
-        mov     al,[cs:old_pic_imr]             ;Get old PIC settings
+        mov     al,[old_pic_imr]                ;Get old PIC settings
         out     0x21,al                         ;Set primary PIC Interrupt Mask Register
 
         mov     bx,0                            ;Reset PIT to defaults (~18.2 Hz)
         call    setup_pit                       ; actually means 0x10000
 
-        push    ds
         push    es
 
         xor     ax,ax
         mov     ds,ax                           ;ds = page 0
 
-        les     si,[cs:old_i08]
+        les     si,[old_i08]
         mov     [8*4],si
         mov     [8*4+2],es                      ;Restore the old INT 08 vector (timer)
 
         pop     es
-        pop     ds
 
         sti                                     ;enable interrupts
         ret

@@ -11,7 +11,7 @@ org     0x0000                          ;Org should be 0x7c00
                                         ; easier to say origin is 0x00
 
 
-NEW_CS          equ 0x80                ;where the code will be placed
+NEW_CS          equ 0x60                ;where the code will be placed
 INTRO_CS        equ NEW_CS+0x20         ;where the intro should be placed (512 bytes off new_cs)
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
