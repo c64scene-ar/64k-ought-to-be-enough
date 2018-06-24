@@ -73,6 +73,7 @@ new_start:
         mov     byte [f_total_sectors],100       ;how many sectors to read
         call    read_sectors
 
+        call    delay
         jmp     INTRO_CS:0x100          ;512 (0x20 * 16) (sector size) + 0x100 (.com offset)
 
 
@@ -165,6 +166,19 @@ print_msg:
         add     di,80
         mov     [last_new_line],di
         jmp     .l0
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+delay:
+        sub     ax,ax
+        int     0x13                    ;reset drive
+
+        mov     cx,5                    ;delay for a while
+.l1:    push    cx
+        sub     cx,cx
+.l0:    loop    .l0
+        pop     cx
+        loop    .l1
+        ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 
