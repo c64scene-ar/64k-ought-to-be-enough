@@ -76,13 +76,11 @@ banner_init:
 
         mov     si,table_9                      ;testing...
         call    draw_bigchar                    ;draw an 8 an wait key
-        sub     ax,ax
-        int     0x16
 
         call    music_init
 
         mov     word [char_offset],CHAR_OFFSET  ;start drawing at row 24
-        mov     byte [text_writer_delay],120    ;2 seconds
+        mov     byte [text_writer_delay],60     ;1 second delay
 
         ; should be the last one to get initialized
         mov     ax,banner_irq_8
@@ -179,7 +177,25 @@ banner_main_loop:
         cmp     byte [end_condition],0          ;animation finished?
         jnz     .exit                           ; yes, end
 
-        call    key_pressed                     ;key pressed?
+        ;key pressed?
+%if EMULATOR
+        cli                                     ;on emulator, test for keyboard buffer
+
+        push    ds
+        push    ax
+
+        sub     ax,ax
+        mov     ds,ax                           ;ds = zero page
+        mov     ax,[0x041a]                     ;keyboard buffer head
+        cmp     ax,[0x041c]                     ;keyboard buffer tail
+
+        pop     ax
+        pop     ds
+        sti
+%else
+        in      al,0x62                         ;on real hardware, test keystroke missed?
+        and     al,1                            ; so that we can disable IRQ9
+%endif
         jz      .main_loop                      ; no, keep looping
 
 .exit:
@@ -236,28 +252,6 @@ render_smallchar:
 
         ret
 
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-key_pressed:
-%if EMULATOR
-        cli                                     ;on emulator, test for keyboard buffer
-
-        push    ds
-        push    ax
-
-        sub     ax,ax
-        mov     ds,ax                           ;ds = zero page
-        mov     ax,[0x041a]                     ;keyboard buffer head
-        cmp     ax,[0x041c]                     ;keyboard buffer tail
-
-        pop     ax
-        pop     ds
-        sti
-%else
-        in      al,0x62                         ;on real hardware, test keystroke missed?
-        and     al,1                            ; so that we can disable IRQ9
-%endif
-        ret
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
