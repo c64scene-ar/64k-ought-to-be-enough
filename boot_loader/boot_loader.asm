@@ -5,13 +5,13 @@
 bits    16
 cpu     8086
 
-org     0x7c00
-;org     0x0000                          ;Org should be 0x7c00
+;org     0x7c00
+org     0x0000                          ;Org should be 0x7c00
                                         ; but since we copy everything to 60:00
                                         ; easier to say origin is 0x00
 
 
-NEW_CS          equ 0x800               ;where the code will be placed
+NEW_CS          equ 0x60                ;where the code will be placed
 INTRO_CS        equ NEW_CS+0x20         ;where the intro should be placed (512 bytes off new_cs)
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -38,24 +38,23 @@ times 0x36 - ($ - $$) db 0              ;some padding. start code at 0x36
 
 _start:
         ;Don't use stack yet. SP not set correctly
-        int 3
         cli                             ;disable the interrupts
         cld
-;        sub     di,di
-;        mov     ax,NEW_CS               ;segment 0x10 will be the new address
-;        mov     es,ax                   ;dest: es:di
-;        mov     si,start+0x7c00         ;copy from byte 0 (since Org is 0, and not 0x7c00, add it)
-;        mov     ax,cs
-;        mov     ds,ax                   ;src = ds:si
-;        mov     cx,256                  ;copy 1 sector (512 bytes)
-;        rep movsw
-;        jmp     NEW_CS:new_start        ;jump to new colocation (minus current offset)
+        sub     di,di
+        mov     ax,NEW_CS               ;segment 0x10 will be the new address
+        mov     es,ax                   ;dest: es:di
+        mov     si,start+0x7c00         ;copy from byte 0 (since Org is 0, and not 0x7c00, add it)
+        mov     ax,cs
+        mov     ds,ax                   ;src = ds:si
+        mov     cx,256                  ;copy 1 sector (512 bytes)
+        rep movsw
+        jmp     NEW_CS:new_start        ;jump to new colocation (minus current offset)
 
 new_start:
         ;Set SP before continue using it
         sub     ax,ax
         mov     ss,ax
-        mov     sp,0x7c00               ;stack
+        mov     sp,0x600                ;stack
 
         sti                             ;enable interrupts
 
