@@ -5,7 +5,8 @@
 bits    16
 cpu     8086
 
-org     0x0000                          ;Org should be 0x7c00
+org     0x7c00
+;org     0x0000                          ;Org should be 0x7c00
                                         ; but since we copy everything to 60:00
                                         ; easier to say origin is 0x00
 
@@ -56,14 +57,14 @@ new_start:
         mov     ss,ax
         mov     sp,0x7c00               ;stack
 
-        mov     ax,cs                   ;es=ds=cs
-        mov     ds,ax
-        mov     es,ax
-
         sti                             ;enable interrupts
 
         mov     ax,0x0001               ;video mode: 40x25 color
         int     0x10
+
+        mov     ax,cs                   ;es=ds=cs
+        mov     ds,ax
+        mov     es,ax
 
         mov     si,boot_msg             ;offset to msg
         call    print_msg
@@ -90,7 +91,6 @@ new_start:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 read_sectors:
-        int 3
         sub     ax,ax
         int     0x13                    ;reset drive
 
