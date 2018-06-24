@@ -45,9 +45,9 @@ dist: x
 	cp bin/intro.com intro/
 	zip intro.zip -r intro
 
-boot: default
+boot: default fat_image
 	nasm -Wall boot_loader/boot_loader.asm -fbin -o boot_loader/boot.bin
-	python3 tools/create_360_img.py -o bin/intro.360 bin/intro.com
+	cat boot_loader/boot.bin boot_loader/fat_without_boot.bin > bin/intro.360
 
 test_boot: boot
 	dosbox-x -conf conf/dosbox-x_pcjr.conf
@@ -88,3 +88,15 @@ res:
 dis:
 	echo "Dissassembling..."
 	ndisasm -b 16 -o 100h bin/${TARGET_NAME} | gvim -
+
+
+fat_image: default
+	echo "Generating FAT image with intro.com"
+	-rm -f boot_loader/fat_image.360
+	sudo mkfs.msdos -n PVM_BOOT -C boot_loader/fat_image.360 360
+	-sudo mkdir /media/floppy
+	sudo mount -o loop boot_loader/fat_image.360 /media/floppy
+	sudo cp bin/intro.com /media/floppy
+	sudo umount /media/floppy
+	sudo rmdir /media/floppy
+	dd if=boot_loader/fat_image.360 of=boot_loader/fat_without_boot.bin bs=512 skip=1 count=719

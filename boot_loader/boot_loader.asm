@@ -194,10 +194,3 @@ f_total_sectors:
 ;; Magic numbers
 times 510 - ($ - $$) db 0               ;byte 509 should be 0
         dw 0xAA55                       ;510 = 0x55, 511 = 0xaa
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; Faking a valid FAT entry to make DoxBox happy
-sector_2:
-        db 0xfd, 0xff, 0xff             ;some magic numbers
-
-times 512 - ($ - sector_2) db 0         ;fill the rest of the sector with 0
