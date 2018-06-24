@@ -32,10 +32,19 @@ class Parser:
             intro_size = fd.tell()
 
             self._output_fd.write(boot_data)
+
+            # intro should start at 0x1c00
+            # just to be compatible with the way a file is created using
+            # mkfs.msdos + cp file.
+            fat_size = 0x1c00 - 1024
+            zeroes = bytearray(fat_size)
+            self._output_fd.write(zeroes)
+
+            # write intro at offset 0x1c00 of the image
             self._output_fd.write(intro_data)
 
             total_size = 360 * 1024         # 360 floppy image
-            total_size -= 1024              # boot_data (2 sector)
+            total_size -= 0x1c00            # boot sector + FAT + padding
             total_size -= intro_size        # intro size
 
             zeroes = bytearray(total_size)

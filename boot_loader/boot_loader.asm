@@ -32,7 +32,7 @@ start:
         dw      0x0002                  ;number of read/write heads
         dw      0x0000                  ;number of hidden sectors
 
-	
+        
 times 0x36 - ($ - $$) db 0              ;some padding. start code at 0x36
 
 _start:
@@ -67,13 +67,14 @@ new_start:
         mov     si,boot_msg             ;offset to msg
         call    print_msg
 
-        mov     ax,0x0001
+        sub     ah,ah
         int     0x16                    ;wait key
 
+        ; where does the intro.com file start
         mov     byte [f_drive],0        ;drive
-        mov     byte [f_head],0         ;initial head
+        mov     byte [f_head],1         ;initial head
         mov     byte [f_track],0        ;initial track (cylinder)
-        mov     byte [f_sector],3       ;initial sector
+        mov     byte [f_sector],5       ;initial sector
         mov     byte [f_total_sectors],100       ;how many sectors to read
         call    read_sectors
 
@@ -81,13 +82,14 @@ new_start:
 .delay:
         loop    .delay
 
-        mov     ax,0x0001
+        sub     ah,ah
         int     0x16                    ;wait key
         jmp     INTRO_CS:0x100          ;512 (0x20 * 16) (sector size) + 0x100 (.com offset)
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 read_sectors:
+        int 3
         sub     ax,ax
         int     0x13                    ;reset drive
 
@@ -156,11 +158,11 @@ read_sector:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 print_msg:
         mov     ah,0x0e                 ;BIOS's print chars
-.l0:	lodsb                           ;loads SI into AL
-	    or      al,al                   ;checks whether the end of the string
-	    jz      .exit                   ;exit if so
-	    int     0x10                    ;otherwise, print char
-	    jmp     .l0                     ;and loop
+.l0:    lodsb                           ;loads SI into AL
+        or      al,al                   ;checks whether the end of the string
+        jz      .exit                   ;exit if so
+        int     0x10                    ;otherwise, print char
+        jmp     .l0                     ;and loop
 .exit:
         ret
 
