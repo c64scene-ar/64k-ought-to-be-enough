@@ -74,6 +74,11 @@ banner_init:
         mov     ax,0x0004                       ;320x200 4 colors
         int     0x10
 
+        mov     si,table_8                      ;testing...
+        call    draw_bigchar                    ;draw an 8 an wait key
+        sub     ax,ax
+        int     0x16
+
         mov     ax,banner_irq_8
         call    irq_8_init
 
