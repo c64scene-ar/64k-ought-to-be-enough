@@ -59,18 +59,12 @@ new_start:
 
         sti                             ;enable interrupts
 
-        mov     ax,0x0001               ;video mode: 40x25 color
-        int     0x10
-
         mov     ax,cs                   ;es=ds=cs
         mov     ds,ax
         mov     es,ax
 
         mov     si,boot_msg             ;offset to msg
         call    print_msg
-
-        sub     ah,ah
-        int     0x16                    ;wait key
 
         ; where does the intro.com file start
         mov     byte [f_drive],0        ;drive
@@ -84,8 +78,6 @@ new_start:
 .delay:
         loop    .delay
 
-        sub     ah,ah
-        int     0x16                    ;wait key
         jmp     INTRO_CS:0x100          ;512 (0x20 * 16) (sector size) + 0x100 (.com offset)
 
 
@@ -158,28 +150,46 @@ read_sector:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 print_msg:
-        mov     ah,0x0e                 ;BIOS's print chars
+        push    es
+        les     di,[video_offset]
 .l0:    lodsb                           ;loads SI into AL
         or      al,al                   ;checks whether the end of the string
         jz      .exit                   ;exit if so
-        int     0x10                    ;otherwise, print char
+        cmp     al,13                   ;new line?
+        jz      .new_line
+        stosb
+        inc     di                      ;skip attrib value
         jmp     .l0                     ;and loop
+
 .exit:
+        pop     es
+        mov     [video_offset],di       ;update char offset
         ret
+.new_line:
+        mov     di,[last_new_line]
+        add     di,80
+        mov     [last_new_line],di
+        jmp     .l0
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 
+video_offset:
+        dw      0x0000                  ;offset
+        dw      0xb800                  ;segment
+last_new_line:
+        dw      0                       ;offset of last new line
+
 boot_msg:
-        db 'PVM BOOT LOADER v0.1',13,10         ;booting msg
+        db 'PVM BOOT LOADER v0.1',13    ;booting msg
         db 'Loading',0
 
 in_progress_msg:
         db '.',0
 
 error_msg:
-        db 13,10,'Error. Could not load intro. Trying again.',13,10,0
+        db 13,'Error. Could not load intro. Trying again.',13,0
 ok_msg:
-        db 13,10,'Ok.',13,10,0                ;booting msg
+        db 13,'Ok.',13,0                ;booting msg
 f_drive:
         db 0                            ;initial drive to read
 f_head:
