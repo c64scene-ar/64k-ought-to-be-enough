@@ -74,7 +74,7 @@ banner_init:
         mov     ax,0x0004                       ;320x200 4 colors
         int     0x10
 
-        mov     si,table_1                      ;testing...
+        mov     si,table_2                      ;testing...
         call    draw_bigchar                    ;draw an 8 an wait key
         sub     ax,ax
         int     0x16
@@ -85,6 +85,11 @@ banner_init:
         ; should be the last one to get initialized
         mov     ax,banner_irq_8
         call    irq_8_init
+
+        mov     si,table_3                      ;testing...
+        call    draw_bigchar                    ;draw an 8 an wait key
+        sub     ax,ax
+        int     0x16
 
         ret
 
@@ -260,6 +265,7 @@ key_pressed:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 banner_irq_8:
+        pushf
         push    es                              ;since we might be interrupting
         push    ds                              ; the decompressor routine, we need to
         push    si                              ; save all registers
@@ -269,7 +275,6 @@ banner_irq_8:
         push    bx
         push    ax
         push    bp
-        pushf
 
         mov     ax,cs
         mov     ds,ax
@@ -277,14 +282,11 @@ banner_irq_8:
         mov     es,ax
 
         call    music_play
-        call    text_writer_update
-
-        inc     byte [vert_retrace]
+        ;call    text_writer_update
 
         mov     al,0x20                         ;send the EOI signal
         out     0x20,al                         ; to the IRQ controller
 
-        popf
         pop     bp
         pop     ax
         pop     bx
@@ -294,9 +296,9 @@ banner_irq_8:
         pop     si
         pop     ds
         pop     es
+        popf
 
         iret
-
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 music_init:
@@ -459,8 +461,6 @@ VOLUME_0_MAX equ $ - volume_0
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; vars
 end_condition:          db 0                    ;when 1, banner animation sequence finishes
-
-vert_retrace:           db 0                    ;when 1, a vertical retrace have just ocurred
 
 bigchar_to_render:      db 0                    ;when 0, render finished/not needed. else, contains the ASCII to be rendered
 
