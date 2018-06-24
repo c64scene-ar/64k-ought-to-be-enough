@@ -32,6 +32,9 @@ start:
         dw      0x0002                  ;number of read/write heads
         dw      0x0000                  ;number of hidden sectors
 
+	
+times 0x36 - ($ - $$) db 0              ;some padding. start code at 0x36
+
 _start:
         ;Don't use stack yet. SP not set correctly
         cli                             ;disable the interrupts
