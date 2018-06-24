@@ -11,7 +11,7 @@ org     0x0000                          ;Org should be 0x7c00
                                         ; easier to say origin is 0x00
 
 
-NEW_CS          equ 0x60                ;where the code will be placed
+NEW_CS          equ 0x80                ;where the code will be placed
 INTRO_CS        equ NEW_CS+0x20         ;where the intro should be placed (512 bytes off new_cs)
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -54,7 +54,7 @@ new_start:
         ;Set SP before continue using it
         sub     ax,ax
         mov     ss,ax
-        mov     sp,0x600                ;stack
+        mov     sp,NEW_CS*16            ;stack
 
         sti                             ;enable interrupts
 
@@ -72,10 +72,6 @@ new_start:
         mov     byte [f_sector],6       ;initial sector
         mov     byte [f_total_sectors],100       ;how many sectors to read
         call    read_sectors
-
-        mov     cx,0
-.delay:
-        loop    .delay
 
         jmp     INTRO_CS:0x100          ;512 (0x20 * 16) (sector size) + 0x100 (.com offset)
 

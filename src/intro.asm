@@ -67,7 +67,7 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
         call    banner_main_loop
         call    banner_cleanup
 
-        int     0x20                            ;exit to DOS
+        int     0x19                            ;reboot again
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 banner_init:
