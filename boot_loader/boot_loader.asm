@@ -10,7 +10,7 @@ org     0x0000                          ;Org should be 0x7c00
                                         ; easier to say origin is 0x00
 
 
-NEW_CS          equ 0x60                ;where the code will be placed
+NEW_CS          equ 0x2000              ;where the code will be placed
 INTRO_CS        equ NEW_CS+0x20         ;where the intro should be placed (512 bytes off new_cs)
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -74,7 +74,7 @@ new_start:
         mov     byte [f_drive],0        ;drive
         mov     byte [f_head],1         ;initial head
         mov     byte [f_track],0        ;initial track (cylinder)
-        mov     byte [f_sector],5       ;initial sector
+        mov     byte [f_sector],6       ;initial sector
         mov     byte [f_total_sectors],100       ;how many sectors to read
         call    read_sectors
 
