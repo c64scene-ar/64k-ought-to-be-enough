@@ -74,22 +74,19 @@ banner_init:
         mov     ax,0x0004                       ;320x200 4 colors
         int     0x10
 
-        mov     si,table_2                      ;testing...
+        mov     si,table_9                      ;testing...
         call    draw_bigchar                    ;draw an 8 an wait key
         sub     ax,ax
         int     0x16
 
         call    music_init
+
         mov     word [char_offset],CHAR_OFFSET  ;start drawing at row 24
+        mov     byte [text_writer_delay],120    ;2 seconds
 
         ; should be the last one to get initialized
         mov     ax,banner_irq_8
         call    irq_8_init
-
-        mov     si,table_3                      ;testing...
-        call    draw_bigchar                    ;draw an 8 an wait key
-        sub     ax,ax
-        int     0x16
 
         ret
 
@@ -282,7 +279,7 @@ banner_irq_8:
         mov     es,ax
 
         call    music_play
-        ;call    text_writer_update
+        call    text_writer_update
 
         mov     al,0x20                         ;send the EOI signal
         out     0x20,al                         ; to the IRQ controller
@@ -595,7 +592,7 @@ charset:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 text_writer_delay:
-        db 1                                    ;ticks to wait until next char it written
+        db 0                                    ;ticks to wait until next char it written
 text_writer_offset:
         dw 0                                    ;offset in the text. next char to be written
 text_writer_msg:
