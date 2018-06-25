@@ -70,7 +70,7 @@ new_start:
         mov     byte [f_head],1         ;initial head
         mov     byte [f_track],0        ;initial track (cylinder)
         mov     byte [f_sector],6       ;initial sector
-        mov     byte [f_total_sectors],100       ;how many sectors to read
+        mov     byte [f_total_sectors],96       ;how many sectors to read (96 = 48K / 512)
         call    read_sectors
 
         call    delay
@@ -88,61 +88,63 @@ read_sectors:
         sub     bx,bx                   ;offset is 0, even though .com starts at 0x100
                                         ; a "jmp INTRO_CS-0x10:0x100" will be done
 
-        mov     cx, [f_total_sectors]
-.l1:
-        push    cx
-
+.loop:
+        int 3
         call    read_sector             ;read one sector at the time
-        inc     bh                      ;bx += 512
-        inc     bh
         jc      .error
 
-        push    bx
-        mov     si,in_progress_msg
+        ; update offset
+        sub     dx,dx
+        mov     dl,al                   ;dx = sectors read
+        mov     cl,9                    ;512 = 2 ^ 9
+        shl     dx,cl                   ;dx contains the new offset
+        add     bx,dx                   ;update offset
+
+        sub     byte [f_total_sectors],al
+        cmp     byte [f_total_sectors],0
+        jz      .finish
+
+        ; assumes it read at most 1 track (single head) per time
+
+        mov     byte [f_sector],1       ;reset sector back to 1
+        inc     byte [f_head]           ;from next head
+        cmp     byte [f_head],2
+        jb      .loop
+
+        mov     byte [f_head],0         ;reset head back to 0
+        inc     byte [f_track]
+        cmp     byte [f_track],40
+        jb      .loop
+
+        int 3
+
+.error:
+        mov     si,error_msg            ;offset to msg
         call    print_msg
-        pop     bx
+        int     0x19                    ;reboot
 
-        inc     byte [f_sector]         ;next sector
-        cmp     byte [f_sector],9       ;end of max sectors?
-        jbe     .cont                   ;no, continue
-
-        mov     byte [f_sector],1       ;start again from sector 1
-        inc     byte [f_head]           ;read using the other head
-        cmp     byte [f_head],1         ;already used the two heads
-        jbe     .cont                   ;no, continue
-
-        mov     byte [f_head],0         ;start again from head 0
-        inc     byte [f_track]          ;next track (cylinder)
-        cmp     byte [f_track],39       ;already reached last track
-        jbe     .cont                   ;no, continue
-
-        mov     si,error_msg
-        call    print_msg
-        int 3                           ;should not happen
-
-.cont:
-        pop     cx
-        loop    .l1
-
+.finish:
         mov     si,ok_msg
         call    print_msg
         ret
-
-.error:
-        pop     cx
-        mov     si,error_msg            ;offset to msg
-        call    print_msg
-        jmp     .l1
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; IN:
 ;       es:bx: point to buffer where data will be stored
 read_sector:
+        mov     al,9+1                  ;max sectors + 1 since sectors start at 1, and not 0
+        sub     al, byte [f_sector]     ;minus starting sector. cl contains the max
+                                        ; possible sector for this track
+        cmp     al,byte [f_total_sectors]
+        jbe     .l0
+        mov     al,byte [f_total_sectors];use f_total_sectors when it is less than
+                                         ; the available sectors
+.l0:
+        mov     ah,0x02                 ;read sectors
         mov     ch,byte [f_track]       ;track to read from
         mov     cl,byte [f_sector]      ;sector to read from
         mov     dh,byte [f_head]
         mov     dl,byte [f_drive]
-        mov     ax,0x0201               ;read 1 one sector at the time
         int     0x13
         ret
 
@@ -194,11 +196,8 @@ boot_msg:
         db 'PVM BOOT LOADER v0.1',13    ;booting msg
         db 'Loading',0
 
-in_progress_msg:
-        db '.',0
-
 error_msg:
-        db 13,'Error. Could not load intro. Trying again.',13,0
+        db 13,'Error loading. Trying again.',13,0
 ok_msg:
         db 13,'Ok.',13,0                ;booting msg
 f_drive:
