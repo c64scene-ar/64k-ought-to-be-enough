@@ -10,8 +10,9 @@ org     0x0000                          ;Org should be 0x7c00
                                         ; but since we copy everything to 20:00
                                         ; easier to say origin is 0x00
 
-NEW_CS          equ 0x20                ;where the code will be placed
+BOOTSECTOR_CS   equ 0x20                ;where the boot-sector code will be placed
 INTRO_CS        equ 0x60                ;where the intro should be placed
+STACK_OFFSET    equ 0x600               ;goes down from 0x5ff 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; Memory map:
@@ -48,20 +49,20 @@ _start:
         cli                             ;disable the interrupts
         cld
         sub     di,di
-        mov     ax,NEW_CS               ;segment 0x10 will be the new address
+        mov     ax,BOOTSECTOR_CS        ;the new destination for the boot sector
         mov     es,ax                   ;dest: es:di
         mov     si,start+0x7c00         ;copy from byte 0 (since Org is 0, and not 0x7c00, add it)
         mov     ax,cs
         mov     ds,ax                   ;src = ds:si
         mov     cx,256                  ;copy 1 sector (512 bytes)
         rep movsw
-        jmp     NEW_CS:new_start        ;jump to new colocation (minus current offset)
+        jmp     BOOTSECTOR_CS:new_start ;jump to new location
 
 new_start:
         ;Set SP before continue using it
         sub     ax,ax
         mov     ss,ax
-        mov     sp,NEW_CS*16            ;stack
+        mov     sp,STACK_OFFSET         ;stack
 
         sti                             ;enable interrupts
 
