@@ -1,4 +1,4 @@
-.PHONY: res
+.PHONY: res runme
 
 TARGET_NAME = intro.com
 TARGET = bin/${TARGET_NAME}
@@ -48,6 +48,14 @@ dist: x
 boot: default fat_image
 	nasm -Wall boot_loader/boot_loader.asm -fbin -o boot_loader/boot.bin
 	cat boot_loader/boot.bin boot_loader/fat_without_boot.bin > bin/intro.360
+
+runme:
+	echo "Generating runme.com"
+	nasm -Wall runme/main.asm -fbin -o bin/runme.com
+
+test_runme:
+	echo "Running runme"
+	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c runme.com
 
 test_boot: boot
 	dosbox-x -conf conf/dosbox-x_pcjr.conf
