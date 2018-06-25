@@ -56,10 +56,6 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
         mov     ax,cs                           ;ds,sp = cs
         mov     ds,ax
 
-        mov     ss,ax
-        mov     ax,0x100
-        mov     sp,ax                           ;stack starts at cs:0x100
-
         mov     ax,GFX_SEG                      ;through the whole intro.
         mov     es,ax                           ;push/pop otherwise
 
@@ -74,19 +70,22 @@ banner_init:
         mov     ax,0x0004                       ;320x200 4 colors
         int     0x10
 
-        mov     si,table_9                      ;testing...
-        call    draw_bigchar                    ;draw an 8 an wait key
-
         call    music_init
 
         mov     word [char_offset],CHAR_OFFSET  ;start drawing at row 24
-        mov     byte [text_writer_delay],60     ;1 second delay
+
+        mov     si,table_tateti                 ;prepare logo to draw
+        call    draw_bigchar                    ;draw it
+
+        mov     byte [text_writer_delay],120    ;wait about 2 seconds
+                                                ; before rendering next char
 
         ; should be the last one to get initialized
         mov     ax,banner_irq_8
         call    irq_8_init
 
         ret
+
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -169,7 +168,6 @@ banner_cleanup:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 banner_main_loop:
-
 .main_loop:
         cmp     byte [bigchar_to_render],0      ;is there any bigchar to render?
         jnz     .render_bigchar
@@ -179,19 +177,15 @@ banner_main_loop:
 
         ;key pressed?
 %if EMULATOR
-        cli                                     ;on emulator, test for keyboard buffer
 
         push    ds
-        push    ax
 
         sub     ax,ax
         mov     ds,ax                           ;ds = zero page
         mov     ax,[0x041a]                     ;keyboard buffer head
         cmp     ax,[0x041c]                     ;keyboard buffer tail
 
-        pop     ax
         pop     ds
-        sti
 %else
         in      al,0x62                         ;on real hardware, test keystroke missed?
         and     al,1                            ; so that we can disable IRQ9

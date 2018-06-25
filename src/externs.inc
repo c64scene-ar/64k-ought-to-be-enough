@@ -43,3 +43,4 @@ extern table_j, table_k, table_l, table_m, table_n, table_o, table_p, table_q, t
 extern table_s, table_t, table_u, table_v, table_w, table_x, table_y, table_z
 extern table_0, table_1, table_2, table_3, table_4, table_5, table_6, table_7, table_8
 extern table_9
+extern table_tateti

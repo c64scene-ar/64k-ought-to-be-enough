@@ -74,7 +74,8 @@ new_start:
         call    read_sectors
 
         call    delay
-        jmp     INTRO_CS:0x100          ;512 (0x20 * 16) (sector size) + 0x100 (.com offset)
+        int 3
+        jmp     INTRO_CS-0x10:0x100     ;512 (0x20 * 16) (sector size) + 0x100 (.com offset)
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -84,7 +85,8 @@ read_sectors:
 
         mov     ax,INTRO_CS             ;512 bytes from here (1 sector size)
         mov     es,ax
-        mov     bx,0x100                ;.com offset
+        sub     bx,bx                   ;offset is 0, even though .com starts at 0x100
+                                        ; a "jmp INTRO_CS-0x10:0x100" will be done
 
         mov     cx, [f_total_sectors]
 .l1:
