@@ -7,13 +7,20 @@ cpu     8086
 
 ;org     0x7c00
 org     0x0000                          ;Org should be 0x7c00
-                                        ; but since we copy everything to 60:00
+                                        ; but since we copy everything to 20:00
                                         ; easier to say origin is 0x00
 
+NEW_CS          equ 0x20                ;where the code will be placed
+INTRO_CS        equ 0x60                ;where the intro should be placed
 
-NEW_CS          equ 0x60                ;where the code will be placed
-INTRO_CS        equ NEW_CS+0x20         ;where the intro should be placed (512 bytes off new_cs)
-
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; Memory map:
+; 0      - 0x01ff: 512 bytes used for the vector table for the first 0x80 interrupts
+; 0x0200 - 0x03ff: 512 bytes used to store the boot sector
+; 0x0400 - 0x04ff: 256 bytes. BIOS variables
+; 0x0500 - 0x05ff: 256 bytes. stack. used globally for all the intro parts and boot
+; 0x0600 - 0xbfff: 46.5k free for the intro
+; 0xc000 - 0xffff: 16k video memory
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 start:
         jmp     _start                  ;must start with a 'jmp' (3 bytes)

@@ -77,7 +77,7 @@ banner_init:
         mov     si,table_tateti                 ;prepare logo to draw
         call    draw_bigchar                    ;draw it
 
-        mov     byte [text_writer_delay],120    ;wait about 2 seconds
+        mov     byte [text_writer_delay],30     ;wait about .5 seconds
                                                 ; before rendering next char
 
         ; should be the last one to get initialized
@@ -169,28 +169,25 @@ banner_cleanup:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 banner_main_loop:
 .main_loop:
-        cmp     byte [bigchar_to_render],0      ;is there any bigchar to render?
-        jnz     .render_bigchar
-
-        cmp     byte [end_condition],0          ;animation finished?
-        jnz     .exit                           ; yes, end
-
         ;key pressed?
 %if EMULATOR
-
         push    ds
-
         sub     ax,ax
         mov     ds,ax                           ;ds = zero page
         mov     ax,[0x041a]                     ;keyboard buffer head
         cmp     ax,[0x041c]                     ;keyboard buffer tail
-
         pop     ds
 %else
         in      al,0x62                         ;on real hardware, test keystroke missed?
         and     al,1                            ; so that we can disable IRQ9
 %endif
-        jz      .main_loop                      ; no, keep looping
+        jnz     .exit                           ;exit if 
+
+        cmp     byte [bigchar_to_render],0      ;is there any bigchar to render?
+        jnz     .render_bigchar
+
+        cmp     byte [end_condition],0          ;animation finished?
+        jz      .main_loop                      ;no, so keep looping
 
 .exit:
         ret                                     ;exit main loop.
@@ -407,7 +404,8 @@ text_writer_update:
         jmp     render_smallchar
 
 .start_again:
-        mov     word [text_writer_offset],0     ;reset offset
+        mov     byte [end_condition],1          ;end animation
+        ;mov     word [text_writer_offset],0     ;reset offset
 
 .clean_line:
         mov     di,CHAR_OFFSET
@@ -595,6 +593,6 @@ text_writer_msg:
         db '        REMOTE ENTRIES ARE WELCOME!     ',1
         db 'GREETINGS TO: XXX,YYY,ZZZ,AAA,BBB,CCC   ',1
         db 'DID WE MENTION THIS INVITE-INTRO RUNS IN',1
-        db '       UNEXPANDED PCJR (128KB) ?        ',1
+        db 'UNEXPANDED PCJR (ONLY 64KB RAM NEEDED!)?',1
         db 0
 
