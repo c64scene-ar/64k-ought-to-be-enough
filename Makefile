@@ -53,7 +53,7 @@ runme:
 	echo "Generating runme.com"
 	nasm -Wall runme/main.asm -fbin -o bin/runme.com
 
-test_runme:
+test_runme: runme
 	echo "Running runme"
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c runme.com
 
@@ -98,13 +98,14 @@ dis:
 	ndisasm -b 16 -o 100h bin/${TARGET_NAME} | gvim -
 
 
-fat_image: default
-	echo "Generating FAT image with intro.com"
+fat_image: default runme
+	echo "Generating FAT image with needed files"
 	-rm -f boot_loader/fat_image.360
 	sudo mkfs.msdos -n PVM_BOOT -C boot_loader/fat_image.360 360
 	-sudo mkdir /media/floppy
 	sudo mount -o loop boot_loader/fat_image.360 /media/floppy
-	sudo cp bin/intro.com /media/floppy
+	sudo cp bin/runme.com /media/floppy
+	sudo cp bin/intro.com /media/floppy/part1.com
 	sudo umount /media/floppy
 	sudo rmdir /media/floppy
 	dd if=boot_loader/fat_image.360 of=boot_loader/fat_without_boot.bin bs=512 skip=1 count=719

@@ -72,25 +72,36 @@ new_start:
         mov     ds,ax
         mov     es,ax
 
+        sti                             ;enable interrupts
+
+        mov     ax,0x0001               ;text 40x25 color
+        int     0x10
+
         mov     si,boot_msg             ;offset to msg
         call    print_msg
 
-        sti                             ;enable interrupts
-
-        int     0x20                    ;read first sector
-
-        call    delay
-        int 3
-        jmp     INTRO_CS-0x10:0x100     ;512 (0x20 * 16) (sector size) + 0x100 (.com offset)
+        int     0x20                    ;read first file
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 int_20_handler:
-        push    ds
-
-        mov     ax,cs
+        mov     ax,cs                   ;ds = cs
         mov     ds,ax
 
-        mov     bx,parts_idx
+        cmp     byte [parts_idx],0      ;first file to load?
+        jz      .skip_clean             ;if so, don't clear the screen
+
+        int 3
+        mov     ax,0x0001               ;text 40x25
+        int     0x10
+
+        mov     word [video_offset],0   ;reset offset, so next msg starts from
+                                        ; the top
+
+.skip_clean:
+        mov     si,loading_msg
+        call    print_msg
+
+        mov     bx,[parts_idx]
         cmp     bx,PARTS_TOTAL
         jz      .reboot
 
@@ -99,7 +110,6 @@ int_20_handler:
 
         mov     ax,[parts_data + bx]
 
-        ; where does the intro.com file start
         mov     byte [f_drive],0        ;drive (should always be zero)
         mov     ax,[parts_data + bx]    ;fetch track/head
         mov     byte [f_track],al
@@ -111,9 +121,11 @@ int_20_handler:
 
         inc     word [parts_idx]
 
-        pop     ds
+        call    delay                   ;small delay to turn motor off
 
-        iret
+        mov     sp,STACK_OFFSET         ;reset stack
+        jmp     INTRO_CS-0x10:0x100     ;jump to entry point:
+                                        ; 512 (0x20 * 16) (sector size) + 0x100 (.com offset)
 
 .reboot:
         int     0x19                    ;no more parts to load, reboot
@@ -206,6 +218,7 @@ print_msg:
         pop     es
         mov     [video_offset],di       ;update char offset
         ret
+
 .new_line:
         mov     di,[last_new_line]
         add     di,80
@@ -236,7 +249,7 @@ last_new_line:
 boot_msg:
         db 'ricarDOS v0.1',13,0         ;booting msg
 loading_msg:
-        db 'Loading',13,0               ;loading msg
+        db 'Loading...',13,0            ;loading msg
 
 error_msg:
         db 13,'Error loading. Trying again.',13,0
@@ -256,9 +269,14 @@ f_total_sectors:
 parts_idx:
         dw 0                            ;how many parts the demo contains
 parts_data:                             ;track / head / sector / total sectors to read
-        db 0,1,6,96                     ;4 bytes per each entry
-        db 0,0,0,0
-        db 0,0,0,0
+        db 0,1,6,2                      ;runme.com. offset: 0x1c00. len: 2 sectors
+        db 0,1,8,96                     ;part1.com. offset: 0x2000. len: 96 sectors
+        db 0,1,6,2                      ;runme.com. offset: 0x1c00. len: 2 sectors
+        db 0,1,8,96                     ;part1.com. offset: 0x2000. len: 96 sectors
+        db 0,1,6,2                      ;runme.com. offset: 0x1c00. len: 2 sectors
+        db 0,1,8,96                     ;part1.com. offset: 0x2000. len: 96 sectors
+        db 0,1,6,2                      ;runme.com. offset: 0x1c00. len: 2 sectors
+        db 0,1,8,96                     ;part1.com. offset: 0x2000. len: 96 sectors
 PARTS_TOTAL equ ($-parts_data)/4        ;how many parts are defined
 
 
