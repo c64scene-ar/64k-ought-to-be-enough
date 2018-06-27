@@ -64,7 +64,9 @@ new_start:
         mov     ss,ax
         mov     sp,STACK_OFFSET         ;stack
 
-        sti                             ;enable interrupts
+        mov     ds,ax                   ;ds=0
+        mov     word [0x20*4],int_20_handler ;new 0x20 handler: offset
+        mov     [0x20*4+2],cs           ;new 0x20 handler: segment
 
         mov     ax,cs                   ;es=ds=cs
         mov     ds,ax
@@ -73,17 +75,48 @@ new_start:
         mov     si,boot_msg             ;offset to msg
         call    print_msg
 
-        ; where does the intro.com file start
-        mov     byte [f_drive],0        ;drive
-        mov     byte [f_head],1         ;initial head
-        mov     byte [f_track],0        ;initial track (cylinder)
-        mov     byte [f_sector],6       ;initial sector
-        mov     byte [f_total_sectors],96       ;how many sectors to read (96 = 48K / 512)
-        call    read_sectors
+        sti                             ;enable interrupts
+
+        int     0x20                    ;read first sector
 
         call    delay
         int 3
         jmp     INTRO_CS-0x10:0x100     ;512 (0x20 * 16) (sector size) + 0x100 (.com offset)
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+int_20_handler:
+        push    ds
+
+        mov     ax,cs
+        mov     ds,ax
+
+        mov     bx,parts_idx
+        cmp     bx,PARTS_TOTAL
+        jz      .reboot
+
+        shl     bx,1                    ;each part takes 4 bytes.
+        shl     bx,1                    ; so multiply bx by 4
+
+        mov     ax,[parts_data + bx]
+
+        ; where does the intro.com file start
+        mov     byte [f_drive],0        ;drive (should always be zero)
+        mov     ax,[parts_data + bx]    ;fetch track/head
+        mov     byte [f_track],al
+        mov     byte [f_head],ah
+        mov     ax,[parts_data + bx + 2];fetch sector/total sectors
+        mov     byte [f_sector],al      ;initial sector
+        mov     byte [f_total_sectors],ah       ;how many sectors to read (96 = 48K / 512)
+        call    read_sectors
+
+        inc     word [parts_idx]
+
+        pop     ds
+
+        iret
+
+.reboot:
+        int     0x19                    ;no more parts to load, reboot
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -201,15 +234,16 @@ last_new_line:
         dw      0                       ;offset of last new line
 
 boot_msg:
-        db 'PVM BOOT LOADER v0.1',13    ;booting msg
-        db 'Loading',0
+        db 'ricarDOS v0.1',13,0         ;booting msg
+loading_msg:
+        db 'Loading',13,0               ;loading msg
 
 error_msg:
         db 13,'Error loading. Trying again.',13,0
 ok_msg:
         db 13,'Ok.',13,0                ;booting msg
 f_drive:
-        db 0                            ;initial drive to read
+        db 0                            ;initial drive to read. MUST be zero
 f_head:
         db 0                            ;initial header of the floppy
 f_track:
@@ -218,6 +252,14 @@ f_sector:
         db 0                            ;initial sector
 f_total_sectors:
         db 0                            ;how many sectors to read in totoal
+
+parts_idx:
+        dw 0                            ;how many parts the demo contains
+parts_data:                             ;track / head / sector / total sectors to read
+        db 0,1,6,96                     ;4 bytes per each entry
+        db 0,0,0,0
+        db 0,0,0,0
+PARTS_TOTAL equ ($-parts_data)/4        ;how many parts are defined
 
 
 ;; Magic numbers
