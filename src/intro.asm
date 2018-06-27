@@ -162,7 +162,6 @@ draw_bigchar:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 banner_cleanup:
-        int 3
         call    irq_8_cleanup
         jmp     music_cleanup
 

@@ -90,12 +90,12 @@ int_20_handler:
         cmp     byte [parts_idx],0      ;first file to load?
         jz      .skip_clean             ;if so, don't clear the screen
 
-        int 3
         mov     ax,0x0001               ;text 40x25
         int     0x10
 
-        mov     word [video_offset],0   ;reset offset, so next msg starts from
-                                        ; the top
+        sub     ax,ax
+        mov     [video_offset],ax       ;reset offset, so next msg starts from
+        mov     [last_new_line],ax      ; the top
 
 .skip_clean:
         mov     si,loading_msg
@@ -142,7 +142,6 @@ read_sectors:
                                         ; a "jmp INTRO_CS-0x10:0x100" will be done
 
 .loop:
-        int 3
         call    read_sector             ;read one sector at the time
         jc      .error
 
@@ -169,7 +168,7 @@ read_sectors:
         cmp     byte [f_track],40
         jb      .loop
 
-        int 3
+        int 3                           ;should not happen
 
 .error:
         mov     si,error_msg            ;offset to msg
