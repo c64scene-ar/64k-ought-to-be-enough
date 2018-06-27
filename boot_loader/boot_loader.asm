@@ -273,10 +273,6 @@ parts_data:                             ;track / head / sector / total sectors t
         db 0,1,8,96                     ;part1.com. offset: 0x2000. len: 96 sectors
         db 0,1,6,2                      ;runme.com. offset: 0x1c00. len: 2 sectors
         db 0,1,8,96                     ;part1.com. offset: 0x2000. len: 96 sectors
-        db 0,1,6,2                      ;runme.com. offset: 0x1c00. len: 2 sectors
-        db 0,1,8,96                     ;part1.com. offset: 0x2000. len: 96 sectors
-        db 0,1,6,2                      ;runme.com. offset: 0x1c00. len: 2 sectors
-        db 0,1,8,96                     ;part1.com. offset: 0x2000. len: 96 sectors
 PARTS_TOTAL equ ($-parts_data)/4        ;how many parts are defined
 
 

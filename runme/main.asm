@@ -6,10 +6,6 @@
 bits    16
 cpu     8086
 
-extern irq_8_cleanup, irq_8_init
-extern wait_vertical_retrace
-
-%include 'src/externs.inc'
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS

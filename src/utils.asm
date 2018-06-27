@@ -129,14 +129,17 @@ irq_8_cleanup:
         call    setup_pit                       ; actually means 0x10000
 
         push    es
+        push    ds
+
+        les     si,[old_i08]                    ;load es:si with old values
 
         xor     ax,ax
         mov     ds,ax                           ;ds = page 0
 
-        les     si,[old_i08]
         mov     [8*4],si
         mov     [8*4+2],es                      ;Restore the old INT 08 vector (timer)
 
+        pop     ds
         pop     es
 
         sti                                     ;enable interrupts
