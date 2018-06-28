@@ -403,30 +403,30 @@ gfx_init:
         ; default palette for the 4 CGA colors
         call    wait_vertical_retrace
         mov     si,palette_default
-        sub     bx,bx                           ;color index
+        mov     bl,0x10                         ;first color
         sub     di,di                           ;used to xchg with ax
                                                 ; (faster way to set ax to 0)
         mov     cx,4                            ;update 4 colors
 .l0:
         mov     al,bl                           ;color to update
-        ;out     dx,al                           ;dx=0x03da (register)
+        out     dx,al                           ;dx=0x03da (register)
 
         lodsb
-        ;out     dx,ax                           ;color
+        out     dx,ax                           ;color
 
         xchg    ax,di                           ;fatest way to set al to 0
-        ;out     dx,al                           ;(register)
+        out     dx,al                           ;(register)
 
-        ;in      al,dx                           ;reset to register again
+        in      al,dx                           ;reset to register again
         inc     bl                              ;next color
 
         loop    .l0
 
+        ; erase bottom line for text writer
+        call    text_writer_clean_bottom_line
 
         ; update some vars
-
         mov     word [char_offset],CHAR_OFFSET  ;start drawing at row 24
-
         mov     byte [text_writer_delay],30     ;wait about .5 seconds
                                                 ; before rendering next char
 
@@ -449,7 +449,7 @@ text_writer_update:
         or      al,al                           ;last char ?
         jz      .start_again
         cmp     al,1
-        jz      .clean_line
+        jz      text_writer_clean_bottom_line
 
 .write:
         mov     [bigchar_to_render],al
@@ -459,7 +459,8 @@ text_writer_update:
         mov     byte [end_condition],1          ;end animation
         ;mov     word [text_writer_offset],0     ;reset offset
 
-.clean_line:
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+text_writer_clean_bottom_line:
         mov     di,CHAR_OFFSET
         mov     word [char_offset],di           ;reset destination for char
         mov     cx,40*4
