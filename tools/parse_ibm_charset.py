@@ -37,7 +37,8 @@ class Parser:
 
     def parse_half_byte(self, byte):
         masks = [0b0001, 0b0010, 0b0100, 0b1000]
-        out = 0
+        # empty is color 2 (0b10)
+        out = 0b10101010
         for bit in range(4):
             mask = byte & masks[bit]
             if mask != 0:

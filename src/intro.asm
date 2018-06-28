@@ -71,14 +71,7 @@ banner_init:
         int     0x10
 
         call    music_init
-
-        mov     word [char_offset],CHAR_OFFSET  ;start drawing at row 24
-
-        mov     si,table_tateti                 ;prepare logo to draw
-        call    draw_bigchar                    ;draw it
-
-        mov     byte [text_writer_delay],30     ;wait about .5 seconds
-                                                ; before rendering next char
+        call    gfx_init
 
         ; should be the last one to get initialized
         mov     ax,banner_irq_8
@@ -155,7 +148,30 @@ draw_bigchar:
         %assign XX XX+2
         %endrep
 
-        SET_PALETTE 15
+        call    wait_vertical_retrace
+        sub     bx,bx                                   ;to be used later
+        mov     cx,[back_fore_color]                    ;background / foreground colors
+        mov     al,0x10                                 ;color index = 0
+        out     dx,al                                   ;dx=0x03da (register)
+
+        mov     al,cl                                   ;background color
+        out     dx,al                                   ;set new color (data)
+
+        xchg    ax,bx                                   ;ax = 0
+        out     dx,al                                   ;reset
+
+        in      al,dx                                   ;reset to register again
+
+        mov     al,0x11                                 ;color index = 1
+        out     dx,al                                   ;dx=0x03da (register)
+
+        mov     al,ch                                   ;foreground color
+        out     dx,al                                   ;update color (register)
+
+        xchg    ax,bx                                   ;ax = 0
+        out     dx,al                                   ;reset
+
+        in      al,dx                                   ;reset to register again
 
         ret
 
@@ -382,6 +398,43 @@ MUSIC_END               equ 0b1000_0000
         mov     word [pvm_offset],ax            ;update new offset with loop data
         ret
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+gfx_init:
+        ; default palette for the 4 CGA colors
+        call    wait_vertical_retrace
+        mov     si,palette_default
+        sub     bx,bx                           ;color index
+        sub     di,di                           ;used to xchg with ax
+                                                ; (faster way to set ax to 0)
+        mov     cx,4                            ;update 4 colors
+.l0:
+        mov     al,bl                           ;color to update
+        ;out     dx,al                           ;dx=0x03da (register)
+
+        lodsb
+        ;out     dx,ax                           ;color
+
+        xchg    ax,di                           ;fatest way to set al to 0
+        ;out     dx,al                           ;(register)
+
+        ;in      al,dx                           ;reset to register again
+        inc     bl                              ;next color
+
+        loop    .l0
+
+
+        ; update some vars
+
+        mov     word [char_offset],CHAR_OFFSET  ;start drawing at row 24
+
+        mov     byte [text_writer_delay],30     ;wait about .5 seconds
+                                                ; before rendering next char
+
+        ; draw big char
+        mov     si,table_tateti                 ;prepare logo to draw
+        call    draw_bigchar                    ;draw it
+
+        ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 text_writer_update:
@@ -410,7 +463,7 @@ text_writer_update:
         mov     di,CHAR_OFFSET
         mov     word [char_offset],di           ;reset destination for char
         mov     cx,40*4
-        sub     ax,ax
+        mov     ax,0b10101010_10101010          ;clear color is 0b10
         rep stosw
 
         mov     di,CHAR_OFFSET + 8192
@@ -446,7 +499,16 @@ end_condition:          db 0                    ;when 1, banner animation sequen
 
 bigchar_to_render:      db 0                    ;when 0, render finished/not needed. else, contains the ASCII to be rendered
 
+palette_default:        db 0, 15, 0, 15         ;black/white, black/white
+back_fore_color:        dw 0x000f               ;background / foreground colors
+                                                ; used for the big letters
 
+back_fore_idx:          db 0                    ;index to the back_fore_tbl
+back_fore_tbl:          db 0, 15
+                        db 1, 2
+                        db 3, 4
+                        db 5, 6
+TOTAL_BACK_FORE         equ ($-back_fore_tbl)/2
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 old_segments:
         dw 0,0,0,0
