@@ -215,7 +215,7 @@ banner_main_loop:
         jnz     .exit                           ;exit if 
 
         cmp     byte [bigchar_to_render],0      ;is there any bigchar to render?
-        jnz     .render_bigchar
+        jnz     .render_char
 
         cmp     byte [end_condition],0          ;animation finished?
         jz      .main_loop                      ;no, so keep looping
@@ -224,7 +224,7 @@ banner_main_loop:
         ret                                     ;exit main loop.
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-.render_bigchar:
+.render_char:
         sub     ah,ah                           ;ah = 0. ax will be used
         mov     al,byte [bigchar_to_render]
         sub     al,0x20                         ;char table starts at 0x20 (ascii fo space)
@@ -236,7 +236,11 @@ banner_main_loop:
         mov     si,table_space                  ;si contains the base for the table
         add     si,ax                           ;si contains the base + offset
         call    draw_bigchar
-        mov     byte [bigchar_to_render],0
+
+        mov     al,[bigchar_to_render]
+        call    render_smallchar                ;render small char after big char so they are in sync
+
+        mov     byte [bigchar_to_render],0      ;trigger that the char has been rendered
         jmp     .main_loop
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -466,10 +470,9 @@ text_writer_update:
         jz      .start_again
         cmp     al,1
         jz      text_writer_clean_bottom_line
-
 .write:
         mov     [bigchar_to_render],al
-        jmp     render_smallchar
+        ret
 
 .start_again:
         mov     byte [end_condition],1          ;end animation
@@ -672,5 +675,6 @@ text_writer_msg:
         db 'GREETINGS TO: XXX,YYY,ZZZ,AAA,BBB,CCC   ',1
         db 'DID WE MENTION THIS INVITE-INTRO RUNS IN',1
         db 'UNEXPANDED PCJR (ONLY 64KB RAM NEEDED!)?',1
+        db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1
         db 0
 
