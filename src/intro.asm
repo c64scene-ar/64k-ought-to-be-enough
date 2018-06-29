@@ -88,10 +88,14 @@ banner_init:
 ;
 ; IN:
 ;       si = pointer to table of char to draw
-draw_bigchar:
+render_bigchar:
 
         ; begin: update background color
         call    wait_vertical_retrace
+
+        cmp     byte [is_flicker_free],0        ;flicker free enabled?
+        jz      .l0                             ; no, so skip
+
         sub     bx,bx                           ;bx=0 (to be used in xchg later)
         mov     cx,[back_fore_color]            ;cx=new color (to be used in xchg later)
         mov     al,0x11                         ;color index = 1
@@ -106,6 +110,7 @@ draw_bigchar:
         in      al,dx                           ;reset to register again
         ; end: update background color
 
+.l0:
         push    si                                      ;save si for later
 
         %assign XX 0
@@ -162,6 +167,9 @@ draw_bigchar:
         %assign XX XX+2
         %endrep
 
+        cmp     byte [is_flicker_free],0                ;flicker free?
+        jz      .l1                                     ; no, so skip it
+
         ; begin: update background / foreground color
         call    wait_vertical_retrace
         sub     bx,bx                                   ;to be used later
@@ -189,6 +197,7 @@ draw_bigchar:
         in      al,dx                                   ;reset to register again
         ; end: update background / foreground color
 
+.l1:
         ret
 
 
@@ -235,7 +244,7 @@ banner_main_loop:
         shl     ax,1
         mov     si,table_space                  ;si contains the base for the table
         add     si,ax                           ;si contains the base + offset
-        call    draw_bigchar
+        call    render_bigchar
 
         mov     al,[bigchar_to_render]
         call    render_smallchar                ;render small char after big char so they are in sync
@@ -452,7 +461,7 @@ gfx_init:
 
         ; draw big char
         mov     si,table_percent                ;prepare logo to draw
-        call    draw_bigchar                    ;draw it
+        call    render_bigchar                  ;draw it
 
         ret
 
@@ -463,6 +472,7 @@ text_writer_update:
         ret
 .l0:
         mov     byte [text_writer_delay],7      ;wait a few cycles
+.read_char:
         mov     bx, word [text_writer_offset]
         inc     word [text_writer_offset]
         mov     al, [text_writer_msg + bx]
@@ -470,13 +480,28 @@ text_writer_update:
         jz      .start_again
         cmp     al,1
         jz      text_writer_clean_bottom_line
+        cmp     al,2
+        jz      .disable_flicker_free
+        cmp     al,3
+        jz      .enable_flicker_free
+
+        ;fall-through. draw char
 .write:
         mov     [bigchar_to_render],al
         ret
 
+.enable_flicker_free:
+        mov     byte [is_flicker_free],1        ;enable flicker free
+        jmp     .read_char                      ;read next char
+
+.disable_flicker_free:
+        mov     byte [is_flicker_free],0        ;disable flicker free
+        jmp     .read_char                      ;read next char
+
 .start_again:
         mov     byte [end_condition],1          ;end animation
         ;mov     word [text_writer_offset],0     ;reset offset
+        ; fall-through to text_writer_clean_bottom_line
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 text_writer_clean_bottom_line:
@@ -518,6 +543,10 @@ VOLUME_0_MAX equ $ - volume_0
 end_condition:          db 0                    ;when 1, banner animation sequence finishes
 
 bigchar_to_render:      db 0                    ;when 0, render finished/not needed. else, contains the ASCII to be rendered
+
+is_flicker_free:        db 1                    ;whether or not foreground color is the same as background
+                                                ; while painting big char to prevent
+                                                ; flicker-free drawing
 
 palette_default:        db 0, 15, 0, 15         ;black/white, black/white
 back_fore_color:        dw 0x000f               ;background / foreground colors
@@ -664,6 +693,9 @@ text_writer_offset:
         dw 0                                    ;offset in the text. next char to be written
 text_writer_msg:
            ;0123456789012345678901234567890123456789
+        db 2
+        db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1
+        db 3
         db '        PUNGAS DE VILLA MARTELLI        ',1
         db '                PRESENTS                ',1
         db 'AN INVITE INTRO FOR PCJR AND TANDY 1000.',1
@@ -675,6 +707,7 @@ text_writer_msg:
         db 'GREETINGS TO: XXX,YYY,ZZZ,AAA,BBB,CCC   ',1
         db 'DID WE MENTION THIS INVITE-INTRO RUNS IN',1
         db 'UNEXPANDED PCJR (ONLY 64KB RAM NEEDED!)?',1
+        db 2                                            ;turn off "flicker-free"
         db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1
         db 0
 
