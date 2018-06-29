@@ -90,7 +90,21 @@ banner_init:
 ;       si = pointer to table of char to draw
 draw_bigchar:
 
-        SET_PALETTE 0
+        ; begin: update background color
+        call    wait_vertical_retrace
+        sub     bx,bx                           ;bx=0 (to be used in xchg later)
+        mov     cx,[back_fore_color]            ;cx=new color (to be used in xchg later)
+        mov     al,0x11                         ;color index = 1
+        out     dx,al                           ;dx=0x03da (register)
+
+        xchg    ax,cx                           ;fast way to set al with new color
+        out     dx,al                           ;set new color (data)
+
+        xchg    ax,bx                           ;fast way to set al to zero
+        out     dx,al                           ;update color (register)
+
+        in      al,dx                           ;reset to register again
+        ; end: update background color
 
         push    si                                      ;save si for later
 
@@ -148,6 +162,7 @@ draw_bigchar:
         %assign XX XX+2
         %endrep
 
+        ; begin: update background / foreground color
         call    wait_vertical_retrace
         sub     bx,bx                                   ;to be used later
         mov     cx,[back_fore_color]                    ;background / foreground colors
@@ -172,6 +187,7 @@ draw_bigchar:
         out     dx,al                                   ;reset
 
         in      al,dx                                   ;reset to register again
+        ; end: update background / foreground color
 
         ret
 
