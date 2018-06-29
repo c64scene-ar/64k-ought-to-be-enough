@@ -447,7 +447,7 @@ gfx_init:
                                                 ; before rendering next char
 
         ; draw big char
-        mov     si,table_tateti                 ;prepare logo to draw
+        mov     si,table_percent                ;prepare logo to draw
         call    draw_bigchar                    ;draw it
 
         ret
