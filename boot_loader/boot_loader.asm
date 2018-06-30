@@ -79,9 +79,20 @@ new_start:
 
         mov     si,boot_msg             ;offset to msg
         call    print_msg
+        call    delay
 
         mov     ah,1                    ;1 == clean scren
         int     0x20                    ;read first file
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+delay:
+        mov     cx,5
+.l1:    push    cx
+        sub     cx,cx
+.l0:    loop    .l0
+        pop     cx
+        loop    .l1
+        ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 int_20_handler:
@@ -244,7 +255,7 @@ loading_msg:
         db 'Loading...',13,0            ;loading msg
 
 error_msg:
-        db 13,'Error loading. Trying again.',13,0
+        db 13,'Error. Trying again.',13,0
 ok_msg:
         db 13,'Ok.',13,0                ;booting msg
 f_drive:
@@ -269,5 +280,10 @@ PARTS_TOTAL equ ($-parts_data)/4        ;how many parts are defined
 
 
 ;; Magic numbers
-times 510 - ($ - $$) db 0               ;byte 509 should be 0
+times 500 - ($ - $$) db 0               ;byte 509 should be 0
+        dw 0xffff                       ;reserved
+        dw 0xffff                       ;reserved
+        dw 0xffff                       ;reserved
+        dw 0xffff                       ;reserved
+        dw 0xffff                       ;reserved
         dw 0xAA55                       ;510 = 0x55, 511 = 0xaa
