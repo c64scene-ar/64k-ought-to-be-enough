@@ -1,42 +1,42 @@
 .PHONY: res runme
 
-TARGET_NAME = intro.com
-TARGET = bin/${TARGET_NAME}
+TARGET_NAME_1 = part1.com
+TARGET_1 = bin/${TARGET_NAME_1}
 ASM = nasm
 ASMFLAGS = -fobj -Wall
 LD = alink
 LDFLAGS = -oCOM -m
 
-default: $(TARGET)
+part1: $(TARGET_1)
 all: res default
 
-OBJECTS = intro.o utils.o segment55_table.o segment55_data.o
+OBJECTS_1 = intro.o utils.o segment55_table.o segment55_data.o
 
-%.o: src/%.asm
+%.o: part1/%.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
 
-.PRECIOUS: $(TARGET) $(OBJECTS)
+.PRECIOUS: $(TARGET_1) $(OBJECTS_1)
 
-$(TARGET): $(OBJECTS)
+$(TARGET_1): $(OBJECTS_1)
 	echo "Linking..."
-	$(LD) $(OBJECTS) $(LDFLAGS) -o $@
+	$(LD) $(OBJECTS_1) $(LDFLAGS) -o $@
 
 clean:
 	echo "Cleaning..."
 	-rm -f *.o
 	-rm -f bin/*.map
 
-run: $(TARGET)
+run: $(TARGET_1)
 	echo "Running game..."
-	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME}
+	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_1}
 
-x: $(TARGET)
+x: $(TARGET_1)
 	echo "Compressing game..."
-	-upx -9 --8086 $(TARGET)
+	-upx -9 --8086 $(TARGET_1)
 
 runx: x
 	echo "Running game..."
-	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME}
+	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_1}
 
 dist: x
 	echo "Generating distribution .zip"
@@ -47,7 +47,7 @@ dist: x
 
 boot: default fat_image
 	nasm -Wall boot_loader/boot_loader.asm -fbin -o boot_loader/boot.bin
-	cat boot_loader/boot.bin boot_loader/fat_without_boot.bin > bin/intro.360
+	cat boot_loader/boot.bin boot_loader/fat_without_boot.bin > bin/demo_pvm.360
 
 runme:
 	echo "Generating runme.com"
@@ -64,11 +64,11 @@ res:
 	echo "Generating resources..."
 	echo "Compressing music..."
 	python3 ~/progs/pc-8088-misc/pvmplay/convert_vgm_to_pvm.py res/cumparchiptune.vgm
-	mv res/cumparchiptune.pvm src/uctumi-song.pvm
+	mv res/cumparchiptune.pvm part1/uctumi-song.pvm
 	echo "Converting graphics..."
-	python3 tools/parse_55_segment_data.py res/55-segment.png -o src/segment55_data.asm
-	python3 tools/parse_55_segment_font.py -o src/segment55_table.asm
-	python3 tools/parse_ibm_charset.py res/tandy_1000_hx_charset-charset.bin -o src/charset_0x20_0x60.bin
+	python3 tools/parse_55_segment_data.py res/55-segment.png -o part1/segment55_data.asm
+	python3 tools/parse_55_segment_font.py -o part1/segment55_table.asm
+	python3 tools/parse_ibm_charset.py res/tandy_1000_hx_charset-charset.bin -o part1/charset_0x20_0x60.bin
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 10 -o src/flashparty.bin res/flashparty.data
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/p.raw res/p.data
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/v.raw res/v.data
@@ -104,8 +104,8 @@ fat_image: default runme
 	sudo mkfs.msdos -n PVM_BOOT -C boot_loader/fat_image.360 360
 	-sudo mkdir /media/floppy
 	sudo mount -o loop boot_loader/fat_image.360 /media/floppy
-	sudo cp bin/runme.com /media/floppy
-	sudo cp bin/intro.com /media/floppy/part1.com
+	sudo cp bin/runme.com /media/floppy/
+	sudo cp bin/part1.com /media/floppy/
 	sudo umount /media/floppy
 	sudo rmdir /media/floppy
 	dd if=boot_loader/fat_image.360 of=boot_loader/fat_without_boot.bin bs=512 skip=1 count=719
