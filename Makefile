@@ -8,7 +8,7 @@ LD = alink
 LDFLAGS = -oCOM -m
 
 part1: $(TARGET_1)
-all: res default
+all: res test_boot
 
 OBJECTS_1 = intro.o utils.o segment55_table.o segment55_data.o
 
@@ -45,7 +45,7 @@ dist: x
 	cp bin/intro.com intro/
 	zip intro.zip -r intro
 
-boot: default fat_image
+boot: part1 fat_image
 	nasm -Wall boot_loader/boot_loader.asm -fbin -o boot_loader/boot.bin
 	cat boot_loader/boot.bin boot_loader/fat_without_boot.bin > bin/demo_pvm.360
 
@@ -98,7 +98,7 @@ dis:
 	ndisasm -b 16 -o 100h bin/${TARGET_NAME} | gvim -
 
 
-fat_image: default runme
+fat_image: part1 runme
 	echo "Generating FAT image with needed files"
 	-rm -f boot_loader/fat_image.360
 	sudo mkfs.msdos -n PVM_BOOT -C boot_loader/fat_image.360 360

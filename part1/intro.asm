@@ -9,7 +9,7 @@ cpu     8086
 extern irq_8_cleanup, irq_8_init
 extern wait_vertical_retrace
 
-%include 'src/externs.inc'
+%include 'part1/externs.inc'
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
@@ -526,7 +526,7 @@ text_writer_clean_bottom_line:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; song related
 pvm_song:
-        incbin 'src/uctumi-song.pvm'
+        incbin 'part1/uctumi-song.pvm'
 pvm_wait:                                       ;cycles to read divided 0x2df
         db 0
 pvm_offset:                                     ;pointer to next byte to read
@@ -684,7 +684,7 @@ char_offset:
         dw 0                                    ;offset used to render a char
                                                 ; from the charset
 charset:
-        incbin 'src/charset_0x20_0x60.bin'      ;the charset already expanded for mode 320x200 @ 4 colors
+        incbin 'part1/charset_0x20_0x60.bin'      ;the charset already expanded for mode 320x200 @ 4 colors
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 text_writer_delay:
