@@ -15,34 +15,12 @@ extern wait_vertical_retrace
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 1                              ;1=run on emulator
+%define EMULATOR 0                              ;1=run on emulator
 
 GFX_SEG         equ     0xb800                  ;0x1800 for PCJr with 32k video ram
                                                 ;0xb800 for 16k modes
 CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
 
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; refreshes the palette. used as a macro, and not function, since it is being
-; called from time-critical sections
-;
-; Args:
-;       #1:     -> color to use
-%macro SET_PALETTE 1
-        call    wait_vertical_retrace
-        sub     bx,bx                           ;bx=0 (to be used in xchg later)
-        mov     cx,%1                           ;cx=new color (to be used in xchg later)
-        ;mov     dx,0x03da                      ;address
-        mov     al,0x11                         ;color index = 1
-        out     dx,al                           ;dx=0x03da (register)
-
-        xchg    ax,cx                           ;fast way to set al with new color
-        out     dx,al                           ;set new color (data)
-
-        xchg    ax,bx                           ;fast way to set al to zero
-        out     dx,al                           ;update color (register)
-
-        in      al,dx                           ;reset to register again
-%endmacro
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
 ; CODE
@@ -52,33 +30,37 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
         resb    0x100                           ;cannot use "org 0x100" when using multiple .o files
         cld                                     ;forward direction
 
-        cli                                     ;disable interrupt while changing the stack
-        mov     ax,cs                           ;ds,sp = cs
-        mov     ds,ax
+        mov     ax,cs
+        mov     ds,ax                           ;ds = cs
+        mov     ax,GFX_SEG
+        mov     es,ax                           ;es = GFX segment.
+                                                ; should be valid everywhere. if modified
+                                                ; use push/pop
+        call    intro_init
+        call    intro_main_loop
+        call    intro_cleanup
 
-        mov     ax,GFX_SEG                      ;through the whole intro.
-        mov     es,ax                           ;push/pop otherwise
-
-        call    banner_init
-        call    banner_main_loop
-        call    banner_cleanup
-
-        int     0x20                            ;exit. next file to load
+        sub     ax,ax                           ;don't clear screen in ricarDOS
+        int     0x20                            ; and load next part
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-banner_init:
+intro_init:
+        
         mov     ax,0x0004                       ;320x200 4 colors
         int     0x10
+
+%if EMULATOR
+%else
+        mov     al,0xa0
+        out     0xf2,al                         ;turn off floppy motor
+%endif
 
         call    music_init
         call    gfx_init
 
         ; should be the last one to get initialized
-        mov     ax,banner_irq_8
-        call    irq_8_init
-
-        ret
-
+        mov     ax,intro_irq_8_handler
+        jmp     irq_8_init
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -202,12 +184,12 @@ render_bigchar:
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-banner_cleanup:
+intro_cleanup:
         call    irq_8_cleanup
         jmp     music_cleanup
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-banner_main_loop:
+intro_main_loop:
 .main_loop:
         ;key pressed?
 %if EMULATOR
@@ -290,11 +272,11 @@ render_smallchar:
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-banner_irq_8:
+intro_irq_8_handler:
         pushf
         push    es                              ;since we might be interrupting
-        push    ds                              ; the decompressor routine, we need to
-        push    si                              ; save all registers
+        push    ds                              ; the main routine, we need to
+        push    si                              ; save all used registers
         push    di
         push    dx
         push    cx
@@ -476,18 +458,19 @@ text_writer_update:
         mov     bx, word [text_writer_offset]
         inc     word [text_writer_offset]
         mov     al, [text_writer_msg + bx]
-        or      al,al                           ;last char ?
+        mov     bl,al                           ;save al in bl, to be used if drawing char
+        or      al,al                           ;al == 2? last char ?
         jz      .start_again
-        cmp     al,1
+        dec     al                              ;al == 1?
         jz      text_writer_clean_bottom_line
-        cmp     al,2
+        dec     al                              ;al == 2?
         jz      .disable_flicker_free
-        cmp     al,3
+        dec     al                              ;al == 3?
         jz      .enable_flicker_free
 
         ;fall-through. draw char
 .write:
-        mov     [bigchar_to_render],al
+        mov     [bigchar_to_render],bl
         ret
 
 .enable_flicker_free:
@@ -515,7 +498,6 @@ text_writer_clean_bottom_line:
         mov     cx,40*4
         rep stosw
         ret
-
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
@@ -693,9 +675,9 @@ text_writer_offset:
         dw 0                                    ;offset in the text. next char to be written
 text_writer_msg:
            ;0123456789012345678901234567890123456789
-        db 2
+        db 2                                            ;turn off "flicker-free"
         db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1
-        db 3
+        db 3                                            ;re-enable "flicker-free"
         db '        PUNGAS DE VILLA MARTELLI        ',1
         db '                PRESENTS                ',1
         db 'AN INVITE INTRO FOR PCJR AND TANDY 1000.',1

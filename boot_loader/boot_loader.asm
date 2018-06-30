@@ -80,10 +80,15 @@ new_start:
         mov     si,boot_msg             ;offset to msg
         call    print_msg
 
+        mov     ah,1                    ;1 == clean scren
         int     0x20                    ;read first file
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 int_20_handler:
+        or      ah,ah                   ;ah=0?
+        jz      .just_load              ; if so, don't print / don't clean any message
+                                        ; just load the next file
+
         mov     ax,cs                   ;ds = cs
         mov     ds,ax
 
@@ -101,6 +106,7 @@ int_20_handler:
         mov     si,loading_msg
         call    print_msg
 
+.just_load:
         mov     bx,[parts_idx]
         cmp     bx,PARTS_TOTAL
         jz      .reboot
@@ -121,7 +127,7 @@ int_20_handler:
 
         inc     word [parts_idx]
 
-        call    delay                   ;small delay to turn motor off
+        ;don't turn motor off. each part is reponsible for leaving the motor on/off
 
         mov     sp,STACK_OFFSET         ;reset stack
         jmp     INTRO_CS-0x10:0x100     ;jump to entry point:
@@ -223,19 +229,6 @@ print_msg:
         add     di,80
         mov     [last_new_line],di
         jmp     .l0
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-delay:
-        sub     ax,ax
-        int     0x13                    ;reset drive
-
-        mov     cx,5                    ;delay for a while
-.l1:    push    cx
-        sub     cx,cx
-.l0:    loop    .l0
-        pop     cx
-        loop    .l1
-        ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 
