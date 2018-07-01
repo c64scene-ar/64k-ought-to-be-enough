@@ -303,84 +303,84 @@ labels:
            ;          1         2         3
            ;0123456789012345678901234567890123456789
 label_is_mda:
-        db 'Hercules detected. If this is true, then'
-        db 'you cannot possible see this message    '
-        db 'since this message uses segment 0xb800  '
-        db '(instead of 0xb000)                     '
-        db 'Cheater!!!                              '
+        db 'Hercules detected. If this is true, then',13,10
+        db 'you cannot possible see this message'    ,13,10
+        db 'since this message uses segment 0xb800'  ,13,10
+        db '(instead of 0xb000)'                     ,13,10
+        db 'Cheater!!!'                              ,13,10
         db '$'
 label_is_cga:
-        db "My friend, this demo doesn't run in a   "
-        db 'CGA machine.                            '
+        db "My friend, this demo doesn't run in a"   ,13,10
+        db 'CGA machine.'                            ,13,10
         db '$'
 label_is_pcjr:
-        db 'IBM PCjr detected. Yay!                 '
+        db 'IBM PCjr detected. Yay!'                 ,13,10
         db '$'
 label_is_tandy_1000:
-        db 'Tandy 1000 detected. Do you know what   '
-        db 'does it mean? That this demo is not     '
-        db 'compatible with this machine.        :-('
-        db '                                        '
-        db 'So sad, since the Tandy 1000 and the    '
-        db 'PCjr are almost the same, and making    '
-        db 'this demo compatible with the Tandy 1000'
-        db "is easy. But unfortunately we didn't    "
-        db 'have time to do it. But if you write us '
-        db 'demanding support for the Tandy 1000 we '
-        db 'might port it to it. Mention the secret '
-        db 'code: "Tandy 1000 & PCjr are the best". '
+        db 'Tandy 1000 detected. Do you know what'   ,13,10
+        db 'does it mean? That this demo is not'     ,13,10
+        db 'compatible with this machine.        :-(',13,10
+        db ''                                        ,13,10
+        db 'So sad, since the Tandy 1000 and the'    ,13,10
+        db 'PCjr are almost the same, and making'    ,13,10
+        db 'this demo compatible with the Tandy 1000',13,10
+        db "is easy. But unfortunately we didn't"    ,13,10
+        db 'have time to do it. But if you write us' ,13,10
+        db 'demanding support for the Tandy 1000 we' ,13,10
+        db 'might port it to it. Mention the secret' ,13,10
+        db 'code: "Tandy 1000 & PCjr are the best".' ,13,10
         db '$'
 label_is_tandy_sltl:
-        db "Tandy 1000 SL/TL detected. We don't     "
-        db 'support modern Tandys. Sorry.           '
+        db "Tandy 1000 SL/TL detected. We don't"     ,13,10
+        db 'support modern Tandys. Sorry.'           ,13,10
         db '$'
 label_is_ega:
-        db 'EGA detected. WTF is an EGA?.           '
-        db 'Not supported                           '
+        db 'EGA detected. WTF is an EGA?.'           ,13,10
+        db 'Not supported.'                          ,13,10
         db '$'
 label_is_vga:
-        db 'Modern computer detected. Abort. Abort. '
+        db 'Modern computer detected. Abort. Abort.' ,13,10
         db '$'
 label_is_mcga:
-        db 'Are you really running this demo in an  '
-        db 'IBM PS/2 model 25?                      '
-        db 'I used to hate that computer ~25 years  '
-        db 'ago. But now I am looking for one. If   '
-        db 'want to donate one, I happily accept it.'
-        db 'Thanks! :-)                             '
+        db 'Are you really running this demo in an'  ,13,10
+        db 'IBM PS/2 model 25?'                      ,13,10
+        db 'I used to hate that computer ~25 years'  ,13,10
+        db 'ago. But now I am looking for one. If'   ,13,10
+        db 'want to donate one, I happily accept it.',13,10
+        db 'Thanks! :-)'                             ,13,10
         db '$'
 
            ;          1         2         3
            ;0123456789012345678901234567890123456789
 label_remove_diskette:
-        db 'Remove the diskette and insert it in an '
-        db 'IBM PCjr, the best computer ever!       '
+        db 'Remove the diskette and insert it in an' ,13,10
+        db 'IBM PCjr, the best computer ever!'       ,13,10
         db '$'
 
 
            ;          1         2         3
            ;0123456789012345678901234567890123456789
 label_above_128k:
-        db 'This code is running above 0x10000.     '
-        db "That means that you didn't boot from    "
-        db 'diskette, correct?                      '
-        db 'In any case, we let you continue running'
-        db 'this demo because we are nice people.   '
+        db 'This code is running above 0x10000.'     ,13,10
+        db "That means that you didn't boot from"    ,13,10
+        db 'diskette, correct?'                      ,13,10
+        db 'In any case, we let you continue running',13,10
+        db 'this demo because we are nice people.'   ,13,10
         db '$'
 
 label_not_8088:
-        db 'But a real 8088 CPU was not detected.   '
-        db 'Are you using a NEC v20 CPU? or most    '
-        db 'probably inside an emulator?            '
-        db 'If so, we let you continue running this '
-        db 'demo, because we are nice people.       '
-        db "But this demo doesn't work Ok on DosBox."
-        db 'And NEC v20 was not tested.             '
-        db 'Run it at your own risk.                '
+        db 'But a real 8088 CPU was not detected.'   ,13,10
+        db 'Are you using a NEC v20 CPU? or most'    ,13,10
+        db 'probably inside an emulator?'            ,13,10
+        db 'If so, we let you continue running this' ,13,10
+        db 'demo, because we are nice people.'       ,13,10
+        db "But this demo doesn't work Ok on DosBox.",13,10
+        db 'And NEC v20 was not tested.'             ,13,10
+        db 'Run it at your own risk.'		     ,13,10
         db '$'
 
 label_warning:
-        db 'Press any key to continue               '
+        db 13,10,'Press any key to continue               '
         db '$'
 
 label_pcjr_a_b:

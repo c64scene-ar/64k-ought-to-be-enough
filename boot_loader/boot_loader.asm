@@ -104,9 +104,8 @@ int_21_handler:
 ;       ah = 0x4c
 ;       al = 0: don't clean screen / 1: clean screen
 ricardos_load_file:
-	int 3
-        mov     ax,cs                   ;ds = cs
-        mov     ds,ax
+        mov     bx,cs                   ;ds = cs
+        mov     ds,bx
 
         or      al,al
         jz      .skip_clean
@@ -161,7 +160,7 @@ ricardos_print_msg:
         mov     si,dx                   ;DS:SI source
 
         push    es
-        les     di,[video_offset]       ;ES:DI: destination
+        les     di,[cs:video_offset]   	;ES:DI: destination
 
 .l0:    lodsb                           ;loads SI into AL
         cmp     al,'$'                  ;checks whether the end of the string
@@ -177,13 +176,13 @@ ricardos_print_msg:
 
 .exit:
         pop     es
-        mov     [video_offset],di       ;update char offset
+        mov     [cs:video_offset],di    ;update char offset
         iret
 
 .new_line:
-        mov     di,[last_new_line]
+        mov     di,[cs:last_new_line]
         add     di,80
-        mov     [last_new_line],di
+        mov     [cs:last_new_line],di
         jmp     .l0
 
 
@@ -271,12 +270,12 @@ last_new_line:
 boot_msg:
         db 'ricarDOS v0.1',13,'$'       ;booting msg
 loading_msg:
-        db 'Loading...',13,'$'          ;loading msg
+        db 13,'Loading...$'          ;loading msg
 
 error_msg:
         db 13,'Error. Trying again.',13,'$'
 ok_msg:
-        db 13,'Ok.',13,'$'              ;booting msg
+        db 'Ok.',13,13,'$'              ;booting msg
 f_drive:
         db 0                            ;initial drive to read. MUST be zero
 f_head:
@@ -293,7 +292,7 @@ parts_idx:
 	;track * 18 + head+9 + sector-1 = offset
 parts_data:                             ;track / head / sector / total sectors to read
         db 0,1,8,8                      ;detect.com. offset: 0x2000-0x3000. len: 8 sectors 
-        db 1,0,7,92                     ;part1.com.  offset: 0x3000-0xe800. len: 96 sectors
+        db 1,0,5,92                     ;part1.com.  offset: 0x2c00-0xe400. len: 92 sectors
 PARTS_TOTAL equ ($-parts_data)/4        ;how many parts are defined
 
 
