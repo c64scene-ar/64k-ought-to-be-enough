@@ -8,10 +8,10 @@ LD = alink
 LDFLAGS = -oCOM -m
 
 part1: $(TARGET_1)
+
 all: res test_boot
 
 OBJECTS_1 = intro.o utils.o segment55_table.o segment55_data.o
-OBJECTS_DETECT = main.o pztimer.o
 
 %.o: part1/%.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
@@ -24,18 +24,18 @@ $(TARGET_1): $(OBJECTS_1)
 
 clean:
 	echo "Cleaning..."
-	-rm -f *.o
+	-rm -f obj/*.o *.o
 	-rm -f bin/*.map
 
-run: $(TARGET_1)
+test_part1: $(TARGET_1)
 	echo "Running game..."
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_1}
 
-x: $(TARGET_1)
+part1x: $(TARGET_1)
 	echo "Compressing game..."
 	-upx -9 --8086 $(TARGET_1)
 
-runx: x
+test_part1x: part1x
 	echo "Running game..."
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_1}
 
@@ -46,13 +46,13 @@ dist: x
 	cp bin/intro.com intro/
 	zip intro.zip -r intro
 
-boot: part1 fat_image
+boot: fat_image
 	nasm -Wall boot_loader/boot_loader.asm -fbin -o boot_loader/boot.bin
 	cat boot_loader/boot.bin boot_loader/fat_without_boot.bin > bin/demo_pvm.360
 
 runme:
 	echo "Generating runme.com"
-	nasm -Wall runme/main.asm -fbin -o bin/runme.com
+	nasm -Wall runme/runme.asm -fbin -o bin/runme.com
 
 test_runme: runme
 	echo "Running runme"
@@ -60,12 +60,12 @@ test_runme: runme
 
 detect:
 	echo "Generating detect.com"
-	nasm -Wall detect/main.asm    -fobj -o obj/main.o
+	nasm -Wall detect/detect.asm  -fobj -o obj/detect.o
 	nasm -Wall detect/pztimer.asm -fobj -o obj/pztimer.o
-	alink -oCOM -m obj/main.o obj/pztimer.o -o bin/detect.com
+	alink -oCOM -m obj/detect.o obj/pztimer.o -o bin/detect.com
 
 test_detect: detect
-	dosbox-x -conf conf/dosbox-x_pcjr.conf
+	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/" -c "c:" -c dir
 
 test_boot: boot
 	dosbox-x -conf conf/dosbox-x_pcjr.conf

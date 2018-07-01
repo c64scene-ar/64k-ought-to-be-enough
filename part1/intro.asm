@@ -45,7 +45,7 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 intro_init:
-        
+
         mov     ax,0x0004                       ;320x200 4 colors
         int     0x10
 
@@ -203,7 +203,7 @@ intro_main_loop:
         in      al,0x62                         ;on real hardware, test keystroke missed?
         and     al,1                            ; so that we can disable IRQ9
 %endif
-        jnz     .exit                           ;exit if 
+        jnz     .exit                           ;exit if
 
         cmp     byte [bigchar_to_render],0      ;is there any bigchar to render?
         jnz     .render_char

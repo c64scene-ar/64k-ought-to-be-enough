@@ -37,25 +37,46 @@ VIDEOCARD_MCGA          equ 7
 
 ;
 ..start:
+main:
         resb    0x100                           ;cannot use "org 0x100" when using multiple .o files
 
         mov     ax,cs
         mov     ds,ax
         mov     ax,0xb800
         mov     es,ax
-        
 
         cld
 
+        ; al =  0 -> MDA
+        ;       1 -> CGA
+        ;       2 -> PCjr
+        ;       3 -> Tandy 1000
+        ;       4 -> Tandy SL/TL
+        ;       5 -> EGA
+        ;       6 -> VGA
+        ;       7 -> MCGA
         call    detect_card
-        cmp     al,2
-        jnz     not_pcjr
+        call    print_msg
 
+        cmp     al,2                            ;is this a PCjr?
+        jz      .is_pcjr                        ;yes!
+
+        mov     dx,label_remove_diskette        ;not a PCjr
+        mov     ah,9                            ;print msg using DOS
+        int     0x21
+
+        sub     ax,ax
+        int     0x16                            ;wait key and...
+;        int     0x19                            ; ...reboot
+        int     0x20
+
+
+.is_pcjr:
         call    detect_mem_128kb
-        jc      not_128k
+        jnc     .not_128k
 
         call    detect_8088
-        jb      not_8088
+        jb      .not_8088
 
         call    detect_jr_a_or_b
 
@@ -64,47 +85,50 @@ VIDEOCARD_MCGA          equ 7
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-not_pcjr:
-        mov     si,label_not_pcjr
-        call    print_dos_msg
-        jmp     exit_with_error
+.not_128k:
+        mov     dx,label_above_128k
+        mov     ah,9
+        int     0x21                            ;DOS print msg
+        jmp     exit_with_warning
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-not_128k:
-        mov     si,label_not_128k
-        call    print_dos_msg
-        jmp     exit_with_error
+.not_8088:
+        mov     dx,label_not_8088
+        mov     ah,9
+        int     0x21                            ;DOS print msg
+
+        ;
+        ;fall-through
+        ;
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+exit_with_warning:
+        mov     dx,label_warning
+        mov     ah,9
+        int     0x21                            ;DOS print msg
+
+        sub     ax,ax
+        int     0x16                            ;wait key
+
+        sub     ah,ah                           ;don't clean screen
+        int     0x20                            ; and load next file
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-not_8088:
-        mov     si,label_not_8088
-        call    print_dos_msg
-        jmp     exit_with_error
+; in:
+;       al = msg index to print
+print_msg:
+        push    ax                              ;save it
 
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-exit_with_error:
-        mov     si,label_fatal_error
-        call    print_dos_msg
-        int     0x19                            ;reboot
+        sub     ah,ah
+        shl     ax,1                            ;multiply by 2 (each address takes 2 bytes)
+        mov     bx,ax
+        mov     dx,[labels + bx]                ;get address from table
+        mov     ah,9
+        int     0x21                            ;DOS print msg
 
-
-;        mov     ax,0xffff                       ;reboot machine
-;        sub     bx,bx
-;        push    ax
-;        push    bx
-;        retf
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-print_dos_msg:
-        lodsb
-        or      al,al
-        jz      .exit
-
-        stosb
-        inc     di                              ;di =+ 2 to skip attribute
-
-.exit:
+        pop     ax                              ;restore ax
         ret
+
+
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 detect_mem_128kb:
@@ -263,23 +287,104 @@ detect_card:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; DATA
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-label_not_pcjr:
-        db 'This demo only works on IBM PCjr computers.',13,10,0
+labels:
+        dw      label_is_mda
+        dw      label_is_cga
+        dw      label_is_pcjr
+        dw      label_is_tandy_1000
+        dw      label_is_tandy_sltl
+        dw      label_is_ega
+        dw      label_is_vga
+        dw      label_is_mcga
 
-label_not_128k:
-        db 'PCjr with at least 256kb RAM needed. Code should run above 128kb RAM',13,10,0
+           ;          1         2         3
+           ;0123456789012345678901234567890123456789
+label_is_mda:
+        db 'Hercules detected. If this is true, then'
+        db 'you cannot possible see this message    '
+        db 'since this message uses segment 0xb800  '
+        db '(instead of 0xb000)                     '
+        db 'Cheater!!!                              '
+        db '$'
+label_is_cga:
+        db "My friend, this demo doesn't run in a   "
+        db 'CGA machine.                            '
+        db '$'
+label_is_pcjr:
+        db 'IBM PCjr detected. Yay!                 '
+        db '$'
+label_is_tandy_1000:
+        db 'Tandy 1000 detected. Do you know what   '
+        db 'does it mean? That this demo is not     '
+        db 'compatible with this machine.        :-('
+        db '                                        '
+        db 'So sad, since the Tandy 1000 and the    '
+        db 'PCjr are almost the same, and making    '
+        db 'this demo compatible with the Tandy 1000'
+        db "is easy. But unfortunately we didn't    "
+        db 'have time to do it. But if you write us '
+        db 'demanding support for the Tandy 1000 we '
+        db 'might port it to it. Mention the secret '
+        db 'code: "Tandy 1000 & PCjr are the best". '
+        db '$'
+label_is_tandy_sltl:
+        db "Tandy 1000 SL/TL detected. We don't     "
+        db 'support modern Tandys. Sorry.           '
+        db '$'
+label_is_ega:
+        db 'EGA detected. WTF is an EGA?.           '
+        db 'Not supported                           '
+        db '$'
+label_is_vga:
+        db 'Modern computer detected. Abort. Abort. '
+        db '$'
+label_is_mcga:
+        db 'Are you really running this demo in an  '
+        db 'IBM PS/2 model 25?                      '
+        db 'I used to hate that computer ~25 years  '
+        db 'ago. But now I am looking for one. If   '
+        db 'want to donate one, I happily accept it.'
+        db 'Thanks! :-)                             '
+        db '$'
+
+           ;          1         2         3
+           ;0123456789012345678901234567890123456789
+label_remove_diskette:
+        db 'Remove the diskette and insert it in an '
+        db 'IBM PCjr, the best computer ever!       '
+        db '$'
+
+
+           ;          1         2         3
+           ;0123456789012345678901234567890123456789
+label_above_128k:
+        db 'This code is running above 0x10000.     '
+        db "That means that you didn't boot from    "
+        db 'diskette, correct?                      '
+        db 'In any case, we let you continue running'
+        db 'this demo because we are nice people.   '
+        db '$'
 
 label_not_8088:
-        db 'An 8088 CPU is needed. No NEC v20, no emulators. Thanks.',13,10,0
+        db 'But a real 8088 CPU was not detected.   '
+        db 'Are you using a NEC v20 CPU? or most    '
+        db 'probably inside an emulator?            '
+        db 'If so, we let you continue running this '
+        db 'demo, because we are nice peopel.       '
+        db "But this demo doesn't work Ok on DosBox."
+        db 'And NEC v20 was not tested.             '
+        db 'Run it at your own risk.                '
+        db '$'
 
-label_fatal_error:
-        db 'This is a fatal error.',0
+label_warning:
+        db 'Press any key to continue               '
+        db '$'
 
 label_pcjr_a_b:
         db 'PCjr '
 label_model:
         db '?'
-        db ' detected.',13,10,0
+        db ' detected.',13,10,'$'
 
 old_pic_imr:
         db 0
