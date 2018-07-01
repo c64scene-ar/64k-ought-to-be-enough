@@ -12,7 +12,7 @@ org     0x0000                          ;Org should be 0x7c00
 
 BOOTSECTOR_CS   equ 0x20                ;where the boot-sector code will be placed
 INTRO_CS        equ 0x60                ;where the intro should be placed
-STACK_OFFSET    equ 0x600               ;goes down from 0x5ff 
+STACK_OFFSET    equ 0x600               ;goes down from 0x5ff
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; Memory map:
@@ -26,7 +26,7 @@ STACK_OFFSET    equ 0x600               ;goes down from 0x5ff
 start:
         jmp     _start                  ;must start with a 'jmp' (3 bytes)
         nop
-        db      'PVM_BOOT'              ;OEM name (8 bytes)
+        db      'ricarDOS'              ;OEM name (8 bytes)
 
         ;BIOS parameter block
         dw      0x0200                  ;bytes per sector
@@ -41,8 +41,10 @@ start:
         dw      0x0002                  ;number of read/write heads
         dw      0x0000                  ;number of hidden sectors
 
-        
+
 times 0x36 - ($ - $$) db 0              ;some padding. start code at 0x36
+                                        ; but could use less padding if space is
+                                        ; needed
 
 _start:
         ;Don't use stack yet. SP not set correctly
@@ -65,8 +67,8 @@ new_start:
         mov     sp,STACK_OFFSET         ;stack
 
         mov     ds,ax                   ;ds=0
-        mov     word [0x20*4],int_20_handler ;new 0x20 handler: offset
-        mov     [0x20*4+2],cs           ;new 0x20 handler: segment
+        mov     word [0x21*4],int_21_handler ;new 0x21 handler: offset
+        mov     [0x21*4+2],cs           ;new 0x20 handler: segment
 
         mov     ax,cs                   ;es=ds=cs
         mov     ds,ax
@@ -77,45 +79,48 @@ new_start:
         mov     ax,0x0001               ;text 40x25 color
         int     0x10
 
-        mov     si,boot_msg             ;offset to msg
-        call    print_msg
-        call    delay
+        mov     dx,boot_msg             ;offset to msg
+        mov     ah,9
+        int     0x21                    ;print msg
 
-        mov     ah,1                    ;1 == clean scren
-        int     0x20                    ;read first file
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-delay:
-        mov     cx,5
-.l1:    push    cx
-        sub     cx,cx
-.l0:    loop    .l0
-        pop     cx
-        loop    .l1
-        ret
+        mov     ah,0x4c
+        int     0x21                    ;load next file
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-int_20_handler:
-        or      ah,ah                   ;ah=0?
-        jz      .just_load              ; if so, don't print / don't clean any message
+;dummy DOS "emulator". mimics some DOS functions so that stand alone
+;.com works the same as with ricarDOS
+;Easier for testing/debugging.
+int_21_handler:
+        cmp     ah,9                    ;print msg
+        jz      ricardos_print_msg
+        cmp     ah,0x4c
+        jz      ricardos_load_file      ; if so, don't print / don't clean any message
                                         ; just load the next file
+        ;unsuppoted command
+        int 3
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+;in:
+;       ah = 0x4c
+;       al = 0: don't clean screen / 1: clean screen
+ricardos_load_file:
         mov     ax,cs                   ;ds = cs
         mov     ds,ax
 
-        cmp     byte [parts_idx],0      ;first file to load?
-        jz      .skip_clean             ;if so, don't clear the screen
+        or      al,al
+        jz      .skip_clean
 
-        mov     ax,0x0001               ;text 40x25
-        int     0x10
+        mov     ax,0x0001               ;text 40x25 @ color
+        int     0x10                    ;set video mode
 
         sub     ax,ax
         mov     [video_offset],ax       ;reset offset, so next msg starts from
         mov     [last_new_line],ax      ; the top
 
 .skip_clean:
-        mov     si,loading_msg
-        call    print_msg
+        mov     dx,loading_msg
+        mov     ah,9
+        int     0x21                    ;print msg
 
 .just_load:
         mov     bx,[parts_idx]
@@ -146,6 +151,39 @@ int_20_handler:
 
 .reboot:
         int     0x19                    ;no more parts to load, reboot
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+;in:
+;       ah = 9
+;       ds:dx: '$'-terminated string
+ricardos_print_msg:
+        mov     si,dx                   ;DS:SI source
+
+        push    es
+        les     di,[video_offset]       ;ES:DI: destination
+
+.l0:    lodsb                           ;loads SI into AL
+        cmp     al,'$'                  ;checks whether the end of the string
+        jz      .exit                   ;exit if so
+        cmp     al,13                   ;new line?
+        jz      .new_line
+        cmp     al,10                   ;skip 10. it is a no-op in ricarDOS
+        jz      .l0
+
+        stosb
+        inc     di                      ;skip attrib value
+        jmp     .l0                     ;and loop
+
+.exit:
+        pop     es
+        mov     [video_offset],di       ;update char offset
+        iret
+
+.new_line:
+        mov     di,[last_new_line]
+        add     di,80
+        mov     [last_new_line],di
+        jmp     .l0
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -218,30 +256,6 @@ read_sector:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-print_msg:
-        push    es
-        les     di,[video_offset]
-.l0:    lodsb                           ;loads SI into AL
-        or      al,al                   ;checks whether the end of the string
-        jz      .exit                   ;exit if so
-        cmp     al,13                   ;new line?
-        jz      .new_line
-        stosb
-        inc     di                      ;skip attrib value
-        jmp     .l0                     ;and loop
-
-.exit:
-        pop     es
-        mov     [video_offset],di       ;update char offset
-        ret
-
-.new_line:
-        mov     di,[last_new_line]
-        add     di,80
-        mov     [last_new_line],di
-        jmp     .l0
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 
 video_offset:
         dw      0x0000                  ;offset
@@ -250,14 +264,14 @@ last_new_line:
         dw      0                       ;offset of last new line
 
 boot_msg:
-        db 'ricarDOS v0.1',13,0         ;booting msg
+        db 'ricarDOS v0.1',13,'$'       ;booting msg
 loading_msg:
-        db 'Loading...',13,0            ;loading msg
+        db 'Loading...',13,'$'          ;loading msg
 
 error_msg:
-        db 13,'Error. Trying again.',13,0
+        db 13,'Error. Trying again.',13,'$'
 ok_msg:
-        db 13,'Ok.',13,0                ;booting msg
+        db 13,'Ok.',13,'$'              ;booting msg
 f_drive:
         db 0                            ;initial drive to read. MUST be zero
 f_head:
