@@ -1,4 +1,4 @@
-.PHONY: res runme
+.PHONY: res runme detect
 
 TARGET_NAME_1 = part1.com
 TARGET_1 = bin/${TARGET_NAME_1}
@@ -11,6 +11,7 @@ part1: $(TARGET_1)
 all: res test_boot
 
 OBJECTS_1 = intro.o utils.o segment55_table.o segment55_data.o
+OBJECTS_DETECT = main.o pztimer.o
 
 %.o: part1/%.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
@@ -57,6 +58,15 @@ test_runme: runme
 	echo "Running runme"
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c runme.com
 
+detect:
+	echo "Generating detect.com"
+	nasm -Wall detect/main.asm    -fobj -o obj/main.o
+	nasm -Wall detect/pztimer.asm -fobj -o obj/pztimer.o
+	alink -oCOM -m obj/main.o obj/pztimer.o -o bin/detect.com
+
+test_detect: detect
+	dosbox-x -conf conf/dosbox-x_pcjr.conf
+
 test_boot: boot
 	dosbox-x -conf conf/dosbox-x_pcjr.conf
 
@@ -98,13 +108,14 @@ dis:
 	ndisasm -b 16 -o 100h bin/${TARGET_NAME} | gvim -
 
 
-fat_image: part1 runme
+fat_image: part1 runme detect
 	echo "Generating FAT image with needed files"
 	-rm -f boot_loader/fat_image.360
 	sudo mkfs.msdos -n PVM_BOOT -C boot_loader/fat_image.360 360
 	-sudo mkdir /media/floppy
 	sudo mount -o loop boot_loader/fat_image.360 /media/floppy
 	sudo cp bin/runme.com /media/floppy/
+	sudo cp bin/detect.com /media/floppy/
 	sudo cp bin/part1.com /media/floppy/
 	sudo umount /media/floppy
 	sudo rmdir /media/floppy
