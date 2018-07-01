@@ -40,9 +40,9 @@ VIDEOCARD_MCGA          equ 7
 main:
         resb    0x100                           ;cannot use "org 0x100" when using multiple .o files
 
-        mov     ax,cs
-        mov     ds,ax
-        mov     ax,0xb800
+        mov     ax,cs 				;setup segments that should be valid in this whole part
+        mov     ds,ax				;data
+        mov     ax,0xb800 			;graphics
         mov     es,ax
 
         cld
@@ -67,8 +67,11 @@ main:
 
         sub     ax,ax
         int     0x16                            ;wait key and...
+
 ;        int     0x19                            ; ...reboot
-        int     0x20
+
+	mov 	ah,0x4c 			;ricarDOS: load next file
+        int     0x21				;DOS: exit
 
 
 .is_pcjr:
@@ -80,8 +83,8 @@ main:
 
         call    detect_jr_a_or_b
 
-        mov     ah,1                            ;exit and load next part
-        int     0x20
+	mov 	ax,0x4c00 			;ricarDOS: load next file. Don't clear screen
+	int 	0x21				;DOS: exit
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -108,9 +111,9 @@ exit_with_warning:
 
         sub     ax,ax
         int     0x16                            ;wait key
-
-        sub     ah,ah                           ;don't clean screen
-        int     0x20                            ; and load next file
+	
+	mov 	ax,0x4c00			;ricarDOS: load next file, don't clear screen
+        int     0x21                            ;DOS: exit
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; in:
@@ -370,7 +373,7 @@ label_not_8088:
         db 'Are you using a NEC v20 CPU? or most    '
         db 'probably inside an emulator?            '
         db 'If so, we let you continue running this '
-        db 'demo, because we are nice peopel.       '
+        db 'demo, because we are nice people.       '
         db "But this demo doesn't work Ok on DosBox."
         db 'And NEC v20 was not tested.             '
         db 'Run it at your own risk.                '

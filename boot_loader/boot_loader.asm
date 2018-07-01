@@ -83,7 +83,7 @@ new_start:
         mov     ah,9
         int     0x21                    ;print msg
 
-        mov     ah,0x4c
+        mov     ax,0x4c00	 	;don't clear screen
         int     0x21                    ;load next file
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -104,6 +104,7 @@ int_21_handler:
 ;       ah = 0x4c
 ;       al = 0: don't clean screen / 1: clean screen
 ricardos_load_file:
+	int 3
         mov     ax,cs                   ;ds = cs
         mov     ds,ax
 
@@ -226,13 +227,17 @@ read_sectors:
         int 3                           ;should not happen
 
 .error:
-        mov     si,error_msg            ;offset to msg
-        call    print_msg
+        mov     dx,error_msg            ;offset to msg
+	mov 	ah,9
+	int 	0x21			;print it using ricarDOS
+
         int     0x19                    ;reboot
 
 .finish:
-        mov     si,ok_msg
-        call    print_msg
+        mov     dx,ok_msg 		;ok msg
+	mov 	ah,9
+	int 	0x21			;print it using ricarDOS
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -285,11 +290,10 @@ f_total_sectors:
 
 parts_idx:
         dw 0                            ;how many parts the demo contains
+	;track * 18 + head+9 + sector-1 = offset
 parts_data:                             ;track / head / sector / total sectors to read
-        db 0,1,6,2                      ;runme.com. offset: 0x1c00. len: 2 sectors
-        db 0,1,8,96                     ;part1.com. offset: 0x2000. len: 96 sectors
-        db 0,1,6,2                      ;runme.com. offset: 0x1c00. len: 2 sectors
-        db 0,1,8,96                     ;part1.com. offset: 0x2000. len: 96 sectors
+        db 0,1,8,8                      ;detect.com. offset: 0x2000-0x3000. len: 8 sectors 
+        db 1,0,7,92                     ;part1.com.  offset: 0x3000-0xe800. len: 96 sectors
 PARTS_TOTAL equ ($-parts_data)/4        ;how many parts are defined
 
 

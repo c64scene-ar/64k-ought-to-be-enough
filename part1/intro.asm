@@ -40,8 +40,8 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
         call    intro_main_loop
         call    intro_cleanup
 
-        sub     ax,ax                           ;don't clear screen in ricarDOS
-        int     0x20                            ; and load next part
+	mov 	ax,0x4c00 			;ricarDOS: load next file. Don't clear screen
+	int 	0x21 				;DOS: exit
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 intro_init:
