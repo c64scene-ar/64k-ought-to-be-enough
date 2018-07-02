@@ -16,7 +16,7 @@ extern wait_vertical_retrace
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 0                              ;1=run on emulator
+%define EMULATOR 1                              ;1=run on emulator
 
 GFX_SEG         equ     0xb800                  ;0x1800 for PCJr with 32k video ram
                                                 ;0xb800 for 16k modes
@@ -41,8 +41,8 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
         call    intro_main_loop
         call    intro_cleanup
 
-	mov 	ax,0x4c00 			;ricarDOS: load next file. Don't clear screen
-	int 	0x21 				;DOS: exit
+        mov     ax,0x4c00                       ;ricarDOS: load next file. Don't clear screen
+        int     0x21                            ;DOS: exit
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 intro_init:
@@ -70,24 +70,25 @@ intro_init:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;display bigchars 9 to 0 as fast a possible multiple times
 show_random_stuff:
-        mov     cx,4 				;5 times display the numbers
-.l1:	push	cx
-	mov 	cx,10 				;10 chars, from 9 to 0
+        mov     cx,4                ;5 times display the numbers
+.l1:    push    cx
+        mov     cx,10               ;10 chars, from 9 to 0
 
 .l0:    push    cx
         mov     bx,cx
-	add 	bx,0x10 			;bx += 0x10 to have the right offset for numbers
-        shl     bx,1				;bx * 8 (since each entry takes 8 bytes)
+        add     bl,0x0f             ;bx += 0x0f to have the right offset for numbers
+        shl     bx,1                ;bx * 8 (since each entry takes 8 bytes)
         shl     bx,1
-	shl 	bx,1
+        shl     bx,1
         lea     si,[table_space+bx]
 
         call    render_bigchar
+
         pop     cx
         loop    .l0
 
-	pop 	cx
-	loop 	.l1
+        pop     cx
+        loop    .l1
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -559,12 +560,14 @@ palette_default:        db 0, 15, 0, 15         ;black/white, black/white
 back_fore_color:        dw 0x000f               ;background / foreground colors
                                                 ; used for the big letters
 
-back_fore_idx:          db 0                    ;index to the back_fore_tbl
-back_fore_tbl:          db 0, 15
-                        db 1, 2
-                        db 3, 4
-                        db 5, 6
-TOTAL_BACK_FORE         equ ($-back_fore_tbl)/2
+back_fore_tbl:          dw 0x000f               ;white/black
+                        dw 0x0f00               ;black/white
+                        dw 0x0b0d               ;cyan/magenta
+                        dw 0x0d0b               ;magenta/cyan
+                        dw 0x0e09               ;yellow/blue
+                        dw 0x090e               ;blue/yellow
+                        dw 0x0c08               ;red/gray
+                        dw 0x080c               ;gray/red
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 old_segments:
         dw 0,0,0,0
@@ -699,6 +702,12 @@ text_writer_delay:
 text_writer_offset:
         dw 0                                    ;offset in the text. next char to be written
 text_writer_msg:
+
+TEXT_CMD_CLEAR_LINE equ 1
+TEXT_CMD_FLICKER_FREE_OFF equ 2
+TEXT_CMD_FLICKER_FREE_ON equ 3
+TEXT_CMD_CHANGE_PALETTE equ 4
+
            ;0123456789012345678901234567890123456789
 ;        db 2                                            ;turn off "flicker-free"
 ;        db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1
@@ -716,7 +725,7 @@ text_writer_msg:
         db 'UNEXPANDED PCJR (ONLY 64KB RAM NEEDED!)?',1
         db 2                                            ;turn off "flicker-free"
         db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1
-	db 3
-	db '                BYE  BYE                ',1
+        db 3
+        db '                BYE  BYE                ',1
         db 0
 
