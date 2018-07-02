@@ -1,4 +1,5 @@
-; Invite intro for Flashparty 2018
+; Invite demo for Flashparty 2018
+; Part 1
 ; Pungas de Villa Martelli - http://pungas.space
 ;
 ; code: riq (http://retro.moe)
@@ -49,19 +50,37 @@ intro_init:
         mov     ax,0x0004                       ;320x200 4 colors
         int     0x10
 
-%if EMULATOR
-%else
-        mov     al,0xa0
-        out     0xf2,al                         ;turn off floppy motor
-%endif
-
         call    music_init
         call    gfx_init
+
+        ;turning off the drive motor is needed to prevent
+        ;it from being on the whole time. but for some strange reason, after
+        ;turning it off, the next drive seek was very loudy (???), so to prevent
+        ;that noise (and harming the drive), we just wait normally until the drive
+        ;is off for half a second showing just random stuff
+        ;mov     al,0xa0
+        ;out     0xf2,al                         ;turn off floppy motor
+        call    show_random_stuff
+
 
         ; should be the last one to get initialized
         mov     ax,intro_irq_8_handler
         jmp     irq_8_init
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+show_random_stuff:
+        mov     cx,64
+.l0:    push    cx
+        shl     cx,1
+        shl     cx,1
+        shl     cx,1
+        mov     bx,cx
+        lea     si,[table_space+bx]
+
+        call    render_bigchar
+        pop     cx
+        loop    .l0
+        ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; draw a big char in the screen.
@@ -216,16 +235,14 @@ intro_main_loop:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 .render_char:
-        sub     ah,ah                           ;ah = 0. ax will be used
-        mov     al,byte [bigchar_to_render]
-        sub     al,0x20                         ;char table starts at 0x20 (ascii fo space)
+        sub     bh,bh                           ;ah = 0. ax will be used
+        mov     bl,byte [bigchar_to_render]
+        sub     bl,0x20                         ;char table starts at 0x20 (ascii fo space)
 
-        mov     bx,ax                           ;each entry takes 8 bytes
-        shl     ax,1                            ; pow(ax,3) == ax * 8
-        shl     ax,1
-        shl     ax,1
-        mov     si,table_space                  ;si contains the base for the table
-        add     si,ax                           ;si contains the base + offset
+        shl     bx,1                            ;pow(ax,3) == ax * 8
+        shl     bx,1                            ; since each entry takes 8 bytes
+        shl     bx,1                            ; up to 64 segments each
+        lea     si,[table_space+bx]
         call    render_bigchar
 
         mov     al,[bigchar_to_render]
@@ -438,7 +455,7 @@ gfx_init:
 
         ; update some vars
         mov     word [char_offset],CHAR_OFFSET  ;start drawing at row 24
-        mov     byte [text_writer_delay],30     ;wait about .5 seconds
+        mov     byte [text_writer_delay],1      ;wait one frame
                                                 ; before rendering next char
 
         ; draw big char
@@ -675,12 +692,12 @@ text_writer_offset:
         dw 0                                    ;offset in the text. next char to be written
 text_writer_msg:
            ;0123456789012345678901234567890123456789
-        db 2                                            ;turn off "flicker-free"
-        db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1
-        db 3                                            ;re-enable "flicker-free"
+;        db 2                                            ;turn off "flicker-free"
+;        db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1
+;        db 3                                            ;re-enable "flicker-free"
         db '        PUNGAS DE VILLA MARTELLI        ',1
         db '                PRESENTS                ',1
-        db 'AN INVITE INTRO FOR PCJR AND TANDY 1000.',1
+        db '  AN INVITE DEMO FOR THE GLORIOUS PCJR  ',1
         db '  WE INVITE YOU TO THE FLASHPARTY 2018  ',1
         db '            SEPTEMBER 21,22,23          ',1
         db 'TO BE HOSTED IN BUENOS AIRES, ARGENTINA.',1
