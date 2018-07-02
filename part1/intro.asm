@@ -716,6 +716,7 @@ text_writer_msg:
         db 'UNEXPANDED PCJR (ONLY 64KB RAM NEEDED!)?',1
         db 2                                            ;turn off "flicker-free"
         db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1
+	db 3
 	db '                BYE  BYE                ',1
         db 0
 
