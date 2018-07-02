@@ -176,11 +176,6 @@ detect_jr_a_or_b:
         mov     dx,label_pcjr_a_b
         int     0x21
 
-        mov     cx,0xffff                       ;delay
-.l1:
-        mul     al
-        loop    .l1
-
         sti                                     ;re-enable interrupts
         ret
 
@@ -384,10 +379,10 @@ label_warning:
         db '$'
 
 label_pcjr_a_b:
-        db 'PCjr '
+        db '(PCjr model '
 label_model:
         db '?'
-        db ' detected.',13,10,'$'
+        db ' detected)',13,10,'$'
 
 old_pic_imr:
         db 0

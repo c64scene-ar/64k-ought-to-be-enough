@@ -292,7 +292,10 @@ parts_idx:
 	;track * 18 + head+9 + sector-1 = offset
 parts_data:                             ;track / head / sector / total sectors to read
         db 0,1,8,8                      ;detect.com. offset: 0x2000-0x3000. len: 8 sectors 
-        db 1,0,5,92                     ;part1.com.  offset: 0x2c00-0xe400. len: 92 sectors
+        db 1,0,5,93                     ;part1.com.  offset: 0x2c00-0xe400. len: 92 sectors
+					; but using 93 just in case. 93 is the maximum possible
+					; since 93 * 512 = 47616. and 49152 - 1536 (reserved bytes) is
+					; 47616
 PARTS_TOTAL equ ($-parts_data)/4        ;how many parts are defined
 
 
