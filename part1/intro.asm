@@ -68,18 +68,26 @@ intro_init:
         jmp     irq_8_init
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+;display bigchars 9 to 0 as fast a possible multiple times
 show_random_stuff:
-        mov     cx,64
+        mov     cx,4 				;5 times display the numbers
+.l1:	push	cx
+	mov 	cx,10 				;10 chars, from 9 to 0
+
 .l0:    push    cx
-        shl     cx,1
-        shl     cx,1
-        shl     cx,1
         mov     bx,cx
+	add 	bx,0x10 			;bx += 0x10 to have the right offset for numbers
+        shl     bx,1				;bx * 8 (since each entry takes 8 bytes)
+        shl     bx,1
+	shl 	bx,1
         lea     si,[table_space+bx]
 
         call    render_bigchar
         pop     cx
         loop    .l0
+
+	pop 	cx
+	loop 	.l1
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -708,5 +716,6 @@ text_writer_msg:
         db 'UNEXPANDED PCJR (ONLY 64KB RAM NEEDED!)?',1
         db 2                                            ;turn off "flicker-free"
         db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1
+	db '                BYE  BYE                ',1
         db 0
 
