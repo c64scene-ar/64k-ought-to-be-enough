@@ -512,6 +512,7 @@ text_writer_update:
         jmp     .read_char                      ;read next char
 
 .change_palette:
+        int 3
         ;bx contains index, re-use it
         inc     word [text_writer_offset]       ;update index to text
         inc     bx                              ;update bx (used as index)
@@ -575,14 +576,20 @@ palette_default:        db 0, 15, 0, 15         ;black/white, black/white
 back_fore_color:        dw 0x000f               ;background / foreground colors
                                                 ; used for the big letters
 
-palette_tbl:            dw 0x000f               ;white/black
-                        dw 0x0f00               ;black/white
-                        dw 0x0b0d               ;cyan/magenta
-                        dw 0x0d0b               ;magenta/cyan
-                        dw 0x0e09               ;yellow/blue
-                        dw 0x090e               ;blue/yellow
-                        dw 0x0c08               ;red/gray
-                        dw 0x080c               ;gray/red
+palette_tbl:            dw 0x000f               ;0: white/black
+                        dw 0x0f00               ;1: black/white
+                        dw 0x0b0d               ;2: cyan/magenta
+                        dw 0x0d0b               ;3: magenta/cyan
+                        dw 0x0e09               ;4: yellow/blue
+                        dw 0x090e               ;5: blue/yellow
+                        dw 0x0c08               ;6: red/gray
+                        dw 0x080c               ;7: gray/red
+                        dw 0x0a05               ;8: green/dark magenta
+                        dw 0x050a               ;9: dark magenta/green
+                        dw 0x010c               ;10: dark blue/red
+                        dw 0x0c01               ;11: red/dark blue
+                        dw 0x030e               ;12: dark cyan/yellow
+                        dw 0x0e03               ;13: yellow/dark cyan
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 old_segments:
         dw 0,0,0,0
@@ -738,10 +745,76 @@ TEXT_CMD_CHANGE_PALETTE equ 4
         db 'GREETINGS TO: XXX,YYY,ZZZ,AAA,BBB,CCC   ',1
         db 'DID WE MENTION THIS INVITE-INTRO RUNS IN',1
         db 'UNEXPANDED PCJR (ONLY 64KB RAM NEEDED!)?',1
-        db 'FLASH PARTY   FLASH  PARTY   FLASH PARTY',1
+
+;       db '              FLASH  PARTY              '
+        db '              '                             ;flash party - 1st time
+        dw 0x0104
+        db 'F'
+        dw 0x0304
+        db 'L'
+        dw 0x0504
+        db 'A'
+        dw 0x0704
+        db 'S'
+        dw 0x0904
+        db 'H'
+        dw 0x0104
+
+        db '  '
+
+        dw 0x0204
+        db 'P'
+        dw 0x0404
+        db 'A'
+        dw 0x0604
+        db 'R'
+        dw 0x0804
+        db 'T'
+        dw 0x0a04
+        db 'Y'
+        dw 0x0004                               ;default color
+        db '    '                               ;wait
+
+
+        db 1                                    ;clean line
+
         db 2                                            ;turn off "flicker-free"
-        db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1
-        db 3
+        db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1         ;bat animation
+        db 3                                    ;turn on "flicker-free" again
+
+        db 1                                    ;clean line
+
+        ;---2nd time flash party
+        db '              '
+        dw 0x0204                               ;flash
+        db 'F'
+        dw 0x0404
+        db 'L'
+        dw 0x0604
+        db 'A'
+        dw 0x0804
+        db 'S'
+        dw 0x0a04
+        db 'H'
+        dw 0x0c04
+        db '  '
+
+        dw 0x0104                               ;party
+        db 'P'
+        dw 0x0304
+        db 'A'
+        dw 0x0504
+        db 'R'
+        dw 0x0704
+        db 'T'
+        dw 0x0904
+        db 'Y'
+        dw 0x0004
+        db '    '
+        db 1                                    ;clean line
+
+        ;----
+
         db '                BYE  BYE                ',1
         db 0
 
