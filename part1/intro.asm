@@ -481,10 +481,12 @@ text_writer_update:
 .l0:
         mov     byte [text_writer_delay],7      ;wait a few cycles
 .read_char:
+        ;bx is being used later, don't overwrite it
         mov     bx, word [text_writer_offset]
         inc     word [text_writer_offset]
         mov     al, [text_writer_msg + bx]
-        mov     bl,al                           ;save al in bl, to be used if drawing char
+
+        mov     cl,al                           ;save al in bl, to be used if drawing char
         or      al,al                           ;al == 2? last char ?
         jz      .start_again
         dec     al                              ;al == 1?
@@ -493,10 +495,12 @@ text_writer_update:
         jz      .disable_flicker_free
         dec     al                              ;al == 3?
         jz      .enable_flicker_free
+        dec     al
+        jz      .change_palette
 
         ;fall-through. draw char
 .write:
-        mov     [bigchar_to_render],bl
+        mov     [bigchar_to_render],cl
         ret
 
 .enable_flicker_free:
@@ -505,6 +509,17 @@ text_writer_update:
 
 .disable_flicker_free:
         mov     byte [is_flicker_free],0        ;disable flicker free
+        jmp     .read_char                      ;read next char
+
+.change_palette:
+        ;bx contains index, re-use it
+        inc     word [text_writer_offset]       ;update index to text
+        inc     bx                              ;update bx (used as index)
+        mov     bl, [text_writer_msg + bx]      ;get palette index
+        sub     bh,bh
+        shl     bx,1                            ;each palette entry takes 2 bytes
+        mov     cx,[palette_tbl + bx]
+        mov     [back_fore_color],cx            ;replace palette with new one
         jmp     .read_char                      ;read next char
 
 .start_again:
@@ -560,7 +575,7 @@ palette_default:        db 0, 15, 0, 15         ;black/white, black/white
 back_fore_color:        dw 0x000f               ;background / foreground colors
                                                 ; used for the big letters
 
-back_fore_tbl:          dw 0x000f               ;white/black
+palette_tbl:            dw 0x000f               ;white/black
                         dw 0x0f00               ;black/white
                         dw 0x0b0d               ;cyan/magenta
                         dw 0x0d0b               ;magenta/cyan
@@ -723,6 +738,7 @@ TEXT_CMD_CHANGE_PALETTE equ 4
         db 'GREETINGS TO: XXX,YYY,ZZZ,AAA,BBB,CCC   ',1
         db 'DID WE MENTION THIS INVITE-INTRO RUNS IN',1
         db 'UNEXPANDED PCJR (ONLY 64KB RAM NEEDED!)?',1
+        db 'FLASH PARTY   FLASH  PARTY   FLASH PARTY',1
         db 2                                            ;turn off "flicker-free"
         db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1
         db 3
