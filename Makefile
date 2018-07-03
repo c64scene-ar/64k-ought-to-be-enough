@@ -1,4 +1,4 @@
-.PHONY: res runme detect
+.PHONY: res runme detect part2
 
 TARGET_NAME_1 = part1.com
 TARGET_1 = bin/${TARGET_NAME_1}
@@ -38,6 +38,14 @@ part1x: $(TARGET_1)
 test_part1x: part1x
 	echo "Running game..."
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_1}
+
+part2:
+	echo "Generating part2"
+	nasm -Wall part2/part2.asm -fbin -o bin/part2.com
+
+test_part2: part2
+	echo "Running part2"
+	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c part2.com
 
 dist: x
 	echo "Generating distribution .zip"
@@ -108,7 +116,7 @@ dis:
 	ndisasm -b 16 -o 100h bin/${TARGET_NAME} | gvim -
 
 
-fat_image: part1 runme detect
+fat_image: runme detect part1 part2
 	echo "Generating FAT image with needed files"
 	-rm -f boot_loader/fat_image.360
 	sudo mkfs.msdos -n PVM_BOOT -C boot_loader/fat_image.360 360
@@ -117,6 +125,7 @@ fat_image: part1 runme detect
 	sudo cp bin/runme.com /media/floppy/
 	sudo cp bin/detect.com /media/floppy/
 	sudo cp bin/part1.com /media/floppy/
+	sudo cp bin/part2.com /media/floppy/
 	sudo umount /media/floppy
 	sudo rmdir /media/floppy
 	dd if=boot_loader/fat_image.360 of=boot_loader/fat_without_boot.bin bs=512 skip=1 count=719
