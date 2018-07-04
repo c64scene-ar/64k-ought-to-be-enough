@@ -48,15 +48,7 @@ show_msg:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-msg:
-           ;          1         2         3
-           ;0123456789012345678901234567890123456789
-        db 'This demo is intended to run in a PCjr  '
-        db 'with 64k RAM (or more).                 '
-        db 'Since the PCjr with 64K does not have   '
-        db 'enough RAM both for the DOS and this    '
-        db 'demo, booting from this disk is required'
-        db '                                        '
-        db '                                        '
-        db '       PRESS ANY KEY TO REBOOT          '
-        db 0
+;DATA
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+image1:
+        incbin 'part2/image1.bin.zx7'
