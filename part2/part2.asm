@@ -7,6 +7,10 @@ bits    16
 cpu     8086
 
 
+extern irq_8_cleanup, irq_8_init
+extern wait_vertical_retrace
+extern dzx7_speed, dzx7_size
+
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -16,35 +20,27 @@ cpu     8086
 ; CODE
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-org     0x100                                   ;it is a .com
 main:
-        mov     ax,0x0001                       ;40x25 color
+        resb    0x100                           ;cannot use "org 0x100" when using multiple .o files
+
+        mov     ax,0x0009                       ;320x200 16 colors
         int     0x10
 
-        call    show_msg
+        mov     ax,cs
+        mov     ds,ax
+        mov     si,image1                       ;ds:si source
+
+        mov     ax,0x1800
+        mov     es,ax
+        sub     di,di                           ;es:di destination
+
+        call    dzx7_speed
+
 
         sub     ax,ax
         int     0x16                            ;wait key
-        int     0x20
         int     0x19                            ;reboot
 
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-show_msg:
-        mov     ax,0xb800
-        mov     es,ax
-        mov     ax,cs
-        mov     ds,ax
-        mov     si,msg
-        sub     di,di
-
-.l0:    lodsb                           ;loads SI into AL
-        or      al,al                   ;checks whether the end of the string
-        jz      .exit                   ;exit if so
-        stosb
-        inc     di                      ;skip attrib value
-        jmp     .l0                     ;and loop
-
-.exit:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;

@@ -1,35 +1,54 @@
-.PHONY: res runme detect part2
+.PHONY: res runme
 
-TARGET_NAME_1 = part1.com
-TARGET_1 = bin/${TARGET_NAME_1}
+TARGET_NAME_P1 = part1.com
+TARGET_NAME_P2 = part2.com
+TARGET_NAME_DETECT = detect.com
+TARGET_P1 = bin/${TARGET_NAME_P1}
+TARGET_P2 = bin/${TARGET_NAME_P2}
+TARGET_DETECT = bin/${TARGET_NAME_DETECT}
 ASM = nasm
 ASMFLAGS = -fobj -Wall
 LD = alink
 LDFLAGS = -oCOM -m
 
-part1: $(TARGET_1)
+part1: $(TARGET_P1)
+part2: $(TARGET_P2)
+detect: $(TARGET_DETECT)
 
 all: res test_boot
 
-OBJECTS_1 = intro.o utils.o segment55_table.o segment55_data.o
+SRCFILES_P1 = part1/intro.asm part1/utils.asm part1/segment55_table.asm part1/segment55_data.asm
+OBJECTS_P1 = $(patsubst %.asm, %.o, $(SRCFILES_P1))
+SRCFILES_P2 = part2/part2.asm part2/zx7_8086.asm
+OBJECTS_P2 = $(patsubst %.asm, %.o, $(SRCFILES_P2))
+SRCFILES_DETECT = detect/detect.asm detect/pztimer.asm
+OBJECTS_DETECT = $(patsubst %.asm, %.o, $(SRCFILES_DETECT))
 
-%.o: part1/%.asm
+%.o: %.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
 
-.PRECIOUS: $(TARGET_1) $(OBJECTS_1)
+.PRECIOUS: $(TARGET_P1) $(OBJECTS_P1) $(TARGET_P2) $(OBJECTS_P2) $(TARGET_DETECT) $(OBJECTS_DETECT)
 
-$(TARGET_1): $(OBJECTS_1)
+$(TARGET_P1): $(OBJECTS_P1)
 	echo "Linking..."
-	$(LD) $(OBJECTS_1) $(LDFLAGS) -o $@
+	$(LD) $(OBJECTS_P1) $(LDFLAGS) -o $@
+
+$(TARGET_P2): $(OBJECTS_P2)
+	echo "Linking..."
+	$(LD) $(OBJECTS_P2) $(LDFLAGS) -o $@
+
+$(TARGET_DETECT): $(OBJECTS_DETECT)
+	echo "Linking..."
+	$(LD) $(OBJECTS_DETECT) $(LDFLAGS) -o $@
 
 clean:
 	echo "Cleaning..."
-	-rm -f obj/*.o *.o
+	-rm -f obj/*.o part1/*.o part2/*.o
 	-rm -f bin/*.map
 
 test_part1: $(TARGET_1)
 	echo "Running game..."
-	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_1}
+	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_P1}
 
 part1x: $(TARGET_1)
 	echo "Compressing game..."
@@ -37,15 +56,11 @@ part1x: $(TARGET_1)
 
 test_part1x: part1x
 	echo "Running game..."
-	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_1}
-
-part2:
-	echo "Generating part2"
-	nasm -Wall part2/part2.asm -fbin -o bin/part2.com
+	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_P1}
 
 test_part2: part2
 	echo "Running part2"
-	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c part2.com
+	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_P2}
 
 dist: x
 	echo "Generating distribution .zip"
@@ -65,12 +80,6 @@ runme:
 test_runme: runme
 	echo "Running runme"
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c runme.com
-
-detect:
-	echo "Generating detect.com"
-	nasm -Wall detect/detect.asm  -fobj -o obj/detect.o
-	nasm -Wall detect/pztimer.asm -fobj -o obj/pztimer.o
-	alink -oCOM -m obj/detect.o obj/pztimer.o -o bin/detect.com
 
 test_detect: detect
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/" -c "c:" -c dir
