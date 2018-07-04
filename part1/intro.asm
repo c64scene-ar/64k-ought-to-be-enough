@@ -512,12 +512,11 @@ text_writer_update:
         jmp     .read_char                      ;read next char
 
 .change_palette:
-        int 3
         ;bx contains index, re-use it
         inc     word [text_writer_offset]       ;update index to text
         inc     bx                              ;update bx (used as index)
-        mov     bl, [text_writer_msg + bx]      ;get palette index
-        sub     bh,bh
+        mov     bl,[text_writer_msg + bx]       ;get palette index
+        sub     bh,bh                           ;MSB of bx is 0
         shl     bx,1                            ;each palette entry takes 2 bytes
         mov     cx,[palette_tbl + bx]
         mov     [back_fore_color],cx            ;replace palette with new one
