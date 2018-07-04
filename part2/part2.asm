@@ -7,8 +7,8 @@ bits    16
 cpu     8086
 
 
-extern irq_8_cleanup, irq_8_init
-extern wait_vertical_retrace
+;extern irq_8_cleanup, irq_8_init
+;extern wait_vertical_retrace
 extern dzx7_speed, dzx7_size
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
