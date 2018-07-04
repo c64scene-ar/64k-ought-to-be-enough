@@ -30,11 +30,11 @@ OBJECTS_DETECT = $(patsubst %.asm, %.o, $(SRCFILES_DETECT))
 .PRECIOUS: $(TARGET_P1) $(OBJECTS_P1) $(TARGET_P2) $(OBJECTS_P2) $(TARGET_DETECT) $(OBJECTS_DETECT)
 
 $(TARGET_P1): $(OBJECTS_P1)
-	echo "Linking..."
+	@echo "Linking..."
 	$(LD) $(OBJECTS_P1) $(LDFLAGS) -o $@
 
 $(TARGET_P2): $(OBJECTS_P2)
-	echo "Linking..."
+	@echo "Linking..."
 	$(LD) $(OBJECTS_P2) $(LDFLAGS) -o $@
 
 $(TARGET_DETECT): $(OBJECTS_DETECT)
@@ -42,28 +42,28 @@ $(TARGET_DETECT): $(OBJECTS_DETECT)
 	$(LD) $(OBJECTS_DETECT) $(LDFLAGS) -o $@
 
 clean:
-	echo "Cleaning..."
-	-rm -f obj/*.o part1/*.o part2/*.o
+	@echo "Cleaning..."
+	-rm -f */*.o
 	-rm -f bin/*.map
 
 test_part1: $(TARGET_1)
-	echo "Running game..."
+	@echo "Running..."
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_P1}
 
 part1x: $(TARGET_1)
-	echo "Compressing game..."
+	@echo "Compressing game..."
 	-upx -9 --8086 $(TARGET_1)
 
 test_part1x: part1x
-	echo "Running game..."
+	@echo "Running..."
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_P1}
 
 test_part2: part2
-	echo "Running part2"
+	@echo "Running..."
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_P2}
 
 dist: x
-	echo "Generating distribution .zip"
+	@echo "Generating distribution .zip"
 	-rm intro.zip
 	-rm intro/intro.com
 	cp bin/intro.com intro/
@@ -74,11 +74,11 @@ boot: fat_image
 	cat boot_loader/boot.bin boot_loader/fat_without_boot.bin > bin/demo_pvm.360
 
 runme:
-	echo "Generating runme.com"
+	@echo "Generating runme.com"
 	nasm -Wall runme/runme.asm -fbin -o bin/runme.com
 
 test_runme: runme
-	echo "Running runme"
+	@echo "Running..."
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c runme.com
 
 test_detect: detect
@@ -88,11 +88,11 @@ test_boot: boot
 	dosbox-x -conf conf/dosbox-x_pcjr.conf
 
 res:
-	echo "Generating resources..."
-	echo "Compressing music..."
+	@echo "Generating resources..."
+	@echo "Compressing music..."
 	python3 ~/progs/pc-8088-misc/pvmplay/convert_vgm_to_pvm.py res/cumparchiptune.vgm
 	mv res/cumparchiptune.pvm part1/uctumi-song.pvm
-	echo "Converting graphics..."
+	@echo "Converting graphics..."
 	python3 tools/parse_55_segment_data.py res/55-segment.png -o part1/segment55_data.asm
 	python3 tools/parse_55_segment_font.py -o part1/segment55_table.asm
 	python3 tools/parse_ibm_charset.py res/tandy_1000_hx_charset-charset.bin -o part1/charset_0x20_0x60.bin
@@ -118,15 +118,15 @@ res:
 	#lz4 -9 -f res/2018.raw src/2018.raw.lz4
 	#lz4 -9 -f res/tango_silueta.raw src/tango_silueta.raw.lz4
 	#lz4 -9 -f res/satelite.raw src/satelite.raw.lz4
-	echo "Done"
+	@echo "Done"
 
 dis:
-	echo "Dissassembling..."
+	@echo "Dissassembling..."
 	ndisasm -b 16 -o 100h bin/${TARGET_NAME} | gvim -
 
 
 fat_image: runme detect part1 part2
-	echo "Generating FAT image with needed files"
+	@echo "Generating FAT image with needed files"
 	-rm -f boot_loader/fat_image.360
 	sudo mkfs.msdos -n PVM_BOOT -C boot_loader/fat_image.360 360
 	-sudo mkdir /media/floppy
