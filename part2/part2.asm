@@ -48,3 +48,6 @@ main:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 image1:
         incbin 'part2/image1.bin.zx7'
+
+charset:
+        incbin 'part2/charset_0x00_0x40.bin'
