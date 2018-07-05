@@ -200,10 +200,10 @@ scroll_anim:
         mov     dx,scroll_pixel_color_tbl       ;table for colors used in the macros
         mov     cl,0b1100_0000                  ;mask used in macros
 
-        RENDER_BIT 0                            ;render rows 0 and 4
-        RENDER_BIT 1                            ;render rows 1 and 5
-        RENDER_BIT 2                            ;render rows 2 and 6
-        RENDER_BIT 3                            ;render rows 3 and 7
+        RENDER_BIT 0                            ;render rows 0,4,8,12
+        RENDER_BIT 1                            ;render rows 1,5,9,13
+        RENDER_BIT 2                            ;render rows 2,6,10,14
+        RENDER_BIT 3                            ;render rows 3,7,11,15
 
         add     byte [scroll_bit_idx],2         ;two incs, since it prints 2 bits at the time
 
