@@ -36,11 +36,18 @@ main:
 
         call    dzx7_speed
 
+        call    scroll_anim
+
 
         sub     ax,ax
         int     0x16                            ;wait key
         int     0x19                            ;reboot
 
+        ret
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+scroll_anim:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -51,3 +58,7 @@ image1:
 
 charset:
         incbin 'part2/charset_0x00_0x40.bin'
+
+scroll_text:
+        db 'HOLA HOLA, ESTO ES UNA PRUEBA DE SCROLL'
+        db 0
