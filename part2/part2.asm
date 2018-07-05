@@ -24,7 +24,7 @@ SCROLL_RIGHT_X  equ     (160-SCROLL_COLS_MARGIN-1)      ;col in which the scroll
 SCROLL_LEFT_X   equ     (SCROLL_COLS_MARGIN)    ;col in which the scroll ends from the left
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; render vertically 4 bits needed for the scroll. grabs the firts for bytes from the cache,
+; render vertically 4 bits needed for the scroll. grabs the firts four bytes from the cache,
 ; use the MSB bit. If it is on, use white, else black color
 ;
 ; IN:   ds:si   -> bit to render (pointer to cache)
@@ -165,36 +165,30 @@ scroll_anim:
 
 .read_and_process_char:
         ;update the cache with the next 32 bytes (2x2 chars)
+        int 3
         mov     bx,[scroll_char_idx]            ;scroll text offset
         mov     bl,byte [scroll_text+bx]        ;char to print
 
-        sub     bl,0x40                         ;offset to 0
+        sub     bl,0x20                         ;offset to 0
 
         sub     bh,bh
         shl     bx,1                            ;bx * 8 since each char takes 8
         shl     bx,1                            ; bytes in the charset
         shl     bx,1
-        lea     si,[charset+bx]                 ;ds:si: charset
+        lea     si,[charset+bx]                 ;ds:si: offset in charset for char
 
         mov     bp,es                           ;save es for later
+
         mov     ax,ds
         mov     es,ax                           ;es = ds
         mov     di,cache_charset                ;es:di: cache
 
-        mov     cx,4                            ;copy first char (4 words == 8 bytes)
+        mov     cx,4                            ;copy upper part of char (4 words == 8 bytes)
         rep movsw
 
-        mov     cl,4
-        add     si,(128-1)*8                    ;point to next char. offset=128
-        rep movsw
-
-        mov     cl,4
-        sub     si,(64+1)*8                     ;point to next char. offset=64
-        rep movsw
-
-        mov     cl,4
-        add     si,(128-1)*8                    ;point to next char. offset=192
-        rep movsw
+        mov     cl,4                            ;di updated to offset in cache_charset
+        add     si,(64-1)*8                     ;point to bottom part of char. offset=64
+        rep movsw                               ;copy bottom to cache (4 words == 8 bytes)
 
         mov     es,bp                           ;restore es
 
@@ -202,14 +196,14 @@ scroll_anim:
 
 .render_bits:
         mov     si,cache_charset                ;ds:si points to cache_charset
-        sub     bp,bp                           ;used for the cache index in the macros
+        sub     bp,bp                           ;used for the cache row index in the macros
         mov     dx,scroll_pixel_color_tbl       ;table for colors used in the macros
         mov     cl,0b1100_0000                  ;mask used in macros
 
-        RENDER_BIT 0
-        RENDER_BIT 1
-        RENDER_BIT 2
-        RENDER_BIT 3
+        RENDER_BIT 0                            ;render rows 0 and 4
+        RENDER_BIT 1                            ;render rows 1 and 5
+        RENDER_BIT 2                            ;render rows 2 and 6
+        RENDER_BIT 3                            ;render rows 3 and 7
 
         add     byte [scroll_bit_idx],2         ;two incs, since it prints 2 bits at the time
 
@@ -227,8 +221,6 @@ scroll_anim:
 .end:
         ret
 
-        ret
-
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;DATA
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -244,7 +236,18 @@ charset:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; scroll related
 scroll_text:
-        db 'HOLA HOLA, ESTO ES UNA PRUEBA DE SCROLL'
+        db 'HI AGAIN! REMEMBER THE DATES: SEPTEMBER 21,22,23 2018 ' 
+        db 'IN BUENOS AIRES, ARGENTINA. '
+        db 'DID YOU KNOW THE PCJR IS THE BEST COMPUTER EVER MADE? '
+        db 'WELL, THAT WAS A LITTLE FAR-FETCHED, BUT YOU KNOW WHAT? '
+        db 'THE PCJR IS SO UNDERRATED THAT WE THOUGHT THAT WE SHOULD GIVE IT '
+        db 'SOME GOOD PRESS. '
+        db 'IT HAS A SOUND CHIP WITH 3 VOICES + NOISE. '
+        db 'IT HAS A NICE 320 x 200 @ 16 COLORS VIDEO MODE. '
+        db '(USING RGBI OUTPUT). '
+        db 'IT ALSO HAS COMPOSITE OUTPUT '
+        db 'AND IT IS SUPER SLOW IF IT HAS LESS THAN 128KB RAM. '
+        db 'AND JUST A BIT FASTER THAN A 1981 PC IF YOUR CODE IS PLACED ABOVE 128KB RAM. '
 SCROLL_TEXT_LEN equ $-scroll_text
 
 scroll_char_idx:                                ;pointer to the next char
