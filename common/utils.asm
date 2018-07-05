@@ -64,8 +64,8 @@ wait_horiz_retrace:
 ; installs a timer IRQ that triggers at the correct horizontal scan line
 ; for the scroll
 ; input:
-; ax = offset for the new irq 8 handler
-; assumes segment is cs
+;       ax = offset for the new irq 8 handler (in cs: segment)
+;       cx = horizontal raster line to trigger the int 8
 global irq_8_init
 irq_8_init:
 
@@ -92,7 +92,7 @@ PIT_DIVIDER equ (262*76)                        ;262 lines * 76 PIT cycles each
         mov     dx,0x03da
         WAIT_VERTICAL_RETRACE
 
-        mov     cx,194                          ;and wait for scanlines
+        ;cx contains the raster line
 .repeat:
         WAIT_HORIZONTAL_RETRACE                 ;inlining, so timing in real machine
         loop    .repeat                         ; is closer to emulators
@@ -160,6 +160,8 @@ setup_pit:
 
         ret
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; DATA
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 old_i08:                                        ;segment + offset to old int 8 (timer)
         dd      0

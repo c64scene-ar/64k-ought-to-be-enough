@@ -68,7 +68,8 @@ intro_init:
         call    show_random_stuff
 
         ; should be the last one to get initialized
-        mov     ax,irq_8_handler
+        mov     ax,irq_8_handler                ;handler address
+        mov     cx,198                          ;horizontal raster line for the IRQ
         jmp     irq_8_init
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;

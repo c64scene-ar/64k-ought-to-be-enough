@@ -17,6 +17,45 @@ extern music_init, music_play, music_cleanup
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 GFX_SEG         equ     0x1800                  ;graphics segment
 
+SCROLL_OFFSET   equ     22*2*160                ;start at line 22:160 bytes per line, lines are every 4 -> 8/4 =2
+SCROLL_COLS_TO_SCROLL   equ 88                  ;how many cols to scroll. max 160 (width 320, but we scroll 2 pixels at the time)
+SCROLL_COLS_MARGIN      equ ((160-SCROLL_COLS_TO_SCROLL)/2)
+SCROLL_RIGHT_X  equ     (160-SCROLL_COLS_MARGIN-1)      ;col in which the scroll starts from the right
+SCROLL_LEFT_X   equ     (SCROLL_COLS_MARGIN)    ;col in which the scroll ends from the left
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; render vertically 4 bits needed for the scroll. grabs the firts for bytes from the cache,
+; use the MSB bit. If it is on, use white, else black color
+;
+; IN:   ds:si   -> bit to render (pointer to cache)
+;       dx      -> pointer to pixel color table
+;       bp      -> row index
+;       cl      -> 0b1100_0000
+; Args: %1: offset line.
+%macro RENDER_BIT 1
+
+        mov     di,SCROLL_OFFSET+160*%1+SCROLL_RIGHT_X  ;es:di points to video memory
+        %rep    4
+                lodsb                                   ;fetches byte from the cache
+                mov     ah,al                           ;save value in ah for later use
+                and     al,cl                           ;cl = 0b1100_0000
+                rol     al,1
+                rol     al,1
+                mov     bx,dx
+                xlatb                                   ;al = [scroll_pixel_color_tbl+ al]
+                stosb
+
+                add     di,8192-1                       ;draw in next bank. di was incremented by
+                                                        ; one in stosb.
+
+                shl     ah,1                            ;al << 2. bit 7,6 contains next bits to render
+                shl     ah,1                            ;
+                mov     bx,bp                           ;index by bp
+                mov     [cache_charset+bx],ah           ;update cache for next iteration
+                inc     bp                              ;inc row index
+        %endrep
+%endmacro
+
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
 ; CODE
@@ -43,12 +82,18 @@ main:
         call    music_init
 
         ; should be the last one to get initialized
-        mov     ax,irq_8_handler
+        mov     ax,irq_8_handler                ;irq 8 callback
+        mov     cx,194                          ;horizontal raster line
         call    irq_8_init
 
 
         sub     ax,ax
         int     0x16                            ;wait key
+
+
+        call    music_cleanup
+        call    irq_8_cleanup
+
         int     0x19                            ;reboot
 
         ret
@@ -73,6 +118,7 @@ irq_8_handler:
         mov     es,ax
 
         call    music_play
+        call    scroll_anim
 
         mov     al,0x20                         ;send the EOI signal
         out     0x20,al                         ; to the IRQ controller
@@ -91,6 +137,99 @@ irq_8_handler:
         iret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+scroll_anim:
+        mov     bp,ds                           ;save ds for later
+        mov     ax,es                           ;ds and es point to video memory
+        mov     ds,ax
+
+        mov     dx,SCROLL_COLS_TO_SCROLL/2      ;div 2 since we use movsw instead of movsb
+
+        ;scroll 16 rows in total
+        %assign XX 0
+        %rep 4
+                %assign YY 0
+                %rep 4
+                        mov     cx,dx                           ;scroll 4 lines of 80 chars
+                        mov     si,SCROLL_OFFSET+8192*XX+160*YY+SCROLL_LEFT_X+1  ;source: last char of screen
+                        mov     di,SCROLL_OFFSET+8192*XX+160*YY+SCROLL_LEFT_X    ;dest: last char of screen - 1
+                        rep movsw                               ;do the copy
+                %assign YY YY+1
+                %endrep
+        %assign XX XX+1
+        %endrep
+
+        mov     ds,bp                           ;restore ds
+
+        cmp     byte [scroll_bit_idx],0         ;if scroll_bit_idx == 0 ?
+        jnz     .render_bits                    ; if not, render bits
+
+.read_and_process_char:
+        ;update the cache with the next 32 bytes (2x2 chars)
+        mov     bx,[scroll_char_idx]            ;scroll text offset
+        mov     bl,byte [scroll_text+bx]        ;char to print
+
+        sub     bl,0x40                         ;offset to 0
+
+        sub     bh,bh
+        shl     bx,1                            ;bx * 8 since each char takes 8
+        shl     bx,1                            ; bytes in the charset
+        shl     bx,1
+        lea     si,[charset+bx]                 ;ds:si: charset
+
+        mov     bp,es                           ;save es for later
+        mov     ax,ds
+        mov     es,ax                           ;es = ds
+        mov     di,cache_charset                ;es:di: cache
+
+        mov     cx,4                            ;copy first char (4 words == 8 bytes)
+        rep movsw
+
+        mov     cl,4
+        add     si,(128-1)*8                    ;point to next char. offset=128
+        rep movsw
+
+        mov     cl,4
+        sub     si,(64+1)*8                     ;point to next char. offset=64
+        rep movsw
+
+        mov     cl,4
+        add     si,(128-1)*8                    ;point to next char. offset=192
+        rep movsw
+
+        mov     es,bp                           ;restore es
+
+        ;fall-through
+
+.render_bits:
+        mov     si,cache_charset                ;ds:si points to cache_charset
+        sub     bp,bp                           ;used for the cache index in the macros
+        mov     dx,scroll_pixel_color_tbl       ;table for colors used in the macros
+        mov     cl,0b1100_0000                  ;mask used in macros
+
+        RENDER_BIT 0
+        RENDER_BIT 1
+        RENDER_BIT 2
+        RENDER_BIT 3
+
+        add     byte [scroll_bit_idx],2         ;two incs, since it prints 2 bits at the time
+
+        test    byte [scroll_bit_idx],8         ;should use 2nd chars?
+        jz      .end                            ;if not, exit
+
+.next_char:
+        sub     ax,ax
+        mov     byte [scroll_bit_idx],al        ;reset bit idx
+        inc     word [scroll_char_idx]          ;scroll_char_idx++
+        cmp     word [scroll_char_idx],SCROLL_TEXT_LEN  ;end of scroll?
+        jnz     .end                            ; if so, reset index
+        mov     word [scroll_char_idx],ax       ;reset to 0
+
+.end:
+        ret
+
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;DATA
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 pvm_song:
@@ -102,6 +241,28 @@ image1:
 charset:
         incbin 'part2/charset_0x00_0x40.bin'
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; scroll related
 scroll_text:
         db 'HOLA HOLA, ESTO ES UNA PRUEBA DE SCROLL'
+SCROLL_TEXT_LEN equ $-scroll_text
+
+scroll_char_idx:                                ;pointer to the next char
+        dw 0
+scroll_bit_idx:                                 ;pointer to the next bit in the char
         db 0
+scroll_pixel_color_tbl:                         ;the colors for the scroll letters
+        db      0x00                            ;00 - black/black
+        db      0x0f                            ;01 - black/white
+        db      0xf0                            ;10 - white/black
+        db      0xff                            ;11 - white/white
+
+scroll_enabled:                                 ;boolean: enabled?
+        db      0
+scroll_effect_enabled:                          ;boolean. whether to enable plasma + raster bar
+        db      0
+
+cache_charset:
+        resb    16                              ;the 16 bytes to print in the current frame
+                                                ; char aligned like: top-left, bottom-left,
+                                                ; top-right, bottom-right

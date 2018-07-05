@@ -49,14 +49,16 @@ class Parser:
             chars = buff[0:128*8]
             out = bytearray()
             for byte in chars:
-                b = self.parse_2_bits(byte>>6)
-                out.append(b)
-                b = self.parse_2_bits(byte>>4)
-                out.append(b)
-                b = self.parse_2_bits(byte>>2)
-                out.append(b)
-                b = self.parse_2_bits(byte)
-                out.append(b)
+                out.append(byte)
+#            for byte in chars:
+#                b = self.parse_2_bits(byte>>6)
+#                out.append(b)
+#                b = self.parse_2_bits(byte>>4)
+#                out.append(b)
+#                b = self.parse_2_bits(byte>>2)
+#                out.append(b)
+#                b = self.parse_2_bits(byte)
+#                out.append(b)
 
         self._output_fd.write(out)
 
