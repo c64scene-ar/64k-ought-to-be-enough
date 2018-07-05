@@ -17,11 +17,11 @@ detect: $(TARGET_DETECT)
 
 all: res test_boot
 
-SRCFILES_P1 = part1/intro.asm part1/utils.asm part1/segment55_table.asm part1/segment55_data.asm
+SRCFILES_P1 = part1/intro.asm common/utils.asm part1/segment55_table.asm part1/segment55_data.asm
 OBJECTS_P1 = $(patsubst %.asm, %.o, $(SRCFILES_P1))
-SRCFILES_P2 = part2/part2.asm part2/zx7_8086.asm
+SRCFILES_P2 = part2/part2.asm common/zx7_8086.asm common/utils.asm
 OBJECTS_P2 = $(patsubst %.asm, %.o, $(SRCFILES_P2))
-SRCFILES_DETECT = detect/detect.asm detect/pztimer.asm
+SRCFILES_DETECT = detect/detect.asm common/pztimer.asm
 OBJECTS_DETECT = $(patsubst %.asm, %.o, $(SRCFILES_DETECT))
 
 %.o: %.asm
