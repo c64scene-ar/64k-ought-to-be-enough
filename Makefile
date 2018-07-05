@@ -91,12 +91,15 @@ res:
 	@echo "Generating resources..."
 	@echo "Compressing music..."
 	python3 ~/progs/pc-8088-misc/pvmplay/convert_vgm_to_pvm.py res/cumparchiptune.vgm
-	mv res/cumparchiptune.pvm part1/uctumi-song.pvm
+	python3 ~/progs/pc-8088-misc/pvmplay/convert_vgm_to_pvm.py res/libertango.vgm
+	mv res/cumparchiptune.pvm part1/uctumi-cumparsita.pvm
+	mv res/libertango.pvm part2/uctumi-libertango.pvm
 	@echo "Converting graphics..."
 	python3 tools/parse_55_segment_data.py res/55-segment.png -o part1/segment55_data.asm
 	python3 tools/parse_55_segment_font.py -o part1/segment55_table.asm
 	python3 tools/parse_ibm_charset.py -m 4 res/tandy_1000_hx_charset-charset.bin -o part1/charset_0x20_0x60.bin
 	python3 tools/parse_ibm_charset.py -m 9 res/arleka_font_caren_remix0C-charset.bin -o part2/charset_0x00_0x40.bin
+	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 9 -o res/alakran-cara.raw "res/grafico 2.data"
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 10 -o src/flashparty.bin res/flashparty.data
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/p.raw res/p.data
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/v.raw res/v.data
@@ -108,7 +111,7 @@ res:
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/2018.raw res/2018.data
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/satelite.raw res/satelite.data
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/tango_silueta.raw res/tango_silueta.data
-	#echo "Compressing graphics..."
+	@echo "Compressing graphics..."
 	#lz4 -9 -f res/p.raw src/p.raw.lz4
 	#lz4 -9 -f res/v.raw src/v.raw.lz4
 	#lz4 -9 -f res/m.raw src/m.raw.lz4
@@ -119,6 +122,7 @@ res:
 	#lz4 -9 -f res/2018.raw src/2018.raw.lz4
 	#lz4 -9 -f res/tango_silueta.raw src/tango_silueta.raw.lz4
 	#lz4 -9 -f res/satelite.raw src/satelite.raw.lz4
+	zx7 -f res/alakran-cara.raw part2/alakran-cara.raw.zx7
 	@echo "Done"
 
 dis:

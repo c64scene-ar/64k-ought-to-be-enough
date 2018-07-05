@@ -454,7 +454,7 @@ text_writer_clean_bottom_line:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; music
 pvm_song:
-        incbin 'part1/uctumi-song.pvm'
+        incbin 'part1/uctumi-cumparsita.pvm'
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; vars

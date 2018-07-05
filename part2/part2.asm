@@ -18,7 +18,7 @@ extern music_init, music_play, music_cleanup
 GFX_SEG         equ     0x1800                  ;graphics segment
 
 SCROLL_OFFSET   equ     22*2*160                ;start at line 22:160 bytes per line, lines are every 4 -> 8/4 =2
-SCROLL_COLS_TO_SCROLL   equ 88                  ;how many cols to scroll. max 160 (width 320, but we scroll 2 pixels at the time)
+SCROLL_COLS_TO_SCROLL   equ 70                  ;how many cols to scroll. max 160 (width 320, but we scroll 2 pixels at the time)
 SCROLL_COLS_MARGIN      equ ((160-SCROLL_COLS_TO_SCROLL)/2)
 SCROLL_RIGHT_X  equ     (160-SCROLL_COLS_MARGIN-1)      ;col in which the scroll starts from the right
 SCROLL_LEFT_X   equ     (SCROLL_COLS_MARGIN)    ;col in which the scroll ends from the left
@@ -225,10 +225,10 @@ scroll_anim:
 ;DATA
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 pvm_song:
-        incbin 'part1/uctumi-song.pvm'
+        incbin 'part2/uctumi-libertango.pvm'
 
 image1:
-        incbin 'part2/image1.bin.zx7'
+        incbin 'part2/alakran-cara.raw.zx7'
 
 charset:
         incbin 'part2/charset_0x00_0x40.bin'
