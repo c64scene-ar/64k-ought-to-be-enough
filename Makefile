@@ -17,9 +17,9 @@ detect: $(TARGET_DETECT)
 
 all: res test_boot
 
-SRCFILES_P1 = part1/intro.asm common/utils.asm part1/segment55_table.asm part1/segment55_data.asm
+SRCFILES_P1 = part1/intro.asm common/music_player.asm common/utils.asm part1/segment55_table.asm part1/segment55_data.asm
 OBJECTS_P1 = $(patsubst %.asm, %.o, $(SRCFILES_P1))
-SRCFILES_P2 = part2/part2.asm common/zx7_8086.asm common/utils.asm
+SRCFILES_P2 = part2/part2.asm common/zx7_8086.asm common/utils.asm common/music_player.asm
 OBJECTS_P2 = $(patsubst %.asm, %.o, $(SRCFILES_P2))
 SRCFILES_DETECT = detect/detect.asm common/pztimer.asm
 OBJECTS_DETECT = $(patsubst %.asm, %.o, $(SRCFILES_DETECT))
@@ -46,13 +46,13 @@ clean:
 	-rm -f */*.o
 	-rm -f bin/*.map
 
-test_part1: $(TARGET_1)
+test_part1: $(TARGET_P1)
 	@echo "Running..."
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_P1}
 
-part1x: $(TARGET_1)
+part1x: $(TARGET_P1)
 	@echo "Compressing game..."
-	-upx -9 --8086 $(TARGET_1)
+	-upx -9 --8086 $(TARGET_P1)
 
 test_part1x: part1x
 	@echo "Running..."

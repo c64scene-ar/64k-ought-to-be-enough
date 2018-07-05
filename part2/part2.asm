@@ -7,13 +7,15 @@ bits    16
 cpu     8086
 
 
-;extern irq_8_cleanup, irq_8_init
-;extern wait_vertical_retrace
+extern irq_8_cleanup, irq_8_init
+extern wait_vertical_retrace
 extern dzx7_speed, dzx7_size
+extern music_init, music_play, music_cleanup
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+GFX_SEG         equ     0x1800                  ;graphics segment
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
@@ -36,7 +38,13 @@ main:
 
         call    dzx7_speed
 
-        call    scroll_anim
+
+        mov     ax,pvm_song                     ;start music offset
+        call    music_init
+
+        ; should be the last one to get initialized
+        mov     ax,irq_8_handler
+        call    irq_8_init
 
 
         sub     ax,ax
@@ -47,12 +55,47 @@ main:
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-scroll_anim:
-        ret
+irq_8_handler:
+        pushf
+        push    es                              ;since we might be interrupting
+        push    ds                              ; the main routine, we need to
+        push    si                              ; save all used registers
+        push    di
+        push    dx
+        push    cx
+        push    bx
+        push    ax
+        push    bp
+
+        mov     ax,cs
+        mov     ds,ax
+        mov     ax,GFX_SEG
+        mov     es,ax
+
+        call    music_play
+
+        mov     al,0x20                         ;send the EOI signal
+        out     0x20,al                         ; to the IRQ controller
+
+        pop     bp
+        pop     ax
+        pop     bx
+        pop     cx
+        pop     dx
+        pop     di
+        pop     si
+        pop     ds
+        pop     es
+        popf
+
+        iret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;DATA
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+pvm_song:
+        incbin 'part1/uctumi-song.pvm'
+
 image1:
         incbin 'part2/image1.bin.zx7'
 
