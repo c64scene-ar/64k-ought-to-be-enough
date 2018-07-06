@@ -20,8 +20,8 @@ extern music_init, music_play, music_cleanup
 
 GFX_SEG         equ     0x1800                  ;graphics segment
 
-SCROLL_OFFSET   equ     22*2*160                ;start at line 22:160 bytes per line, lines are every 4 -> 8/4 =2
-SCROLL_COLS_TO_SCROLL   equ 108                 ;how many cols to scroll. max 160 (width 320, but we scroll 2 pixels at the time)
+SCROLL_OFFSET   equ     23*2*160                ;start at line 22:160 bytes per line, lines are every 4 -> 8/4 =2
+SCROLL_COLS_TO_SCROLL   equ 140                 ;how many cols to scroll. max 160 (width 320, but we scroll 2 pixels at the time)
 SCROLL_COLS_MARGIN      equ ((160-SCROLL_COLS_TO_SCROLL)/2)
 SCROLL_RIGHT_X  equ     (160-SCROLL_COLS_MARGIN-1)      ;col in which the scroll starts from the right
 SCROLL_LEFT_X   equ     (SCROLL_COLS_MARGIN)    ;col in which the scroll ends from the left
@@ -86,7 +86,7 @@ main:
 
         ; should be the last one to get initialized
         mov     ax,irq_8_handler                ;irq 8 callback
-        mov     cx,194                          ;horizontal raster line
+        mov     cx,199                          ;horizontal raster line
         call    irq_8_init
 
 %if EMULATOR
@@ -282,7 +282,7 @@ scroll_text:
         db 'THE PCJR IS SO UNDERRATED THAT WE THOUGHT THAT WE SHOULD GIVE IT '
         db 'SOME GOOD PRESS. '
         db 'IT HAS A SOUND CHIP WITH 3 VOICES + NOISE. '
-        db 'IT HAS A NICE 320 x 200 @ 16 COLORS VIDEO MODE. '
+        db 'IT HAS A NICE 320 X 200 @ 16 COLORS VIDEO MODE. '
         db '(USING RGBI OUTPUT). '
         db 'IT ALSO HAS COMPOSITE OUTPUT '
         db 'AND IT IS SUPER SLOW IF IT HAS LESS THAN 128KB RAM. '
