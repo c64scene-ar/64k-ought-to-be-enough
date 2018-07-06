@@ -15,10 +15,13 @@ extern music_init, music_play, music_cleanup
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+%define DEBUG 1                                 ;0=diabled, 1=enabled
+%define EMULATOR 0                              ;1=run on emulator
+
 GFX_SEG         equ     0x1800                  ;graphics segment
 
 SCROLL_OFFSET   equ     22*2*160                ;start at line 22:160 bytes per line, lines are every 4 -> 8/4 =2
-SCROLL_COLS_TO_SCROLL   equ 70                  ;how many cols to scroll. max 160 (width 320, but we scroll 2 pixels at the time)
+SCROLL_COLS_TO_SCROLL   equ 108                 ;how many cols to scroll. max 160 (width 320, but we scroll 2 pixels at the time)
 SCROLL_COLS_MARGIN      equ ((160-SCROLL_COLS_TO_SCROLL)/2)
 SCROLL_RIGHT_X  equ     (160-SCROLL_COLS_MARGIN-1)      ;col in which the scroll starts from the right
 SCROLL_LEFT_X   equ     (SCROLL_COLS_MARGIN)    ;col in which the scroll ends from the left
@@ -86,9 +89,14 @@ main:
         mov     cx,194                          ;horizontal raster line
         call    irq_8_init
 
-
+%if EMULATOR
         sub     ax,ax
         int     0x16                            ;wait key
+%else
+.l0:    in      al,0x62                         ;on real hardware, test keystroke missed?
+        and     al,1                            ; so that we can disable IRQ9
+        jz      .l0
+%endif
 
 
         call    music_cleanup
@@ -117,8 +125,17 @@ irq_8_handler:
         mov     ax,GFX_SEG
         mov     es,ax
 
+%if DEBUG
+        call    inc_d020
+%endif
+
         call    music_play
         call    scroll_anim
+
+%if DEBUG
+        call    dec_d020
+%endif
+
 
         mov     al,0x20                         ;send the EOI signal
         out     0x20,al                         ; to the IRQ controller
@@ -165,7 +182,6 @@ scroll_anim:
 
 .read_and_process_char:
         ;update the cache with the next 32 bytes (2x2 chars)
-        int 3
         mov     bx,[scroll_char_idx]            ;scroll text offset
         mov     bl,byte [scroll_text+bx]        ;char to print
 
@@ -220,6 +236,29 @@ scroll_anim:
 
 .end:
         ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+;DEBUG ONLY
+%if DEBUG
+inc_d020:
+        mov     dx,0x03da                       ;show how many raster barts it consumes
+        mov     al,2                            ;select border color
+        out     dx,al                           ;(register)
+
+        mov     al,0x0f
+        out     dx,al                           ;change border to white (data)
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+dec_d020:
+        mov     dx,0x03da                       ;show how many raster barts it consumes
+        mov     al,2                            ;select border color
+        out     dx,al                           ;(register)
+
+        sub     al,al
+        out     dx,al                           ;change border back to black (data)
+        ret
+%endif
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;DATA

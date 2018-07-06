@@ -110,7 +110,6 @@ MUSIC_END               equ 0b1000_0000
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 .is_end:
-        int 3
         mov     bx,[pvm_song_start]
         mov     ax,[bx + 0x0c]                  ;offset loop relative to start of data
         add     ax,bx                           ;add start offset
