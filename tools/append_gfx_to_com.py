@@ -9,16 +9,21 @@ place (0x0800:0000)
 import argparse
 import json
 import sys
+import logging
 
 
 __docformat__ = 'restructuredtext'
 
 
 class Parser:
-    def __init__(self, gfx_file, com_file, output_fd):
+    def __init__(self, com_max_size, gfx_file, com_file, output_fd):
+        self._com_max_size = com_max_size
         self._com_file = com_file
         self._gfx_file = gfx_file
         self._output_fd = output_fd
+
+        logging.basicConfig(level=logging.INFO)
+
         self.run()
 
     def run(self):
@@ -30,12 +35,13 @@ class Parser:
 
             # Max possible size for .com. It will be loaded in 0x0000:0600
             # and should not go over 0x0000:8000
-            com_max_size = 32768 - 512 * 3
+            com_max_size = self._com_max_size * 1024 - 512 * 3
             com_size = len(com_data)
 
             # if delta, is negative, then .com too big
             com_delta = com_max_size - com_size
             assert(com_delta >= 0 and "Invalid .com size. Too big")
+            logging.info("Bytes still available in .com: %d" % com_delta)
 
             # create new binary
             self._output_fd.write(com_data)
@@ -56,6 +62,8 @@ $ %(prog)s charset.bin -o new_charset.bin
             help='.com file. Default: stdout')
     parser.add_argument('-o', '--output-file', metavar='<filename>',
             help='output file. Default: stdout')
+    parser.add_argument('-s', '--max-size', metavar='N', type=int,
+            help='max size for .com. Possible values: 32, 48, etc.')
 
     args = parser.parse_args()
     return args
@@ -63,11 +71,8 @@ $ %(prog)s charset.bin -o new_charset.bin
 
 def main():
     args = parse_args()
-    if args.output_file is not None:
-        with open(args.output_file, 'wb') as fd:
-            Parser(args.filename, args.com_file, fd)
-    else:
-        Parser(args.filename, args.com_file, sys.stdout)
+    with open(args.output_file, 'wb') as fd:
+        Parser(args.max_size, args.filename, args.com_file, fd)
 
 if __name__ == "__main__":
     main()

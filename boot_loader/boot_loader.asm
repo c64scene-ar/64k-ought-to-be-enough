@@ -87,7 +87,7 @@ new_start:
         mov     ah,9
         int     0x21                    ;print msg
 
-        mov     ax,0x4c00	 	;don't clear screen
+        mov     ax,0x4c00               ;don't clear screen
         int     0x21                    ;load next file
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -167,7 +167,7 @@ ricardos_print_msg:
         mov     si,dx                   ;DS:SI source
 
         push    es
-        les     di,[cs:video_offset]   	;ES:DI: destination
+        les     di,[cs:video_offset]    ;ES:DI: destination
 
 .l0:    lodsb                           ;loads SI into AL
         cmp     al,'$'                  ;checks whether the end of the string
@@ -234,15 +234,15 @@ read_sectors:
 
 .error:
         mov     dx,error_msg            ;offset to msg
-	mov 	ah,9
-	int 	0x21			;print it using ricarDOS
+        mov     ah,9
+        int     0x21                    ;print it using ricarDOS
 
         int     0x19                    ;reboot
 
 .finish:
-        mov     dx,ok_msg 		;ok msg
-	mov 	ah,9
-	int 	0x21			;print it using ricarDOS
+        mov     dx,ok_msg               ;ok msg
+        mov     ah,9
+        int     0x21                    ;print it using ricarDOS
 
         ret
 
@@ -296,21 +296,18 @@ f_total_sectors:
 
 parts_idx:
         dw 0                            ;how many parts the demo contains
-	;(track * 18 + head+9 + sector-1) * 512 = offset
-	;formula:
-	; sectors = offset / 512
-	; track = sectors / 18
-	; head = (track % 18) >= 9
-	; sector = track % 9
+        ;(track * 18 + head+9 + sector-1) * 512 = offset
+        ;formula:
+        ; sectors = offset / 512
+        ; track = sectors / 18
+        ; head = (track % 18) >= 9
+        ; sector = track % 9
 parts_data:                             ;track / head / sector / total sectors to read
-        db 0,1,8,8                      ;detect.com. offset: 0x2000-0x3000. len: 8 sectors 
-        db 1,0,5,93                     ;part1.com.  offset: 0x2c00-0xe400. len: 92 sectors
-					; but using 93 just in case. 93 is the maximum possible
-					; since 93 * 512 = 47616. and 49152 - 1536 (reserved bytes) is
-					; 47616
-	db 6,0,9,61			;part2.com: offset: 0xe800
-					; it shouldn't be bigger than 30.5k, since the other 32k
-					; are reserved video
+        db 0,1,8,8                      ;detect.com: offset: 0x2000-0x3000. len: 8 sectors
+        db 1,0,5,125                    ;part1.com: offset: 0x2c00-0xe400. len: 125 sectors max (64000 bytes)
+                                        ; overwrites video memory
+        db 6,0,9,125                    ;part2.com: offset: 0xe800-0x0000. len: 125 sectors max (64000 bytes)
+                                        ; overwrites video memory
 PARTS_TOTAL equ ($-parts_data)/4        ;how many parts are defined
 
 

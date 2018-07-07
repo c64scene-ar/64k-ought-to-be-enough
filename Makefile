@@ -46,9 +46,14 @@ clean:
 	-rm -f */*.o
 	-rm -f bin/*.map
 
+part1a: part1
+	@echo "Appending GFX to .com..."
+	@python3 tools/append_gfx_to_com.py part1/image_320_200.raw -c bin/part1.com -o bin/part1gfx.com -s 48
+	@echo "Done."
+
 test_part1: $(TARGET_P1)
 	@echo "Running..."
-	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_P1}
+	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c part1gfx.com
 
 part1x: $(TARGET_P1)
 	@echo "Compressing game..."
@@ -60,7 +65,7 @@ test_part1x: part1x
 
 part2a: part2
 	@echo "Appending GFX to .com..."
-	@python3 tools/append_gfx_to_com.py part2/image_320_200.raw -c bin/part2.com -o bin/part2gfx.com
+	@python3 tools/append_gfx_to_com.py part2/image_320_200.raw -c bin/part2.com -o bin/part2gfx.com -s 32
 	@echo "Done."
 
 test_part2: part2a
@@ -106,6 +111,7 @@ res:
 	python3 tools/parse_ibm_charset.py -m 9 res/arleka_font_caren_remix0C-charset.bin -o part2/charset_0x00_0x40.bin
 	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 9 -o res/alakran-cara.raw "res/alakran-cara.data"
 	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 9 -o part2/image_320_200.raw res/image_320_200.data
+	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o part1/image_320_200.raw res/part1_image.data
 	@#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 10 -o src/flashparty.bin res/flashparty.data
 	@#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/p.raw res/p.data
 	@#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/v.raw res/v.data
@@ -144,7 +150,7 @@ fat_image: runme detect part1 part2a
 	sudo mount -o loop boot_loader/fat_image.360 /media/floppy
 	sudo cp bin/runme.com /media/floppy/
 	sudo cp bin/detect.com /media/floppy/
-	sudo cp bin/part1.com /media/floppy/
+	sudo cp bin/part1gfx.com /media/floppy/part1.com
 	sudo cp bin/part2gfx.com /media/floppy/part2.com
 	sudo umount /media/floppy
 	sudo rmdir /media/floppy
