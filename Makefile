@@ -99,7 +99,7 @@ res:
 	python3 tools/parse_55_segment_font.py -o part1/segment55_table.asm
 	python3 tools/parse_ibm_charset.py -m 4 res/tandy_1000_hx_charset-charset.bin -o part1/charset_0x20_0x60.bin
 	python3 tools/parse_ibm_charset.py -m 9 res/arleka_font_caren_remix0C-charset.bin -o part2/charset_0x00_0x40.bin
-	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 9 -o res/alakran-cara.raw "res/grafico 2.data"
+	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 9 -o res/alakran-cara.raw "res/alakran-cara.data"
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 10 -o src/flashparty.bin res/flashparty.data
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/p.raw res/p.data
 	#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/v.raw res/v.data
