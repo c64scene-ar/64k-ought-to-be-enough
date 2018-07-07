@@ -21,7 +21,7 @@ extern music_init, music_play, music_cleanup
 %define DEBUG 1                                 ;0=diabled, 1=enabled
 %define EMULATOR 1                              ;1=run on emulator
 
-GFX_SEG         equ     0x1800                  ;graphics segment
+GFX_SEG         equ     0x0800                  ;graphics segment (32k offset)
 
 SCROLL_OFFSET   equ     23*2*160                ;start at line 22:160 bytes per line, lines are every 4 -> 8/4 =2
 SCROLL_COLS_TO_SCROLL   equ 140                 ;how many cols to scroll. max 160 (width 320, but we scroll 2 pixels at the time)
@@ -70,18 +70,28 @@ SCROLL_LEFT_X   equ     (SCROLL_COLS_MARGIN)    ;col in which the scroll ends fr
 main:
         resb    0x100                           ;cannot use "org 0x100" when using multiple .o files
 
+        sub     ax,ax
+        mov     ds,ax                           ;ds = 0
+        mov     word [0x0415],128               ;make BIOS set_video_modo believe that we
+                                                ; have at least 128K RAM, otherwise it won't let
+                                                ; us set video mode 9
+
         mov     ax,0x0009                       ;320x200 16 colors
         int     0x10
 
+        mov     ax,0x0583                       ;set CPU/CRT pages
+        mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
+        int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
+
         mov     ax,cs
-        mov     ds,ax
+        mov     ds,ax                           ;ds=cs
         mov     si,image1                       ;ds:si source
 
-        mov     ax,0x1800
-        mov     es,ax
+        mov     ax,GFX_SEG
+        mov     es,ax                           ;es=GFX seg
         sub     di,di                           ;es:di destination
 
-        call    dzx7_speed
+        call    dzx7_speed                      ;uncompress image in GFX segment
 
 
         mov     ax,pvm_song                     ;start music offset
