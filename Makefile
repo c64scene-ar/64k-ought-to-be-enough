@@ -1,4 +1,4 @@
-.PHONY: res runme
+.PHONY: res runme part2a
 
 TARGET_NAME_P1 = part1.com
 TARGET_NAME_P2 = part2.com
@@ -58,9 +58,14 @@ test_part1x: part1x
 	@echo "Running..."
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_P1}
 
-test_part2: part2
+part2a: part2
+	@echo "Appending GFX to .com..."
+	@python3 tools/append_gfx_to_com.py part2/image_320_200.raw -c bin/part2.com -o bin/part2gfx.com
+	@echo "Done."
+
+test_part2: part2a
 	@echo "Running..."
-	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_P2}
+	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c part2gfx.com
 
 dist: x
 	@echo "Generating distribution .zip"
@@ -140,7 +145,7 @@ fat_image: runme detect part1 part2
 	sudo cp bin/runme.com /media/floppy/
 	sudo cp bin/detect.com /media/floppy/
 	sudo cp bin/part1.com /media/floppy/
-	sudo cp bin/part2.com /media/floppy/
+	sudo cp bin/part2gfx.com /media/floppy/part2.com
 	sudo umount /media/floppy
 	sudo rmdir /media/floppy
 	dd if=boot_loader/fat_image.360 of=boot_loader/fat_without_boot.bin bs=512 skip=1 count=719
