@@ -1,3 +1,10 @@
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; Detect computer
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; Pungas de Villa Martelli - http://pungas.space
+;
+; code: riq (http://retro.moe)
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
 ; Reusing code and comments from Paku Paku game.
 ; http://www.deathshadow.com/pakuPaku
@@ -40,9 +47,9 @@ VIDEOCARD_MCGA          equ 7
 main:
         resb    0x100                           ;cannot use "org 0x100" when using multiple .o files
 
-        mov     ax,cs 				;setup segments that should be valid in this whole part
-        mov     ds,ax				;data
-        mov     ax,0xb800 			;graphics
+        mov     ax,cs                           ;setup segments that should be valid in this whole part
+        mov     ds,ax                           ;data
+        mov     ax,0xb800                       ;graphics
         mov     es,ax
 
         cld
@@ -68,10 +75,10 @@ main:
         sub     ax,ax
         int     0x16                            ;wait key and...
 
-;        int     0x19                            ; ...reboot
+        int     0x19                            ; ...reboot
 
-	mov 	ah,0x4c 			;ricarDOS: load next file
-        int     0x21				;DOS: exit
+;        mov     ah,0x4c                         ;ricarDOS: load next file
+;        int     0x21                            ;DOS: exit
 
 
 .is_pcjr:
@@ -83,8 +90,8 @@ main:
 
         call    detect_jr_a_or_b
 
-	mov 	ax,0x4c00 			;ricarDOS: load next file. Don't clear screen
-	int 	0x21				;DOS: exit
+        mov     ax,0x4c00                       ;ricarDOS: load next file. Don't clear screen
+        int     0x21                            ;DOS: exit
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -111,8 +118,8 @@ exit_with_warning:
 
         sub     ax,ax
         int     0x16                            ;wait key
-	
-	mov 	ax,0x4c00			;ricarDOS: load next file, don't clear screen
+
+        mov     ax,0x4c00                       ;ricarDOS: load next file, don't clear screen
         int     0x21                            ;DOS: exit
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -371,7 +378,7 @@ label_not_8088:
         db 'demo, because we are nice people.'       ,13,10
         db "But this demo doesn't work Ok on DosBox.",13,10
         db 'And NEC v20 was not tested.'             ,13,10
-        db 'Run it at your own risk.'		     ,13,10
+        db 'Run it at your own risk.'                ,13,10
         db '$'
 
 label_warning:

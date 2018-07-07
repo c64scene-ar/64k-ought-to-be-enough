@@ -1,6 +1,10 @@
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; Boot loader
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; Pungas de Villa Martelli - http://pungas.space
+;
+; code: riq (http://retro.moe)
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 
 bits    16
 cpu     8086
@@ -107,8 +111,11 @@ ricardos_load_file:
         mov     bx,cs                   ;ds = cs
         mov     ds,bx
 
-        or      al,al
-        jz      .skip_clean
+        or      al,al                   ;al = 0?
+        jz      .skip_clean             ;yes, skip clean
+
+        dec     al                      ;al = 1 ?
+        jz      .just_load              ;yes, skip clean and print
 
         mov     ax,0x0001               ;text 40x25 @ color
         int     0x10                    ;set video mode

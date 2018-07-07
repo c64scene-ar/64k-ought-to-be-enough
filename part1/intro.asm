@@ -1,8 +1,10 @@
-; Invite demo for Flashparty 2018
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; Part 1
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; Pungas de Villa Martelli - http://pungas.space
 ;
 ; code: riq (http://retro.moe)
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 
 bits    16
 cpu     8086
@@ -42,7 +44,7 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
         call    intro_main_loop
         call    intro_cleanup
 
-        mov     ax,0x4c00                       ;ricarDOS: load next file. Don't clear screen
+        mov     ax,0x4c01                       ;ricarDOS: load next file. Don't print anything, just load file.
         int     0x21                            ;DOS: exit
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -710,5 +712,6 @@ TEXT_CMD_CHANGE_PALETTE equ 4
         ;----
 
         db '                BYE  BYE                ',1
+        db '$%$%'
         db 0
 
