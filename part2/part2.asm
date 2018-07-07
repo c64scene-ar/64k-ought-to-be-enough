@@ -19,7 +19,7 @@ extern music_init, music_play, music_cleanup
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 0                              ;1=run on emulator
+%define EMULATOR 1                              ;1=run on emulator
 
 GFX_SEG         equ     0x0800                  ;graphics segment (32k offset)
 
@@ -76,8 +76,8 @@ main:
                                                 ; have at least 128K RAM, otherwise it won't let
                                                 ; us set video mode 9
 
-        mov     ax,0x0009                       ;320x200 16 colors
-        int     0x10
+        mov     ax,0x0089                       ;set video mode 9, don't clean screen
+        int     0x10                            ;320x200 16 colors
 
         mov     ax,0x0583                       ;set CPU/CRT pages
         mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
@@ -115,9 +115,8 @@ main:
         call    music_cleanup
         call    irq_8_cleanup
 
-        int     0x19                            ;reboot
-
-        ret
+        mov     ax,0x4c00                       ;ricarDOS: load next file
+        int     0x21                            ;DOS: exit to DOS
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -288,7 +287,7 @@ charset:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; scroll related
 scroll_text:
-        db 'HI AGAIN! REMEMBER THE DATES: SEPTEMBER 21,22,23 2018 ' 
+        db 'HI AGAIN! REMEMBER THE DATES: SEPTEMBER 21,22,23 2018 '
         db 'IN BUENOS AIRES, ARGENTINA. '
         db 'DID YOU KNOW THE PCJR IS THE BEST COMPUTER EVER MADE? '
         db 'WELL, THAT WAS A LITTLE FAR-FETCHED, BUT YOU KNOW WHAT? '
