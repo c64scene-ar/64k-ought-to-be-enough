@@ -296,17 +296,17 @@ f_total_sectors:
 
 parts_idx:
         dw 0                            ;how many parts the demo contains
-        ;(track * 18 + head+9 + sector-1) * 512 = offset
+        ;(track * 18 + head*9 + sector-1) * 512 = offset
         ;formula:
         ; sectors = offset / 512
         ; track = sectors / 18
-        ; head = (track % 18) >= 9
-        ; sector = track % 9
+        ; head = (sectors % 18) >= 9
+        ; sector = (sectors % 9)+1
 parts_data:                             ;track / head / sector / total sectors to read
         db 0,1,8,8                      ;detect.com: offset: 0x2000-0x3000. len: 8 sectors
-        db 1,0,5,125                    ;part1.com: offset: 0x2c00-0xe400. len: 125 sectors max (64000 bytes)
+        db 1,0,5,125                    ;part1.com: offset: 0x2c00-0x12600. len: 125 sectors max (64000 bytes)
                                         ; overwrites video memory
-        db 6,0,9,125                    ;part2.com: offset: 0xe800-0x0000. len: 125 sectors max (64000 bytes)
+        db 8,0,4,125                    ;part2.com: offset: 0x12600-0x22000. len: 125 sectors max (64000 bytes)
                                         ; overwrites video memory
 PARTS_TOTAL equ ($-parts_data)/4        ;how many parts are defined
 

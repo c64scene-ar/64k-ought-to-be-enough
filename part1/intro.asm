@@ -34,8 +34,8 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
         resb    0x100                           ;cannot use "org 0x100" when using multiple .o files
         cld                                     ;forward direction
 
-        mov     ax,cs
-        mov     ds,ax                           ;ds = cs
+        push    cs
+        pop     ds                              ;ds=cs
         mov     ax,GFX_SEG
         mov     es,ax                           ;es = GFX segment.
                                                 ; should be valid everywhere. if modified
@@ -51,8 +51,12 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
 intro_init:
 
         ;init graphics
-        mov     ax,0x0004                       ;320x200 4 colors
-        int     0x10
+        mov     ax,0x0084                       ;320x200 4 colors
+        int     0x10                            ;don't clean screen
+
+        mov     ax,0x0583                       ;set CPU/CRT pages
+        mov     bx,0x0303                       ;use page 3 for video memory/map 0xb800
+        int     0x10                            ;page 3 means: starts at 0x0c00 (48k offset)
 
         ;init music
         mov     ax,pvm_song                     ;start music offset
