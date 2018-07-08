@@ -142,7 +142,7 @@ dis:
 	ndisasm -b 16 -o 100h bin/${TARGET_NAME} | gvim -
 
 
-fat_image: runme detect part1 part2a
+fat_image: runme detect part1a part2a
 	@echo "Generating FAT image with needed files"
 	-rm -f boot_loader/fat_image.360
 	sudo mkfs.msdos -n PVM_BOOT -C boot_loader/fat_image.360 360

@@ -19,7 +19,7 @@ extern music_init, music_play, music_cleanup
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 0                              ;1=run on emulator
+%define EMULATOR 1                              ;1=run on emulator
 
 GFX_SEG         equ     0xb800                  ;0x1800 for PCJr with 32k video ram
                                                 ;0xb800 for 16k modes
@@ -57,6 +57,9 @@ intro_init:
         mov     ax,0x0583                       ;set CPU/CRT pages
         mov     bx,0x0303                       ;use page 3 for video memory/map 0xb800
         int     0x10                            ;page 3 means: starts at 0x0c00 (48k offset)
+
+        sub     ax,ax
+        int     0x16                            ;wait key
 
         ;init music
         mov     ax,pvm_song                     ;start music offset

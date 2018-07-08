@@ -303,10 +303,10 @@ parts_idx:
         ; head = (sectors % 18) >= 9
         ; sector = (sectors % 9)+1
 parts_data:                             ;track / head / sector / total sectors to read
-        db 0,1,8,8                      ;detect.com: offset: 0x2000-0x3000. len: 8 sectors
+        db 0,1,8,6                      ;detect.com: offset: 0x2000-0x2c00. len: 6 sectors
         db 1,0,5,125                    ;part1.com: offset: 0x2c00-0x12600. len: 125 sectors max (64000 bytes)
                                         ; overwrites video memory
-        db 8,0,4,125                    ;part2.com: offset: 0x12600-0x22000. len: 125 sectors max (64000 bytes)
+        db 8,0,5,125                    ;part2.com: offset: 0x12800-0x22200. len: 125 sectors max (64000 bytes)
                                         ; overwrites video memory
 PARTS_TOTAL equ ($-parts_data)/4        ;how many parts are defined
 

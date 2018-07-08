@@ -83,6 +83,9 @@ main:
         mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
         int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
 
+        sub     ax,ax
+        int     0x16                            ;wait key
+
         mov     ax,cs
         mov     ds,ax                           ;ds=cs
         mov     si,image1                       ;ds:si source
