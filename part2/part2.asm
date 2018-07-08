@@ -19,7 +19,7 @@ extern music_init, music_play, music_cleanup
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 1                              ;1=run on emulator
+%define EMULATOR 0                              ;1=run on emulator
 
 GFX_SEG         equ     0x0800                  ;graphics segment (32k offset)
 
@@ -83,11 +83,15 @@ main:
         mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
         int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
 
-        sub     ax,ax
-        int     0x16                            ;wait key
+        ;delay
+        mov     cx,0xc000                       ;delay
+.l0:
+        mul     ax
+        mul     ax
+        loop    .l0
 
-        mov     ax,cs
-        mov     ds,ax                           ;ds=cs
+        push    cs
+        pop     ds                              ;ds=cs
         mov     si,image1                       ;ds:si source
 
         mov     ax,GFX_SEG
@@ -109,9 +113,9 @@ main:
         sub     ax,ax
         int     0x16                            ;wait key
 %else
-.l0:    in      al,0x62                         ;on real hardware, test keystroke missed?
+.l1:    in      al,0x62                         ;on real hardware, test keystroke missed?
         and     al,1                            ; so that we can disable IRQ9
-        jz      .l0
+        jz      .l1
 %endif
 
 

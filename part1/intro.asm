@@ -19,7 +19,7 @@ extern music_init, music_play, music_cleanup
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 1                              ;1=run on emulator
+%define EMULATOR 0                              ;1=run on emulator
 
 GFX_SEG         equ     0xb800                  ;0x1800 for PCJr with 32k video ram
                                                 ;0xb800 for 16k modes
@@ -50,7 +50,8 @@ CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 intro_init:
 
-        ;init graphics
+        ;init video mode. don't clear screen
+        ;display gfx that is already loaded in memory
         mov     ax,0x0084                       ;320x200 4 colors
         int     0x10                            ;don't clean screen
 
@@ -58,8 +59,18 @@ intro_init:
         mov     bx,0x0303                       ;use page 3 for video memory/map 0xb800
         int     0x10                            ;page 3 means: starts at 0x0c00 (48k offset)
 
-        sub     ax,ax
-        int     0x16                            ;wait key
+        ;delay
+        mov     cx,0x8000                       ;delay
+.l0:
+        mul     ax
+        mul     ax
+        loop    .l0
+
+        ;clear screen
+        sub     ax,ax                           ;color black
+        mov     cx,8192                         ;clean screen
+        rep stosw
+
 
         ;init music
         mov     ax,pvm_song                     ;start music offset
@@ -84,8 +95,6 @@ intro_init:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;display bigchars 9 to 0 as fast a possible multiple times
 show_random_stuff:
-        mov     cx,4                ;5 times display the numbers
-.l1:    push    cx
         mov     cx,10               ;10 chars, from 9 to 0
 
 .l0:    push    cx
@@ -100,9 +109,6 @@ show_random_stuff:
 
         pop     cx
         loop    .l0
-
-        pop     cx
-        loop    .l1
 
         ret
 
