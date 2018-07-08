@@ -52,7 +52,7 @@ intro_init:
 
         ;init video mode. don't clear screen
         ;display gfx that is already loaded in memory
-        mov     ax,0x0084                       ;320x200 4 colors
+        mov     ax,0x0088                       ;160x200 16 colors
         int     0x10                            ;don't clean screen
 
         mov     ax,0x0583                       ;set CPU/CRT pages
@@ -66,10 +66,10 @@ intro_init:
         mul     ax
         loop    .l0
 
-        ;clear screen
-        sub     ax,ax                           ;color black
-        mov     cx,8192                         ;clean screen
-        rep stosw
+        ;init video mode.
+        ;display gfx that is already loaded in memory
+        mov     ax,0x0004                       ;320x200 4 colors
+        int     0x10
 
 
         ;init music
