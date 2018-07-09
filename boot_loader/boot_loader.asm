@@ -157,7 +157,8 @@ ricardos_load_file:
                                         ; 512 (0x20 * 16) (sector size) + 0x100 (.com offset)
 
 .reboot:
-        int     0x19                    ;no more parts to load, reboot
+        jmp     0xf000:0xfff0           ;no more pars to load, reset computer
+        ;int     0x19                    ;no more parts to load, reboot from floppy
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;in:
@@ -237,7 +238,7 @@ read_sectors:
         mov     ah,9
         int     0x21                    ;print it using ricarDOS
 
-        int     0x19                    ;reboot
+        int     0x19                    ;reboot, try again
 
 .finish:
         mov     dx,ok_msg               ;ok msg
@@ -298,9 +299,9 @@ parts_idx:
         dw 0                            ;how many parts the demo contains
         ;(track * 18 + head*9 + sector-1) * 512 = offset
         ;formula:
-        ; sectors = offset / 512
-        ; track = sectors / 18
-        ; head = (sectors % 18) >= 9
+        ; sectors = offset // 512
+        ; track = sectors // 18
+        ; head = (sectors // 9) % 2
         ; sector = (sectors % 9)+1
 parts_data:                             ;track / head / sector / total sectors to read
         db 0,1,8,6                      ;detect.com: offset: 0x2000-0x2c00. len: 6 sectors
