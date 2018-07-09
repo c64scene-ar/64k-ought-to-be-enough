@@ -84,8 +84,10 @@ main:
         int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
 
         ;delay
-        mov     cx,0xc000                       ;delay
-.l0:
+        mov     cx,0xf000                       ;delay to display the graphics for a few ms
+.l0:                                            ; also helps to turn off the floppy drive motor
+        mul     ax
+        mul     ax
         mul     ax
         mul     ax
         loop    .l0
