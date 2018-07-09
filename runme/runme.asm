@@ -1,7 +1,10 @@
-; Invite intro for Flashparty 2018
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; "Ought to be enough" - runme
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; Pungas de Villa Martelli - http://pungas.space
 ;
 ; code: riq (http://retro.moe)
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 
 bits    16
 cpu     8086
@@ -25,7 +28,7 @@ main:
 
         sub     ax,ax
         int     0x16                            ;wait key
-        int     0x20
+
         int     0x19                            ;reboot
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -54,7 +57,7 @@ msg:
         db 'This demo is intended to run in a PCjr  '
         db 'with 64k RAM (or more).                 '
         db 'Since the PCjr with 64K does not have   '
-        db 'enough RAM both for the DOS and this    '
+        db 'enough RAM to hold both the DOS and this'
         db 'demo, booting from this disk is required'
         db '                                        '
         db '                                        '

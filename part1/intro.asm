@@ -367,11 +367,6 @@ gfx_init:
         mov     word [char_offset],CHAR_OFFSET  ;start drawing at row 24
         mov     byte [text_writer_delay],1      ;wait one frame
                                                 ; before rendering next char
-
-        ; draw big char
-        mov     si,table_percent                ;prepare logo to draw
-        call    render_bigchar                  ;draw it
-
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;

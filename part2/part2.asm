@@ -111,16 +111,25 @@ main:
         mov     cx,199                          ;horizontal raster line
         call    irq_8_init
 
+.main_loop:
+
 %if EMULATOR
+        push    ds
         sub     ax,ax
-        int     0x16                            ;wait key
+        mov     ds,ax                           ;ds = zero page
+        mov     ax,[0x041a]                     ;keyboard buffer head
+        cmp     ax,[0x041c]                     ;keyboard buffer tail
+        pop     ds
 %else
-.l1:    in      al,0x62                         ;on real hardware, test keystroke missed?
+        in      al,0x62                         ;on real hardware, test keystroke missed?
         and     al,1                            ; so that we can disable IRQ9
-        jz      .l1
 %endif
+        jnz     .exit
 
+        cmp     byte [end_condition],0          ;animation finished?
+        jz      .main_loop                      ;no, so keep looping
 
+.exit:
         call    music_cleanup
         call    irq_8_cleanup
 
@@ -253,7 +262,9 @@ scroll_anim:
         inc     word [scroll_char_idx]          ;scroll_char_idx++
         cmp     word [scroll_char_idx],SCROLL_TEXT_LEN  ;end of scroll?
         jnz     .end                            ; if so, reset index
-        mov     word [scroll_char_idx],ax       ;reset to 0
+
+        ;mov     word [scroll_char_idx],ax       ;reset to 0
+        mov     byte [end_condition],1          ;trigger end condition, end
 
 .end:
         ret
@@ -293,6 +304,8 @@ image1:
 charset:
         incbin 'part2/charset_0x00_0x40.bin'
 
+end_condition:
+        db 0                                    ;1 if demo should end
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; scroll related
 scroll_text:
@@ -308,6 +321,7 @@ scroll_text:
         db 'IT ALSO HAS COMPOSITE OUTPUT '
         db 'AND IT IS SUPER SLOW IF IT HAS LESS THAN 128KB RAM. '
         db 'AND JUST A BIT FASTER THAN A 1981 PC IF YOUR CODE IS PLACED ABOVE 128KB RAM. '
+        db '                            '
 SCROLL_TEXT_LEN equ $-scroll_text
 
 scroll_char_idx:                                ;pointer to the next char
