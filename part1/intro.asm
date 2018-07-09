@@ -1,5 +1,5 @@
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; Part 1
+; "Ought to be enough" - Part 1
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; Pungas de Villa Martelli - http://pungas.space
 ;
@@ -59,9 +59,19 @@ intro_init:
         mov     bx,0x0303                       ;use page 3 for video memory/map 0xb800
         int     0x10                            ;page 3 means: starts at 0x0c00 (48k offset)
 
+        ;turning off the drive motor is needed to prevent
+        ;it from being on the whole time. but for some strange reason, after
+        ;turning it off, the next drive seek was very loudy (???), so to prevent
+        ;that noise (and harming the drive), we just wait normally until the drive
+        ;is off for half a second showing just random stuff
+        ;mov     al,0xa0
+        ;out     0xf2,al                         ;turn off floppy motor
+
         ;delay
-        mov     cx,0x8000                       ;delay
-.l0:
+        mov     cx,0xf000                       ;delay to display the graphics for a few ms
+.l0:                                            ; also helps to turn off the floppy drive motor
+        mul     ax
+        mul     ax
         mul     ax
         mul     ax
         loop    .l0
@@ -78,39 +88,10 @@ intro_init:
 
         call    gfx_init
 
-        ;turning off the drive motor is needed to prevent
-        ;it from being on the whole time. but for some strange reason, after
-        ;turning it off, the next drive seek was very loudy (???), so to prevent
-        ;that noise (and harming the drive), we just wait normally until the drive
-        ;is off for half a second showing just random stuff
-        ;mov     al,0xa0
-        ;out     0xf2,al                         ;turn off floppy motor
-        call    show_random_stuff
-
         ; should be the last one to get initialized
         mov     ax,irq_8_handler                ;handler address
         mov     cx,198                          ;horizontal raster line for the IRQ
         jmp     irq_8_init
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-;display bigchars 9 to 0 as fast a possible multiple times
-show_random_stuff:
-        mov     cx,10               ;10 chars, from 9 to 0
-
-.l0:    push    cx
-        mov     bx,cx
-        add     bl,0x0f             ;bx += 0x0f to have the right offset for numbers
-        shl     bx,1                ;bx * 8 (since each entry takes 8 bytes)
-        shl     bx,1
-        shl     bx,1
-        lea     si,[table_space+bx]
-
-        call    render_bigchar
-
-        pop     cx
-        loop    .l0
-
-        ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; draw a big char in the screen.
