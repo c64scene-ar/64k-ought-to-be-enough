@@ -72,7 +72,7 @@ intro_init:
 
         ;delay
         mov     cx,0xf000                       ;delay to display the graphics for a few ms
-.l0:                                            ; also helps to turn off the floppy drive motor
+.l0:
         mul     ax
         mul     ax
         mul     ax
@@ -109,9 +109,12 @@ render_bigchar:
         jz      .l0                             ; no, so skip
 
         ; begin: update background color
-        ;call    wait_vertical_retrace
-        mov     dx,0x03da
+.wait_retrace:
+        cmp     byte [vert_retrace],0                   ;wait for vertical retrace
+        jz      .wait_retrace
+        mov     byte [vert_retrace],0                   ;clear vert retrace
 
+        mov     dx,0x03da
         sub     bx,bx                           ;bx=0 (to be used in xchg later)
         mov     cx,[back_fore_color]            ;cx=new color (to be used in xchg later)
         mov     al,0x11                         ;color index = 1

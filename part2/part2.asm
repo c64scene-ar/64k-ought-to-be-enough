@@ -83,9 +83,21 @@ main:
         mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
         int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
 
+
+        ;turning off the drive motor is needed to prevent
+        ;it from being on the whole time.
+        mov     bp,ds                           ;save ds
+        sub     ax,ax
+        mov     ds,ax                           ;ds = 0 (zero page)
+        mov     byte [0x0440],0                 ;motor count to zero
+        and     byte [0x043f],0xf0              ;turn off motor running bits
+        mov     al,0x80
+        out     0xf2,al                         ;turn off floppy motor
+        mov     ds,bp                           ;restore ds
+
         ;delay
         mov     cx,0xf000                       ;delay to display the graphics for a few ms
-.l0:                                            ; also helps to turn off the floppy drive motor
+.l0:
         mul     ax
         mul     ax
         mul     ax
