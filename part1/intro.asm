@@ -19,7 +19,7 @@ extern music_init, music_play, music_cleanup
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 0                              ;1=run on emulator
+%define EMULATOR 1                              ;1=run on emulator
 
 GFX_SEG         equ     0xb800                  ;0x1800 for PCJr with 32k video ram
                                                 ;0xb800 for 16k modes
@@ -60,12 +60,15 @@ intro_init:
         int     0x10                            ;page 3 means: starts at 0x0c00 (48k offset)
 
         ;turning off the drive motor is needed to prevent
-        ;it from being on the whole time. but for some strange reason, after
-        ;turning it off, the next drive seek was very loudy (???), so to prevent
-        ;that noise (and harming the drive), we just wait normally until the drive
-        ;is off for half a second showing just random stuff
-        ;mov     al,0xa0
-        ;out     0xf2,al                         ;turn off floppy motor
+        ;it from being on the whole time.
+        mov     bp,ds                           ;save ds
+        sub     ax,ax
+        mov     ds,ax                           ;ds = 0 (zero page)
+        mov     byte [0x0040],0                 ;motor count to zero
+        and     byte [0x003f],0xf0              ;turn off motor running bits
+        mov     al,0x80
+        out     0xf2,al                         ;turn off floppy motor
+        mov     ds,bp                           ;restore ds
 
         ;delay
         mov     cx,0xf000                       ;delay to display the graphics for a few ms
@@ -102,11 +105,12 @@ intro_init:
 ;       si = pointer to table of char to draw
 render_bigchar:
 
-        ; begin: update background color
-        call    wait_vertical_retrace
-
         cmp     byte [is_flicker_free],0        ;flicker free enabled?
         jz      .l0                             ; no, so skip
+
+        ; begin: update background color
+        ;call    wait_vertical_retrace
+        mov     dx,0x03da
 
         sub     bx,bx                           ;bx=0 (to be used in xchg later)
         mov     cx,[back_fore_color]            ;cx=new color (to be used in xchg later)
@@ -180,10 +184,15 @@ render_bigchar:
         %endrep
 
         cmp     byte [is_flicker_free],0                ;flicker free?
-        jz      .l1                                     ; no, so skip it
+        jz      .end                                    ; no, so skip it
 
         ; begin: update background / foreground color
-        call    wait_vertical_retrace
+        ;call    wait_vertical_retrace
+.l1:    cmp     byte [vert_retrace],0                   ;wait for vertical retrace
+        jz      .l1
+
+        mov     byte [vert_retrace],0                   ;clear vert retrace
+
         sub     bx,bx                                   ;to be used later
         mov     cx,[back_fore_color]                    ;background / foreground colors
         mov     al,0x10                                 ;color index = 0
@@ -209,7 +218,7 @@ render_bigchar:
         in      al,dx                                   ;reset to register again
         ; end: update background / foreground color
 
-.l1:
+.end:
         ret
 
 
@@ -320,6 +329,8 @@ irq_8_handler:
         call    music_play
         call    text_writer_update
 
+        inc     byte [vert_retrace]             ;flag that a vert retrace occurred
+
         mov     al,0x20                         ;send the EOI signal
         out     0x20,al                         ; to the IRQ controller
 
@@ -339,7 +350,7 @@ irq_8_handler:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 gfx_init:
         ; default palette for the 4 CGA colors
-        call    wait_vertical_retrace
+        ;call    wait_vertical_retrace
         mov     si,palette_default
         mov     bl,0x10                         ;first color
         sub     di,di                           ;used to xchg with ax
@@ -456,7 +467,7 @@ bigchar_to_render:      db 0                    ;when 0, render finished/not nee
 is_flicker_free:        db 1                    ;whether or not foreground color is the same as background
                                                 ; while painting big char to prevent
                                                 ; flicker-free drawing
-
+vert_retrace:           db 0                    ;a verticla retrace have just occurred
 palette_default:        db 0, 15, 0, 15         ;black/white, black/white
 back_fore_color:        dw 0x000f               ;background / foreground colors
                                                 ; used for the big letters
@@ -633,17 +644,17 @@ TEXT_CMD_CHANGE_PALETTE equ 4
 
 ;       db '              FLASH  PARTY              '
         db '              '                             ;flash party - 1st time
-        dw 0x0104
+        dw 0x0104                                       ;change palette
         db 'F'
-        dw 0x0304
+        dw 0x0304                                       ;change palette
         db 'L'
-        dw 0x0504
+        dw 0x0504                                       ;change palette
         db 'A'
-        dw 0x0704
+        dw 0x0704                                       ;change palette
         db 'S'
-        dw 0x0904
+        dw 0x0904                                       ;change palette
         db 'H'
-        dw 0x0104
+        dw 0x0104                                       ;change palette
 
         db '  '
 
@@ -663,7 +674,7 @@ TEXT_CMD_CHANGE_PALETTE equ 4
 
         db 1                                    ;clean line
 
-        db 2                                            ;turn off "flicker-free"
+        db 2                                    ;turn off "flicker-free"
         db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1         ;bat animation
         db 3                                    ;turn on "flicker-free" again
 
