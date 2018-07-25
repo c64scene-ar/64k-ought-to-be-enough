@@ -19,7 +19,7 @@ extern music_init, music_play, music_cleanup
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 1                              ;1=run on emulator
+%define EMULATOR 0                              ;1=run on emulator
 
 GFX_SEG         equ     0xb800                  ;0x1800 for PCJr with 32k video ram
                                                 ;0xb800 for 16k modes
@@ -64,8 +64,8 @@ intro_init:
         mov     bp,ds                           ;save ds
         sub     ax,ax
         mov     ds,ax                           ;ds = 0 (zero page)
-        mov     byte [0x0040],0                 ;motor count to zero
-        and     byte [0x003f],0xf0              ;turn off motor running bits
+        mov     byte [0x0440],0                 ;motor count to zero
+        and     byte [0x043f],0xf0              ;turn off motor running bits
         mov     al,0x80
         out     0xf2,al                         ;turn off floppy motor
         mov     ds,bp                           ;restore ds
@@ -190,9 +190,9 @@ render_bigchar:
         ;call    wait_vertical_retrace
 .l1:    cmp     byte [vert_retrace],0                   ;wait for vertical retrace
         jz      .l1
-
         mov     byte [vert_retrace],0                   ;clear vert retrace
 
+        mov     dx,0x03da
         sub     bx,bx                                   ;to be used later
         mov     cx,[back_fore_color]                    ;background / foreground colors
         mov     al,0x10                                 ;color index = 0
@@ -351,6 +351,7 @@ irq_8_handler:
 gfx_init:
         ; default palette for the 4 CGA colors
         ;call    wait_vertical_retrace
+        mov     dx,0x03da
         mov     si,palette_default
         mov     bl,0x10                         ;first color
         sub     di,di                           ;used to xchg with ax

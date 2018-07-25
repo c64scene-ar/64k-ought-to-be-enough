@@ -100,8 +100,7 @@ int_21_handler:
         cmp     ah,0x4c
         jz      ricardos_load_file      ; if so, don't print / don't clean any message
                                         ; just load the next file
-        ;unsuppoted command
-        int 3
+        int 3                           ;unsuppoted command
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;in:
