@@ -100,8 +100,8 @@ test_boot: boot
 res:
 	@echo "Generating resources..."
 	@echo "Compressing music..."
-	python3 ~/progs/pc-8088-misc/pvmplay/convert_vgm_to_pvm.py res/cumparchiptune.vgm
-	python3 ~/progs/pc-8088-misc/pvmplay/convert_vgm_to_pvm.py res/libertango.vgm
+	python3 tools/convert_vgm_to_pvm.py res/cumparchiptune.vgm
+	python3 tools/convert_vgm_to_pvm.py res/libertango.vgm
 	mv res/cumparchiptune.pvm part1/uctumi-cumparsita.pvm
 	mv res/libertango.pvm part2/uctumi-libertango.pvm
 	@echo "Converting graphics..."
@@ -109,20 +109,20 @@ res:
 	python3 tools/parse_55_segment_font.py -o part1/segment55_table.asm
 	python3 tools/parse_ibm_charset.py -m 4 res/tandy_1000_hx_charset-charset.bin -o part1/charset_0x20_0x60.bin
 	python3 tools/parse_ibm_charset.py -m 9 res/arleka_font_caren_remix0C-charset.bin -o part2/charset_0x00_0x40.bin
-	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 9 -o res/alakran-cara.raw "res/alakran-cara.data"
-	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 9 -o part2/image_320_200.raw res/part2_image.data
-	python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 8 -o part1/image_320_200.raw res/part1_image.data
-	@#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 10 -o src/flashparty.bin res/flashparty.data
-	@#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/p.raw res/p.data
-	@#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/v.raw res/v.data
-	@#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/m.raw res/m.data
-	@#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/invites.raw res/invites.data
-	@#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/you.raw res/you.data
-	@#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/to.raw res/to.data
-	@#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/fp.raw res/fp.data
-	@#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/2018.raw res/2018.data
-	@#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/satelite.raw res/satelite.data
-	@#python3 ~/progs/pc-8088-misc/tools/convert_gfx_to_bios_format.py -g 4 -o res/tango_silueta.raw res/tango_silueta.data
+	python3 tools/convert_gfx_to_bios_format.py -g 9 -o res/alakran-cara.raw "res/alakran-cara.png"
+	python3 tools/convert_gfx_to_bios_format.py -g 9 -o part2/image_320_200.raw res/part2_image.png
+	python3 tools/convert_gfx_to_bios_format.py -g 8 -o part1/image_320_200.raw res/part1_image.png
+	@#python3 tools/convert_gfx_to_bios_format.py -g 10 -o src/flashparty.bin res/flashparty.data
+	@#python3 tools/convert_gfx_to_bios_format.py -g 4 -o res/p.raw res/p.data
+	@#python3 tools/convert_gfx_to_bios_format.py -g 4 -o res/v.raw res/v.data
+	@#python3 tools/convert_gfx_to_bios_format.py -g 4 -o res/m.raw res/m.data
+	@#python3 tools/convert_gfx_to_bios_format.py -g 4 -o res/invites.raw res/invites.data
+	@#python3 tools/convert_gfx_to_bios_format.py -g 4 -o res/you.raw res/you.data
+	@#python3 tools/convert_gfx_to_bios_format.py -g 4 -o res/to.raw res/to.data
+	@#python3 tools/convert_gfx_to_bios_format.py -g 4 -o res/fp.raw res/fp.data
+	@#python3 tools/convert_gfx_to_bios_format.py -g 4 -o res/2018.raw res/2018.data
+	@#python3 tools/convert_gfx_to_bios_format.py -g 4 -o res/satelite.raw res/satelite.data
+	@#python3 tools/convert_gfx_to_bios_format.py -g 4 -o res/tango_silueta.raw res/tango_silueta.data
 	@echo "Compressing graphics..."
 	@#lz4 -9 -f res/p.raw src/p.raw.lz4
 	@#lz4 -9 -f res/v.raw src/v.raw.lz4
