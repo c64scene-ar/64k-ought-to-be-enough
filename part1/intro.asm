@@ -110,9 +110,9 @@ render_bigchar:
 
         ; begin: update background color
 .wait_retrace:
-        cmp     byte [vert_retrace],0                   ;wait for vertical retrace
-        jz      .wait_retrace
-        mov     byte [vert_retrace],0                   ;clear vert retrace
+;        cmp     byte [vert_retrace],0                   ;wait for vertical retrace
+;        jz      .wait_retrace
+;        mov     byte [vert_retrace],0                   ;clear vert retrace
 
         mov     dx,0x03da
         sub     bx,bx                           ;bx=0 (to be used in xchg later)
@@ -190,12 +190,12 @@ render_bigchar:
         jz      .end                                    ; no, so skip it
 
         ; begin: update background / foreground color
-        ;call    wait_vertical_retrace
-.l1:    cmp     byte [vert_retrace],0                   ;wait for vertical retrace
-        jz      .l1
-        mov     byte [vert_retrace],0                   ;clear vert retrace
+        call    wait_vertical_retrace
+;.l1:    cmp     byte [vert_retrace],0                   ;wait for vertical retrace
+;        jz      .l1
+;        mov     byte [vert_retrace],0                   ;clear vert retrace
+;        mov     dx,0x03da
 
-        mov     dx,0x03da
         sub     bx,bx                                   ;to be used later
         mov     cx,[back_fore_color]                    ;background / foreground colors
         mov     al,0x10                                 ;color index = 0
