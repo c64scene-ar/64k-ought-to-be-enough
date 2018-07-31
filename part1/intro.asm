@@ -19,7 +19,7 @@ extern music_init, music_play, music_cleanup
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 0                              ;1=run on emulator
+%define EMULATOR 1                              ;1=run on emulator
 
 GFX_SEG         equ     0xb800                  ;0x1800 for PCJr with 32k video ram
                                                 ;0xb800 for 16k modes
@@ -59,6 +59,8 @@ intro_init:
         mov     bx,0x0303                       ;use page 3 for video memory/map 0xb800
         int     0x10                            ;page 3 means: starts at 0x0c00 (48k offset)
 
+        call    delete_640
+
         ;turning off the drive motor is needed to prevent
         ;it from being on the whole time.
         mov     bp,ds                           ;save ds
@@ -70,14 +72,8 @@ intro_init:
         out     0xf2,al                         ;turn off floppy motor
         mov     ds,bp                           ;restore ds
 
-        ;delay
-        mov     cx,0xf000                       ;delay to display the graphics for a few ms
-.l0:
-        mul     ax
-        mul     ax
-        mul     ax
-        mul     ax
-        loop    .l0
+        mov     bx,5
+        call    delay
 
         ;init video mode.
         ;display gfx that is already loaded in memory
@@ -95,6 +91,67 @@ intro_init:
         mov     ax,irq_8_handler                ;handler address
         mov     cx,198                          ;horizontal raster line for the IRQ
         jmp     irq_8_init
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; delay
+;       in: lenghts of delay
+delay:
+        push    cx
+.l1:
+        mov     cx,0x2000
+.l0:
+        loop    .l0
+        dec     bx
+        jnz     .l1
+        pop     cx
+        ret
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; deletes the 0 from 640 converting it to 64
+delete_640:
+
+        ;draw diagonal top-left to bottom-right
+        mov     di,16
+        mov     cx,0                            ;initial values. col
+        mov     dx,151                          ;initial values. row
+
+.l0: 
+        sub     bx,bx                           ;page 0
+        mov     ax,0x0c04                       ;draw dot, color red
+        int     0x10
+
+        inc     cx                              ;same color, same row, but col++
+        int     0x10                            ;draw dot
+        
+        inc     dx                              ;row++
+
+        mov     bx,1
+        call    delay
+
+        dec     di
+        jnz     .l0
+
+        ;draw diagonal top-right to bottom-left
+        mov     di,16
+        mov     cx,16                           ;initial values. col
+        mov     dx,151                          ;initial values. row
+
+.l1: 
+        sub     bx,bx                           ;page 0
+        mov     ax,0x0c04                       ;draw dot, color red
+        int     0x10
+
+        dec     cx                              ;same color, same row, but col--
+        int     0x10                            ;draw dot
+        
+        inc     dx                              ;row++
+
+        mov     bx,1
+        call    delay
+
+        dec     di
+        jnz     .l1
+
+        ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; draw a big char in the screen.
