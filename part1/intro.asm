@@ -19,7 +19,7 @@ extern music_init, music_play, music_cleanup
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 1                              ;1=run on emulator
+%define EMULATOR 0                              ;1=run on emulator
 
 GFX_SEG         equ     0xb800                  ;0x1800 for PCJr with 32k video ram
                                                 ;0xb800 for 16k modes
@@ -72,9 +72,6 @@ intro_init:
         out     0xf2,al                         ;turn off floppy motor
         mov     ds,bp                           ;restore ds
 
-        mov     bx,5
-        call    delay
-
         ;init video mode.
         ;display gfx that is already loaded in memory
         mov     ax,0x0004                       ;320x200 4 colors
@@ -112,20 +109,30 @@ delete_640:
         ;draw diagonal top-left to bottom-right
         mov     di,16
         mov     cx,0                            ;initial values. col
-        mov     dx,151                          ;initial values. row
+        mov     dx,150                          ;initial values. row
+        sub     bx,bx                           ;page 0
 
 .l0: 
-        sub     bx,bx                           ;page 0
         mov     ax,0x0c04                       ;draw dot, color red
         int     0x10
 
-        inc     cx                              ;same color, same row, but col++
+        inc     dx                              ;row++
+        mov     ax,0x0c04                       ;draw dot, color red
+        int     0x10
+
+        inc     dx                              ;row++
+        mov     ax,0x0c04                       ;draw dot, color red
+        int     0x10
+
+        dec     dx                              ;row--
+        dec     dx                              ;row--
+        inc     cx                              ;col++
+        mov     ax,0x0c04                       ;draw dot, color red
         int     0x10                            ;draw dot
-        
+
         inc     dx                              ;row++
 
-        mov     bx,1
-        call    delay
+        call    beep
 
         dec     di
         jnz     .l0
@@ -133,24 +140,67 @@ delete_640:
         ;draw diagonal top-right to bottom-left
         mov     di,16
         mov     cx,16                           ;initial values. col
-        mov     dx,151                          ;initial values. row
+        mov     dx,150                          ;initial values. row
 
 .l1: 
-        sub     bx,bx                           ;page 0
+        mov     ax,0x0c04                       ;draw dot, color red
+        int     0x10
+        inc     dx                              ;row++
         mov     ax,0x0c04                       ;draw dot, color red
         int     0x10
 
-        dec     cx                              ;same color, same row, but col--
+        inc     dx                              ;row++
+        mov     ax,0x0c04                       ;draw dot, color red
+        int     0x10
+
+        dec     dx                              ;row--
+        dec     dx                              ;row--
+
+        dec     cx                              ;col--
+        mov     ax,0x0c04                       ;draw dot, color red
         int     0x10                            ;draw dot
         
         inc     dx                              ;row++
 
-        mov     bx,1
-        call    delay
+        call    beep
 
         dec     di
         jnz     .l1
 
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; beep
+beep:
+        push    ax
+        push    cx
+
+        mov     al,0b1011_0110
+        out     0x43,al
+
+        mov     ax,0x5533
+        out     0x42,al
+        mov     al,ah
+        out     0x42,al
+
+        in      al,0x61
+        mov     ah,al
+        or      al,3
+        out     0x61,al
+
+        mov     cx,0x6000
+.delay0:
+        loop    .delay0
+
+        mov     al,ah
+        out     0x61,al
+
+        mov     cx,0x6000
+.delay1:
+        loop    .delay1
+
+        pop     cx
+        pop     ax
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;

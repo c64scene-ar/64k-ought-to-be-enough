@@ -19,7 +19,7 @@ extern music_init, music_play, music_cleanup
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 1                              ;1=run on emulator
+%define EMULATOR 0                              ;1=run on emulator
 
 GFX_SEG         equ     0x0800                  ;graphics segment (32k offset)
 
