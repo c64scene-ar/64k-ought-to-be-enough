@@ -18,6 +18,7 @@ __docformat__ = 'restructuredtext'
 
 BIOSFormat = namedtuple('BIOSFormat', 'width, height, colors, blocks')
 formats = {}
+formats[0] = BIOSFormat(-1, -1, -1, -1)        # Used for debug
 formats[4] = BIOSFormat(320, 200, 4, 2)        # 320 x 200 4 colors
 formats[6] = BIOSFormat(640, 200, 2, 2)        # 640 x 200 2 colors
 formats[8] = BIOSFormat(160, 200, 16, 2)       # 160 x 200 16 colors
@@ -111,11 +112,16 @@ def run(image_file, gfx_format, output_fd):
         width = im.width
         height = im.height
         array = im.tobytes()
-        for y in range(height):
-            line = array[width * y : width * (y+1)]
-            lines.append(parse_line(line, gfx_format.colors))
 
-    write_to_file(lines, output_fd, gfx_format)
+        if gfx_format.colors == -1:
+            # Debug. Write what's inside PIL
+            output_fd.buffer.write(array)
+        else:
+            for y in range(height):
+                line = array[width * y : width * (y+1)]
+                lines.append(parse_line(line, gfx_format.colors))
+
+            write_to_file(lines, output_fd, gfx_format)
 
 
 def parse_args():
@@ -129,9 +135,10 @@ $ %(prog)s -g 9 -o image.tandy image.raw
     parser.add_argument('filename', metavar='<filename>',
             help='file to convert')
     parser.add_argument('-g', '--bios_gfx_mode', type=int, metavar='BIOS_graphics_mode',
-            dest='format', help='output file. Default: 4. Valid options: 4, 6, 8, 9, 10', default=4)
+            dest='format', help='output file. Default: 4. Valid options: 0, 4, 6, 8, 9, 10',
+            default=4, required=True)
     parser.add_argument('-o', '--output-file', metavar='<filename>',
-            help='output file. Default: stdout')
+            help='output file. Default: stdout', required=True)
 
     args = parser.parse_args()
     return args
@@ -139,11 +146,8 @@ $ %(prog)s -g 9 -o image.tandy image.raw
 
 def main():
     args = parse_args()
-    if args.output_file is not None:
-        with open(args.output_file, 'w+') as fd:
-            run(args.filename, formats[args.format], fd)
-    else:
-        run(args.filename, formats[args.format], sys.stdout)
+    with open(args.output_file, 'w+') as fd:
+        run(args.filename, formats[args.format], fd)
 
 if __name__ == "__main__":
     main()
