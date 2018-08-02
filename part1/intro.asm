@@ -222,12 +222,27 @@ render_bigchar:
 ;        mov     byte [vert_retrace],0                   ;clear vert retrace
 
         mov     dx,0x03da
-        sub     bx,bx                           ;bx=0 (to be used in xchg later)
         mov     cx,[back_fore_color]            ;cx=new color (to be used in xchg later)
+
+        ; change background color to background color
+        sub     bx,bx                           ;bx=0 (to be used in xchg later)
         mov     al,0x11                         ;color index = 1
         out     dx,al                           ;dx=0x03da (register)
 
-        xchg    ax,cx                           ;fast way to set al with new color
+        mov     al,cl                           ;set color
+        out     dx,al                           ;set new color (data)
+
+        xchg    ax,bx                           ;ax = 0
+        out     dx,al                           ;reset
+
+        in      al,dx                           ;reset to register again
+
+        ; change foreground color to background color
+        sub     bx,bx                           ;bx=0 (to be used in xchg later)
+        mov     al,0x10                         ;color index = 0
+        out     dx,al                           ;dx=0x03da (register)
+
+        mov     al,cl                           ;fast way to set al with new color
         out     dx,al                           ;set new color (data)
 
         xchg    ax,bx                           ;fast way to set al to zero
