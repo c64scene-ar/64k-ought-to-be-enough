@@ -314,7 +314,7 @@ image1:
         incbin 'part2/alakran-cara.raw.zx7'
 
 charset:
-        incbin 'part2/charset_0x00_0x40.bin'
+        incbin 'part2/charset_bigfont.bin'
 
 end_condition:
         db 0                                    ;1 if demo should end
