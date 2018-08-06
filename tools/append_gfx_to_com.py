@@ -40,8 +40,9 @@ class Parser:
 
             # if delta, is negative, then .com too big
             com_delta = com_max_size - com_size
-            assert(com_delta >= 0 and "Invalid .com size. Too big")
             logging.info("Bytes still available in .com: %d" % com_delta)
+            if com_delta < 0:
+                raise Exception('File too big. Reduce size by %d bytes' % int(com_delta))
 
             # create new binary
             self._output_fd.write(com_data)
