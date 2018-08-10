@@ -23,8 +23,8 @@ extern music_init, music_play, music_cleanup
 
 GFX_SEG         equ     0x0800                  ;graphics segment (32k offset)
 
-SCROLL_OFFSET   equ     23*2*160                ;start at line 22:160 bytes per line, lines are every 4 -> 8/4 =2
-SCROLL_COLS_TO_SCROLL   equ 140                 ;how many cols to scroll. max 160 (width 320, but we scroll 2 pixels at the time)
+SCROLL_OFFSET   equ     21*2*160                ;start at line 21:160 bytes per line, lines are every 4 -> 8/4 =2
+SCROLL_COLS_TO_SCROLL   equ 70                  ;how many cols to scroll. max 160 (width 320, but we scroll 2 pixels at the time)
 SCROLL_COLS_MARGIN      equ ((160-SCROLL_COLS_TO_SCROLL)/2)
 SCROLL_RIGHT_X  equ     (160-SCROLL_COLS_MARGIN-1)      ;col in which the scroll starts from the right
 SCROLL_LEFT_X   equ     (SCROLL_COLS_MARGIN)    ;col in which the scroll ends from the left
@@ -44,7 +44,9 @@ SCROLL_LEFT_X   equ     (SCROLL_COLS_MARGIN)    ;col in which the scroll ends fr
         %rep    4
                 lodsb                                   ;fetches byte from the cache
                 mov     ah,al                           ;save value in ah for later use
-                and     al,cl                           ;cl = 0b1100_0000
+                and     al,cl                           ;cl = 0b1111_0000
+                rol     al,1
+                rol     al,1
                 rol     al,1
                 rol     al,1
                 mov     bx,dx
@@ -223,16 +225,47 @@ scroll_anim:
         jnz     .render_bits                    ; if not, render bits
 
 .read_and_process_char:
-        ;update the cache with the next 32 bytes (2x2 chars)
+        ;update the cache with the next 192 bytes (3x4 chars @ 2 bit resolution each)
         mov     bx,[scroll_char_idx]            ;scroll text offset
         mov     bl,byte [scroll_text+bx]        ;char to print
 
-        sub     bl,0x20                         ;offset to 0
+        cmp     bl,0x20                         ;special case for space
+        jnz     .is_regular_char
 
+        ; To save space (192 chars and more), the 'space' char is not
+        ; in the charset. The charset only contains A-Z.
+        ; So when a space is found, we generate it in runtime, which is 
+        ; basically 192 empty chars
+        mov     bp,es                           ;save es for later
+
+        mov     ax,ds
+        mov     es,ax                           ;es = ds
+        mov     di,cache_charset                ;es:di: cache
+
+        sub     ax,ax                           ;ax=0 (emtpy bits)
+        mov     cx,192/2                        ;copy 192 bytes (or 96 words)
+        rep stosw
+
+        mov     es,bp                           ;restore es
+        jmp     .render_bits
+
+.is_regular_char:
+        ; fall-through
+        sub     bl,0x41                         ;offset to 0. first char is 'A'
         sub     bh,bh
-        shl     bx,1                            ;bx * 8 since each char takes 8
-        shl     bx,1                            ; bytes in the charset
-        shl     bx,1
+
+        push    bx                              ;save bx
+
+        mov     cl,7                            ;multiplying by 192 is the same as
+        shl     bx,cl                           ; doing: n << 7 + n << 6. Here we
+                                                ; calculate the (bx << 7)
+
+        pop     ax                              ;restore bx in ax
+        dec     cl                              ; and shift by 6 the result
+        shl     ax,cl
+        add     bx,ax                           ;finally add bx and ax and the multiplication
+                                                ; is done.
+
         lea     si,[charset+bx]                 ;ds:si: offset in charset for char
 
         mov     bp,es                           ;save es for later
@@ -241,12 +274,8 @@ scroll_anim:
         mov     es,ax                           ;es = ds
         mov     di,cache_charset                ;es:di: cache
 
-        mov     cx,4                            ;copy upper part of char (4 words == 8 bytes)
+        mov     cx,192/2                        ;copy 192 bytes (or 96 words)
         rep movsw
-
-        mov     cl,4                            ;di updated to offset in cache_charset
-        add     si,(64-1)*8                     ;point to bottom part of char. offset=64
-        rep movsw                               ;copy bottom to cache (4 words == 8 bytes)
 
         mov     es,bp                           ;restore es
 
@@ -352,6 +381,6 @@ scroll_effect_enabled:                          ;boolean. whether to enable plas
         db      0
 
 cache_charset:
-        resb    16                              ;the 16 bytes to print in the current frame
-                                                ; char aligned like: top-left, bottom-left,
-                                                ; top-right, bottom-right
+        resb    192                             ;the 192 bytes that it takes to represent
+                                                ; a big char: 3 * 4 * 2 bits per color
+                                                ; column firts.
