@@ -31,6 +31,17 @@ class ParseBigCharset:
     SPACING = 2             # pixels between chars in the .png
     BITS_PER_COLOR = 2      # 4 colors max per pixel
 
+    # how many pixels fits in one byte
+    # eg: if using 4 colors (2 bits per color), then 4 pixels fits in one
+    # byte
+    PIXELS_PER_BYTE = 8 // BITS_PER_COLOR
+
+    # how many bytes are needed to represent one row
+    # eg: 6 bytes are needed for one row if the char is 24 pixels width
+    # and each pixels needs 2 bits.
+    BYTES_PER_ROW = CHAR_WIDTH // PIXELS_PER_BYTE
+
+
     def __init__(self, image_file, output_fd):
         output = bytearray()
         with Image.open(image_file) as im:
@@ -54,18 +65,8 @@ class ParseBigCharset:
     def parse_char(self, chr_idx):
         output = bytearray()
 
-        # how many pixels fits in one byte
-        # eg: if using 4 colors (2 bits per color), then 4 pixels fits in one
-        # byte
-        pixels_per_byte = 8 // self.BITS_PER_COLOR
-
-        # how many bytes are needed to represent one row
-        # eg: 6 bytes are needed for one row if the char is 24 pixels width
-        # and each pixels needs 2 bits.
-        bytes_per_row = self.CHAR_WIDTH // pixels_per_byte
-
         # parse each column first. columns are packed together.
-        for col in range(bytes_per_row):
+        for col in range(self.BYTES_PER_ROW):
             output += self.parse_char_column(chr_idx, col)
         return output
 
@@ -73,10 +74,11 @@ class ParseBigCharset:
         output = bytearray()
 
         # offset to char and the wanted column
-        offset = char_idx * (self.CHAR_WIDTH + self.SPACING) + col * 8
+        offset = char_idx * (self.CHAR_WIDTH + self.SPACING) + col * self.PIXELS_PER_BYTE
         for i in range(self.CHAR_HEIGHT):
-            offset + i * self._im_width
             b = self.parse_for_4_colors(offset)
+            # point to next row
+            offset += self._im_width
             output.append(b)
         return output
 
