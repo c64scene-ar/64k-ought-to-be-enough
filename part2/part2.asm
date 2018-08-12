@@ -34,33 +34,30 @@ SCROLL_LEFT_X   equ     (SCROLL_COLS_MARGIN)    ;col in which the scroll ends fr
 ; use the MSB bit. If it is on, use white, else black color
 ;
 ; IN:   ds:si   -> bit to render (pointer to cache)
-;       dx      -> pointer to pixel color table
+;       bx      -> pointer to pixel color table
 ;       bp      -> row index
-;       cl      -> 0b1100_0000
 ; Args: %1: offset line.
 %macro RENDER_BIT 1
-
         mov     di,SCROLL_OFFSET+160*%1+SCROLL_RIGHT_X  ;es:di points to video memory
         %rep    4
                 lodsb                                   ;fetches byte from the cache
                 mov     ah,al                           ;save value in ah for later use
-                and     al,cl                           ;cl = 0b1111_0000
-                rol     al,1
-                rol     al,1
-                rol     al,1
-                rol     al,1
-                mov     bx,dx
+
+                ;write first 2 pixels
+                mov     cl,4
+                shr     al,cl                           ;mov 4-MSB bits into LSB
+
                 xlatb                                   ;al = [scroll_pixel_color_tbl+ al]
-                stosb
+                stosb                                   ;write 2 pixels
 
-                add     di,8192-1                       ;draw in next bank. di was incremented by
-                                                        ; one in stosb.
-
-                shl     ah,1                            ;al << 2. bit 7,6 contains next bits to render
-                shl     ah,1                            ;
-                mov     bx,bp                           ;index by bp
-                mov     [cache_charset+bx],ah           ;update cache for next iteration
-                inc     bp                              ;inc row index
+                ;write 2nd 2 pixels
+                mov     al,ah                           ;restore previous al value
+                and     al,0b0000_1111                  ;filter out 4 MSB bits, and only use
+                                                        ; 4 LSB bits
+                xlatb                                   ;al = [scroll_pixel_color_tbl+ al]
+                stosb                                   ;es:di already pointing to the correct
+                                                        ; offset
+                add     di,8192-2                       ;next bank minus 2 (from previous two stobs)
         %endrep
 %endmacro
 
@@ -234,7 +231,7 @@ scroll_anim:
 
         ; To save space (192 chars and more), the 'space' char is not
         ; in the charset. The charset only contains A-Z.
-        ; So when a space is found, we generate it in runtime, which is 
+        ; So when a space is found, we generate it in runtime, which is
         ; basically 192 empty chars
         mov     bp,es                           ;save es for later
 
@@ -283,18 +280,22 @@ scroll_anim:
 
 .render_bits:
         mov     si,cache_charset                ;ds:si points to cache_charset
-        sub     bp,bp                           ;used for the cache row index in the macros
-        mov     dx,scroll_pixel_color_tbl       ;table for colors used in the macros
-        mov     cl,0b1100_0000                  ;mask used in macros
+        mov     bx,scroll_pixel_color_tbl       ;table for colors used in the macros
+        RENDER_BIT 0
+        RENDER_BIT 1
 
-        RENDER_BIT 0                            ;render rows 0,4,8,12
-        RENDER_BIT 1                            ;render rows 1,5,9,13
-        RENDER_BIT 2                            ;render rows 2,6,10,14
-        RENDER_BIT 3                            ;render rows 3,7,11,15
+        RENDER_BIT 2
+        RENDER_BIT 3
+
+        RENDER_BIT 4
+        RENDER_BIT 5
+
+        RENDER_BIT 6
+        RENDER_BIT 7
 
         add     byte [scroll_bit_idx],2         ;two incs, since it prints 2 bits at the time
 
-        test    byte [scroll_bit_idx],8         ;should use 2nd chars?
+        test    byte [scroll_bit_idx],6         ;should use 2nd chars?
         jz      .end                            ;if not, exit
 
 .next_char:
