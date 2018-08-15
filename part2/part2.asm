@@ -222,6 +222,9 @@ scroll_anim:
         jnz     .render_bits                    ; if not, render bits
 
 .read_and_process_char:
+;        cmp     byte [scroll_force_spacer],0
+;        jnz     .force_spacer
+
         ;update the cache with the next 192 bytes (3x4 chars @ 2 bit resolution each)
         mov     bx,[scroll_char_idx]            ;scroll text offset
         mov     bl,byte [scroll_text+bx]        ;char to print
@@ -246,8 +249,26 @@ scroll_anim:
         mov     es,bp                           ;restore es
         jmp     .render_bits
 
+.force_spacer:                                  ;some chars takes the whole 24 bits wide
+                                                ; so a spacer of 4 pixels is added
+        mov     bp,es                           ;save es for later
+
+        mov     ax,ds
+        mov     es,ax                           ;es = ds
+        mov     di,cache_charset                ;es:di: cache
+
+        sub     ax,ax                           ;ax=0 (emtpy bits)
+        mov     cx,192/2                        ;copy 192 bytes (or 96 words)
+        rep stosw
+
+        mov     byte [scroll_char_idx],5        ;make it believe that we are in
+                                                ; in the last column, so only
+                                                ; one column of 4 pixels is rendered
+        mov     es,bp                           ;restore es
+
+        jmp     .render_bits
+
 .is_regular_char:
-        ; fall-through
         sub     bl,0x41                         ;offset to 0. first char is 'A'
         sub     bh,bh
 
@@ -275,11 +296,11 @@ scroll_anim:
         rep movsw                               ; the size of one char
 
         mov     es,bp                           ;restore es
-
         ;fall-through
 
 .render_bits:
         mov     si,cache_charset                ;ds:si points to cache_charset
+        add     si,[scroll_cache_offset]
         mov     bx,scroll_pixel_color_tbl       ;table for colors used in the macros
         RENDER_BIT 0
         RENDER_BIT 1
@@ -293,14 +314,25 @@ scroll_anim:
         RENDER_BIT 6
         RENDER_BIT 7
 
-        add     byte [scroll_bit_idx],2         ;two incs, since it prints 2 bits at the time
+        inc     byte [scroll_bit_idx]           ;we render 4 bits at the time
+        cmp     byte [scroll_bit_idx],6         ;end of char ? (6 * 4 = 24)
+        jz      .next_char
 
-        test    byte [scroll_bit_idx],6         ;should use 2nd chars?
-        jz      .end                            ;if not, exit
+        add     word [scroll_cache_offset],32   ;in each pass we render 32 bytes
+                                                ; 32 height * 8 bits width (4 pixels) = 32 bytes
+        jmp     .end
 
 .next_char:
+        cmp     byte [scroll_force_spacer],0
+        ;next is spacer
+        inc     byte [scroll_force_spacer]
+        jmp     .end
+
+.next_is_char:
+        dec     byte [scroll_force_spacer]
         sub     ax,ax
         mov     byte [scroll_bit_idx],al        ;reset bit idx
+        mov     word [scroll_cache_offset],ax   ;reset cache offset
         inc     word [scroll_char_idx]          ;scroll_char_idx++
         cmp     word [scroll_char_idx],SCROLL_TEXT_LEN  ;end of scroll?
         jnz     .end                            ; if so, reset index
@@ -393,6 +425,11 @@ scroll_enabled:                                 ;boolean: enabled?
 scroll_effect_enabled:                          ;boolean. whether to enable plasma + raster bar
         db      0
 
+scroll_force_spacer:
+        db      0                               ;when 1, a spacer of 4 pixels is rendered. occurs after
+                                                ; rendering a char.
+scroll_cache_offset:                            ;cache contains the data of the char to render
+        dw 0                                    ; the cache_offset, is the offset within the cache
 cache_charset:
         resb    192                             ;the 192 bytes that it takes to represent
                                                 ; a big char: 3 * 4 * 2 bits per color
