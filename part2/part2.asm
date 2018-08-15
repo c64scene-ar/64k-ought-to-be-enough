@@ -203,11 +203,11 @@ scroll_anim:
         mov     dx,SCROLL_COLS_TO_SCROLL/2      ;div 2 since we use movsw instead of movsb
 
         ;scroll 16 rows in total
-        %assign XX 0
+        %assign XX 0                            ;represents the 4 banks
         %rep 4
-                %assign YY 0
-                %rep 4
-                        mov     cx,dx                           ;scroll 4 lines of 80 chars
+                %assign YY 0                    ;represents how many rows to scroll times 4 (banks)
+                %rep 8
+                        mov     cx,dx                           ;scroll 8 rows
                         mov     si,SCROLL_OFFSET+8192*XX+160*YY+SCROLL_LEFT_X+1  ;source: last char of screen
                         mov     di,SCROLL_OFFSET+8192*XX+160*YY+SCROLL_LEFT_X    ;dest: last char of screen - 1
                         rep movsw                               ;do the copy
@@ -272,7 +272,7 @@ scroll_anim:
         mov     di,cache_charset                ;es:di: cache
 
         mov     cx,192/2                        ;copy 192 bytes (or 96 words)
-        rep movsw
+        rep movsw                               ; the size of one char
 
         mov     es,bp                           ;restore es
 
@@ -371,10 +371,22 @@ scroll_char_idx:                                ;pointer to the next char
 scroll_bit_idx:                                 ;pointer to the next bit in the char
         db 0
 scroll_pixel_color_tbl:                         ;the colors for the scroll letters
-        db      0x00                            ;00 - black/black
-        db      0x0f                            ;01 - black/white
-        db      0xf0                            ;10 - white/black
-        db      0xff                            ;11 - white/white
+        db      0x00                            ;0000 - black/black
+        db      0x01                            ;0001 - black/white
+        db      0x02                            ;0010 - white/black
+        db      0x03                            ;0011 - white/white
+        db      0x10                            ;0100 - black/black
+        db      0x11                            ;0101 - black/white
+        db      0x12                            ;0110 - white/black
+        db      0x13                            ;0111 - white/white
+        db      0x20                            ;1000 - black/black
+        db      0x21                            ;1001 - black/white
+        db      0x22                            ;1010 - white/black
+        db      0x23                            ;1011 - white/white
+        db      0x30                            ;1100 - black/black
+        db      0x31                            ;1101 - black/white
+        db      0x32                            ;1110 - white/black
+        db      0x33                            ;1111 - white/white
 
 scroll_enabled:                                 ;boolean: enabled?
         db      0
