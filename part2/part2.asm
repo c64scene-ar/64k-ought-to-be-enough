@@ -209,7 +209,7 @@ scroll_anim:
                 %rep 8
                         mov     cx,dx                           ;scroll 8 rows
                         mov     si,SCROLL_OFFSET+8192*XX+160*YY+SCROLL_LEFT_X+1  ;source: last char of screen
-                        mov     di,SCROLL_OFFSET+8192*XX+160*YY+SCROLL_LEFT_X    ;dest: last char of screen - 1
+                        mov     di,SCROLL_OFFSET+8192*XX+160*YY+SCROLL_LEFT_X-1  ;dest: last char of screen - 1
                         rep movsw                               ;do the copy
                 %assign YY YY+1
                 %endrep
@@ -325,11 +325,11 @@ scroll_anim:
 .next_char:
         cmp     byte [scroll_force_spacer],0
         ;next is spacer
-        inc     byte [scroll_force_spacer]
-        jmp     .end
+;        inc     byte [scroll_force_spacer]
+;        jmp     .end
 
 .next_is_char:
-        dec     byte [scroll_force_spacer]
+;        dec     byte [scroll_force_spacer]
         sub     ax,ax
         mov     byte [scroll_bit_idx],al        ;reset bit idx
         mov     word [scroll_cache_offset],ax   ;reset cache offset
