@@ -28,6 +28,7 @@ SCROLL_COLS_TO_SCROLL   equ 80                  ;how many cols to scroll. max 16
 SCROLL_COLS_MARGIN      equ ((160-SCROLL_COLS_TO_SCROLL)/2)
 SCROLL_RIGHT_X  equ     (160-SCROLL_COLS_MARGIN-1)      ;col in which the scroll starts from the right
 SCROLL_LEFT_X   equ     (SCROLL_COLS_MARGIN)    ;col in which the scroll ends from the left
+CHARSET_COLS_PER_CHAR   equ 6                   ;each char has 6 columns
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; render vertically 4 bits needed for the scroll. grabs the firts four bytes from the cache,
@@ -218,19 +219,18 @@ scroll_anim:
 
         mov     ds,bp                           ;restore ds
 
-        cmp     byte [scroll_char_col],0        ;if scroll_char_col == 0 ?
+        cmp     byte [scroll_char_col],CHARSET_COLS_PER_CHAR    ;if scroll_char_col == 6 ? (initial state)
         jnz     .render_bits                    ; if not, render bits
 
 
-        ; Update the cache with the next 192 bytes (3x4 chars @ 2 bit resolution each)
-        ; It could could be a regular 'space' or a char. 'space' is treated
-        ; differently to save memory
+        ; Update the pointer to the chardef
         mov     bx,[scroll_char_idx]            ;scroll text offset
         mov     bl,byte [scroll_text+bx]        ;char to print
 
         cmp     bl,0x20                         ;special case for space
         jnz     .is_regular_char
 
+        ; Is space
         mov     word [scroll_char_offset],charset_space
         jmp     .render_bits
 
@@ -270,37 +270,37 @@ scroll_anim:
         RENDER_BIT 6
         RENDER_BIT 7
 
-        inc     byte [scroll_char_col]          ;we render 4 bits at the time
-        cmp     byte [scroll_char_col],6        ;end of char ? (6 * 4 = 24)
-        jz      .next_char
+        dec     byte [scroll_char_col]          ;we render 4 bits at the time
+        jz      .next_char                      ;after rendering all its columsn,
+                                                ; end of char ? (6 * 4 = 24)
 
         add     word [scroll_char_offset],32    ;in each pass we render 32 bytes
                                                 ; 32 height * 8 bits width (4 pixels) = 32 bytes
-        jmp     .end                            ; and end
+        ret                                     ;end.
 
 .next_char:
-        cmp     byte [scroll_force_spacer],0    ;if 0, then next char is 'spacer'
-        jnz     .next_is_char                   ;if not, do regualar char
+        cmp     byte [scroll_force_spacer],0    ;if 1, then next char is 'spacer'
+        jz      .next_is_char                   ;if not, do regualar char
 
         ;next is spacer
-        inc     byte [scroll_force_spacer]      ;next should be regular char
-        mov     byte [scroll_char_col],5        ;set bit idx to 5, so only one
+        dec     byte [scroll_force_spacer]      ;next should be regular char
+        inc     byte [scroll_char_col]          ;set bit idx to 1, so only one
                                                 ; space column is rendered
         mov     word [scroll_char_offset],charset_space    ;reset cache offset
                                                 ; so that it points to an empty char
-        jmp     .end
+        ret                                     ;end.
 
 .next_is_char:
-        dec     byte [scroll_force_spacer]      ;next should be spacer
-        mov     byte [scroll_char_col],0        ;reset bit idx
+        inc     byte [scroll_force_spacer]      ;after real char, next should be spacer
+        mov     byte [scroll_char_col],CHARSET_COLS_PER_CHAR    ;total columns to render per char
         inc     word [scroll_char_idx]          ;scroll_char_idx++
         cmp     word [scroll_char_idx],SCROLL_TEXT_LEN  ;end of scroll?
-        jnz     .end                            ; if so, reset index
+        jz      .end_scroll                     ; if so, end scroll
+        ret                                     ;end
 
+.end_scroll:
         ;mov     word [scroll_char_idx],ax       ;reset to 0
         mov     byte [end_condition],1          ;trigger end condition, end
-
-.end:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -355,8 +355,8 @@ SCROLL_TEXT_LEN equ $-scroll_text
 
 scroll_char_idx:                                ;pointer to the next char in text
         dw 0
-scroll_char_col:                                ;pointer to the next column of the char is cache
-        db 0
+scroll_char_col:                                ;total columns to render per char
+        db CHARSET_COLS_PER_CHAR
 scroll_pixel_color_tbl:                         ;the colors for the scroll letters
         db      0x00                            ;0000 - black/black
         db      0x0c                            ;0001 - black/white
@@ -381,7 +381,7 @@ scroll_effect_enabled:                          ;boolean. whether to enable plas
         db      0
 
 scroll_force_spacer:
-        db      0                               ;when 1, a spacer of 4 pixels is rendered. occurs after
+        db      1                               ;when 1, a spacer of 4 pixels is rendered. occurs after
                                                 ; rendering a char.
 scroll_char_offset:                             ;Pointer to the char definition. Will get
         dw      0                               ; updated after each pass.
