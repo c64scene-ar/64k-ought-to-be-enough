@@ -19,7 +19,7 @@ extern music_init, music_play, music_cleanup
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 0                              ;1=run on emulator
+%define EMULATOR 1                              ;1=run on emulator
 
 GFX_SEG         equ     0x0800                  ;graphics segment (32k offset)
 
@@ -202,15 +202,15 @@ scroll_anim:
 
         mov     dx,SCROLL_COLS_TO_SCROLL/2      ;div 2 since we use movsw instead of movsb
 
-        ;scroll 16 rows in total
+        ;scroll 32 rows in total
         %assign XX 0                            ;represents the 4 banks
         %rep 4
                 %assign YY 0                    ;represents how many rows to scroll times 4 (banks)
                 %rep 8
-                        mov     cx,dx                           ;scroll 8 rows
+                        mov     cx,dx           ;scroll 8 rows
                         mov     si,SCROLL_OFFSET+8192*XX+160*YY+SCROLL_LEFT_X+1  ;source: last char of screen
                         mov     di,SCROLL_OFFSET+8192*XX+160*YY+SCROLL_LEFT_X-1  ;dest: last char of screen - 1
-                        rep movsw                               ;do the copy
+                        rep movsw               ;do the copy
                 %assign YY YY+1
                 %endrep
         %assign XX XX+1
@@ -231,21 +231,7 @@ scroll_anim:
         cmp     bl,0x20                         ;special case for space
         jnz     .is_regular_char
 
-        ; To save space (192 chars and more), the 'space' char is not
-        ; in the charset. The charset only contains A-Z.
-        ; So when a space is found, we generate it in runtime, which is
-        ; basically 192 empty chars
-        mov     bp,es                           ;save es for later
-
-        mov     ax,ds
-        mov     es,ax                           ;es = ds
-        mov     di,cache_charset                ;es:di: cache
-
-        sub     ax,ax                           ;ax=0 (emtpy bits)
-        mov     cx,192/2                        ;copy 192 bytes (or 96 words)
-        rep stosw
-
-        mov     es,bp                           ;restore es
+        mov     word [scroll_char_offset],charset_space
         jmp     .render_bits
 
 
@@ -266,22 +252,11 @@ scroll_anim:
                                                 ; is done.
 
         lea     si,[charset+bx]                 ;ds:si: offset in charset for char
-
-        mov     bp,es                           ;save es for later
-
-        mov     ax,ds
-        mov     es,ax                           ;es = ds
-        mov     di,cache_charset                ;es:di: cache
-
-        mov     cx,192/2                        ;copy 192 bytes (or 96 words)
-        rep movsw                               ; the size of one char
-
-        mov     es,bp                           ;restore es
+        mov     [scroll_char_offset],si         ; and save it in the offset variable
         ;fall-through
 
 .render_bits:
-        mov     si,cache_charset                ;ds:si points to cache_charset
-        add     si,[scroll_cache_offset]
+        mov     si,[scroll_char_offset]
         mov     bx,scroll_pixel_color_tbl       ;table for colors used in the macros
         RENDER_BIT 0
         RENDER_BIT 1
@@ -295,13 +270,13 @@ scroll_anim:
         RENDER_BIT 6
         RENDER_BIT 7
 
-        inc     byte [scroll_char_col]           ;we render 4 bits at the time
-        cmp     byte [scroll_char_col],6         ;end of char ? (6 * 4 = 24)
+        inc     byte [scroll_char_col]          ;we render 4 bits at the time
+        cmp     byte [scroll_char_col],6        ;end of char ? (6 * 4 = 24)
         jz      .next_char
 
-        add     word [scroll_cache_offset],32   ;in each pass we render 32 bytes
+        add     word [scroll_char_offset],32    ;in each pass we render 32 bytes
                                                 ; 32 height * 8 bits width (4 pixels) = 32 bytes
-        jmp     .end                            ;and end
+        jmp     .end                            ; and end
 
 .next_char:
         cmp     byte [scroll_force_spacer],0    ;if 0, then next char is 'spacer'
@@ -311,24 +286,13 @@ scroll_anim:
         inc     byte [scroll_force_spacer]      ;next should be regular char
         mov     byte [scroll_char_col],5        ;set bit idx to 5, so only one
                                                 ; space column is rendered
-        mov     word [scroll_cache_offset],0    ;reset cache offset
-
-        ;clear cache with 'space' needed for the spacer
-        mov     bp,es                           ;save es for later
-        mov     ax,ds
-        mov     es,ax                           ;es = ds
-        mov     di,cache_charset                ;es:di: cache
-        sub     ax,ax                           ;ax=0 (emtpy bits)
-        mov     cx,192/2                        ;copy 192 bytes (or 96 words)
-        rep stosw
-        mov     es,bp                           ;restore es
+        mov     word [scroll_char_offset],charset_space    ;reset cache offset
+                                                ; so that it points to an empty char
         jmp     .end
 
 .next_is_char:
         dec     byte [scroll_force_spacer]      ;next should be spacer
-        sub     ax,ax
-        mov     byte [scroll_char_col],al        ;reset bit idx
-        mov     word [scroll_cache_offset],ax   ;reset cache offset
+        mov     byte [scroll_char_col],0        ;reset bit idx
         inc     word [scroll_char_idx]          ;scroll_char_idx++
         cmp     word [scroll_char_idx],SCROLL_TEXT_LEN  ;end of scroll?
         jnz     .end                            ; if so, reset index
@@ -419,9 +383,8 @@ scroll_effect_enabled:                          ;boolean. whether to enable plas
 scroll_force_spacer:
         db      0                               ;when 1, a spacer of 4 pixels is rendered. occurs after
                                                 ; rendering a char.
-scroll_cache_offset:                            ;cache contains the data of the char to render
-        dw 0                                    ; the cache_offset, is the offset within the cache
-cache_charset:
+scroll_char_offset:                             ;Pointer to the char definition. Will get
+        dw      0                               ; updated after each pass.
+charset_space:
         resb    192                             ;the 192 bytes that it takes to represent
-                                                ; a big char: 3 * 4 * 2 bits per color
-                                                ; column firts.
+                                                ; a space
