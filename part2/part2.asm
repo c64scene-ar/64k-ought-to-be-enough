@@ -8,12 +8,7 @@
 
 bits    16
 cpu     8086
-
-
-extern irq_8_cleanup, irq_8_init
-extern wait_vertical_retrace
-extern dzx7_speed, dzx7_size
-extern music_init, music_play, music_cleanup
+org     0x100
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
@@ -30,6 +25,10 @@ SCROLL_RIGHT_X  equ     (160-SCROLL_COLS_MARGIN-1)      ;col in which the scroll
 SCROLL_LEFT_X   equ     (SCROLL_COLS_MARGIN)    ;col in which the scroll ends from the left
 CHARSET_COLS_PER_CHAR   equ 6                   ;each char has 6 columns
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+section .text
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; render vertically 4 bits needed for the scroll. grabs the firts four bytes from the cache,
 ; use the MSB bit. If it is on, use white, else black color
@@ -67,9 +66,7 @@ CHARSET_COLS_PER_CHAR   equ 6                   ;each char has 6 columns
 ; CODE
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-main:
-        resb    0x100                           ;cannot use "org 0x100" when using multiple .o files
-
+start:
         sub     ax,ax
         mov     ds,ax                           ;ds = 0
         mov     word [0x0415],128               ;make BIOS set_video_modo believe that we
@@ -162,21 +159,9 @@ irq_8_handler:
         push    ax
         push    bp
 
-        mov     ax,cs
-        mov     ds,ax
-        mov     ax,GFX_SEG
-        mov     es,ax
 
-%if DEBUG
-        call    inc_d020
-%endif
-
-        call    music_play
         call    scroll_anim
-
-%if DEBUG
-        call    dec_d020
-%endif
+        call    music_play
 
 
         mov     al,0x20                         ;send the EOI signal
@@ -197,9 +182,9 @@ irq_8_handler:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 scroll_anim:
-        mov     bp,ds                           ;save ds for later
-        mov     ax,es                           ;ds and es point to video memory
-        mov     ds,ax
+        mov     ax,GFX_SEG
+        mov     es,ax
+        mov     ds,ax                           ;ds = es = video segment
 
         mov     dx,SCROLL_COLS_TO_SCROLL/2      ;div 2 since we use movsw instead of movsb
 
@@ -217,7 +202,8 @@ scroll_anim:
         %assign XX XX+1
         %endrep
 
-        mov     ds,bp                           ;restore ds
+        mov     ax,cs
+        mov     ds,ax                           ;ds = cs
 
         cmp     byte [scroll_char_col],CHARSET_COLS_PER_CHAR    ;if scroll_char_col == 6 ? (initial state)
         jnz     .render_bits                    ; if not, render bits
@@ -304,29 +290,6 @@ scroll_anim:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-;DEBUG ONLY
-%if DEBUG
-inc_d020:
-        mov     dx,0x03da                       ;show how many raster barts it consumes
-        mov     al,2                            ;select border color
-        out     dx,al                           ;(register)
-
-        mov     al,0x0f
-        out     dx,al                           ;change border to white (data)
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-dec_d020:
-        mov     dx,0x03da                       ;show how many raster barts it consumes
-        mov     al,2                            ;select border color
-        out     dx,al                           ;(register)
-
-        sub     al,al
-        out     dx,al                           ;change border back to black (data)
-        ret
-%endif
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;DATA
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 pvm_song:
@@ -388,3 +351,10 @@ scroll_char_offset:                             ;Pointer to the char definition.
 charset_space:
         resb    192                             ;the 192 bytes that it takes to represent
                                                 ; a space
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; includes
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+%include 'common/utils.asm'
+%include 'common/music_player.asm'
+%include 'common/zx7_8086.asm'
+

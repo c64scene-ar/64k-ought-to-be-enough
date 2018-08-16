@@ -1,10 +1,8 @@
-.PHONY: res runme part2a
+.PHONY: res runme part2 part2a part1a
 
 TARGET_NAME_P1 = part1.com
-TARGET_NAME_P2 = part2.com
 TARGET_NAME_DETECT = detect.com
 TARGET_P1 = bin/${TARGET_NAME_P1}
-TARGET_P2 = bin/${TARGET_NAME_P2}
 TARGET_DETECT = bin/${TARGET_NAME_DETECT}
 ASM = nasm
 ASMFLAGS = -fobj -Wall
@@ -12,30 +10,23 @@ LD = alink
 LDFLAGS = -oCOM -m
 
 part1: $(TARGET_P1)
-part2: $(TARGET_P2)
 detect: $(TARGET_DETECT)
 
 all: res test_boot
 
 SRCFILES_P1 = part1/intro.asm common/music_player.asm common/utils.asm part1/segment55_table.asm part1/segment55_data.asm
 OBJECTS_P1 = $(patsubst %.asm, %.o, $(SRCFILES_P1))
-SRCFILES_P2 = part2/part2.asm common/zx7_8086.asm common/utils.asm common/music_player.asm
-OBJECTS_P2 = $(patsubst %.asm, %.o, $(SRCFILES_P2))
 SRCFILES_DETECT = detect/detect.asm common/pztimer.asm
 OBJECTS_DETECT = $(patsubst %.asm, %.o, $(SRCFILES_DETECT))
 
 %.o: %.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
 
-.PRECIOUS: $(TARGET_P1) $(OBJECTS_P1) $(TARGET_P2) $(OBJECTS_P2) $(TARGET_DETECT) $(OBJECTS_DETECT)
+.PRECIOUS: $(TARGET_P1) $(OBJECTS_P1) $(TARGET_DETECT) $(OBJECTS_DETECT)
 
 $(TARGET_P1): $(OBJECTS_P1)
 	@echo "Linking..."
 	$(LD) $(OBJECTS_P1) $(LDFLAGS) -o $@
-
-$(TARGET_P2): $(OBJECTS_P2)
-	@echo "Linking..."
-	$(LD) $(OBJECTS_P2) $(LDFLAGS) -o $@
 
 $(TARGET_DETECT): $(OBJECTS_DETECT)
 	echo "Linking..."
@@ -62,6 +53,10 @@ part1x: $(TARGET_P1)
 test_part1x: part1x
 	@echo "Running..."
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_P1}
+
+part2:
+	@echo "Generating part2.com"
+	nasm -Wall part2/part2.asm -fbin -o bin/part2.com
 
 part2a: part2
 	@echo "Appending GFX to .com..."
