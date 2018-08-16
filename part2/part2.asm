@@ -24,7 +24,7 @@ extern music_init, music_play, music_cleanup
 GFX_SEG         equ     0x0800                  ;graphics segment (32k offset)
 
 SCROLL_OFFSET   equ     21*2*160                ;start at line 21:160 bytes per line, lines are every 4 -> 8/4 =2
-SCROLL_COLS_TO_SCROLL   equ 70                  ;how many cols to scroll. max 160 (width 320, but we scroll 2 pixels at the time)
+SCROLL_COLS_TO_SCROLL   equ 90                  ;how many cols to scroll. max 160 (width 320, but we scroll 2 pixels at the time)
 SCROLL_COLS_MARGIN      equ ((160-SCROLL_COLS_TO_SCROLL)/2)
 SCROLL_RIGHT_X  equ     (160-SCROLL_COLS_MARGIN-1)      ;col in which the scroll starts from the right
 SCROLL_LEFT_X   equ     (SCROLL_COLS_MARGIN)    ;col in which the scroll ends from the left
@@ -218,14 +218,13 @@ scroll_anim:
 
         mov     ds,bp                           ;restore ds
 
-        cmp     byte [scroll_bit_idx],0         ;if scroll_bit_idx == 0 ?
+        cmp     byte [scroll_char_col],0        ;if scroll_char_col == 0 ?
         jnz     .render_bits                    ; if not, render bits
 
-.read_and_process_char:
-;        cmp     byte [scroll_force_spacer],0
-;        jnz     .force_spacer
 
-        ;update the cache with the next 192 bytes (3x4 chars @ 2 bit resolution each)
+        ; Update the cache with the next 192 bytes (3x4 chars @ 2 bit resolution each)
+        ; It could could be a regular 'space' or a char. 'space' is treated
+        ; differently to save memory
         mov     bx,[scroll_char_idx]            ;scroll text offset
         mov     bl,byte [scroll_text+bx]        ;char to print
 
@@ -249,24 +248,6 @@ scroll_anim:
         mov     es,bp                           ;restore es
         jmp     .render_bits
 
-.force_spacer:                                  ;some chars takes the whole 24 bits wide
-                                                ; so a spacer of 4 pixels is added
-        mov     bp,es                           ;save es for later
-
-        mov     ax,ds
-        mov     es,ax                           ;es = ds
-        mov     di,cache_charset                ;es:di: cache
-
-        sub     ax,ax                           ;ax=0 (emtpy bits)
-        mov     cx,192/2                        ;copy 192 bytes (or 96 words)
-        rep stosw
-
-        mov     byte [scroll_char_idx],5        ;make it believe that we are in
-                                                ; in the last column, so only
-                                                ; one column of 4 pixels is rendered
-        mov     es,bp                           ;restore es
-
-        jmp     .render_bits
 
 .is_regular_char:
         sub     bl,0x41                         ;offset to 0. first char is 'A'
@@ -314,24 +295,39 @@ scroll_anim:
         RENDER_BIT 6
         RENDER_BIT 7
 
-        inc     byte [scroll_bit_idx]           ;we render 4 bits at the time
-        cmp     byte [scroll_bit_idx],6         ;end of char ? (6 * 4 = 24)
+        inc     byte [scroll_char_col]           ;we render 4 bits at the time
+        cmp     byte [scroll_char_col],6         ;end of char ? (6 * 4 = 24)
         jz      .next_char
 
         add     word [scroll_cache_offset],32   ;in each pass we render 32 bytes
                                                 ; 32 height * 8 bits width (4 pixels) = 32 bytes
-        jmp     .end
+        jmp     .end                            ;and end
 
 .next_char:
-        cmp     byte [scroll_force_spacer],0
+        cmp     byte [scroll_force_spacer],0    ;if 0, then next char is 'spacer'
+        jnz     .next_is_char                   ;if not, do regualar char
+
         ;next is spacer
-;        inc     byte [scroll_force_spacer]
-;        jmp     .end
+        inc     byte [scroll_force_spacer]      ;next should be regular char
+        mov     byte [scroll_char_col],5        ;set bit idx to 5, so only one
+                                                ; space column is rendered
+        mov     word [scroll_cache_offset],0    ;reset cache offset
+
+        ;clear cache with 'space' needed for the spacer
+        mov     bp,es                           ;save es for later
+        mov     ax,ds
+        mov     es,ax                           ;es = ds
+        mov     di,cache_charset                ;es:di: cache
+        sub     ax,ax                           ;ax=0 (emtpy bits)
+        mov     cx,192/2                        ;copy 192 bytes (or 96 words)
+        rep stosw
+        mov     es,bp                           ;restore es
+        jmp     .end
 
 .next_is_char:
-;        dec     byte [scroll_force_spacer]
+        dec     byte [scroll_force_spacer]      ;next should be spacer
         sub     ax,ax
-        mov     byte [scroll_bit_idx],al        ;reset bit idx
+        mov     byte [scroll_char_col],al        ;reset bit idx
         mov     word [scroll_cache_offset],ax   ;reset cache offset
         inc     word [scroll_char_idx]          ;scroll_char_idx++
         cmp     word [scroll_char_idx],SCROLL_TEXT_LEN  ;end of scroll?
@@ -383,42 +379,37 @@ end_condition:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; scroll related
 scroll_text:
-        db 'HI AGAIN! REMEMBER THE DATES: SEPTEMBER 21,22,23 2018 '
-        db 'IN BUENOS AIRES, ARGENTINA. '
-        db 'DID YOU KNOW THE PCJR IS THE BEST COMPUTER EVER MADE? '
-        db 'WELL, THAT WAS A LITTLE FAR-FETCHED, BUT YOU KNOW WHAT? '
-        db 'THE PCJR IS SO UNDERRATED THAT WE THOUGHT THAT WE SHOULD GIVE IT '
-        db 'SOME GOOD PRESS. '
-        db 'IT HAS A SOUND CHIP WITH 3 VOICES + NOISE. '
-        db 'IT HAS A NICE 320 X 200 @ 16 COLORS VIDEO MODE. '
-        db '(USING RGBI OUTPUT). '
-        db 'IT ALSO HAS COMPOSITE OUTPUT '
-        db 'AND IT IS SUPER SLOW IF IT HAS LESS THAN 128KB RAM. '
-        db 'AND JUST A BIT FASTER THAN A 1981 PC IF YOUR CODE IS PLACED ABOVE 128KB RAM. '
-        db '                            '
+        db 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        db '    '
+        db 'THE PCJR WITH SIXTY FOUR KILOBYTES OF RAM DOES NOT SUPPORT '
+        db 'SIXTEEN COLOR MODES, AT LEAST IN THEORY. IN PRACTICE IF YOU TELL '
+        db 'THE COMPUTER THAT YOU HAVE ONE HUNDRED TWENTY EIGHT KILOBYTES OF '
+        db 'RAM, EVEN YOU HAVE SIXTY FOUR, THEN YOU CAN USE THE SIXTEEN COLOR '
+        db 'VIDEO MODES. AND THAT IS WHAT WE ARE DOING IN THIS SCROLL. '
+        db 'THIS IS JUST THE 320 X 200 WITH SIXTEEN COLORS RUNNING. '
 SCROLL_TEXT_LEN equ $-scroll_text
 
-scroll_char_idx:                                ;pointer to the next char
+scroll_char_idx:                                ;pointer to the next char in text
         dw 0
-scroll_bit_idx:                                 ;pointer to the next bit in the char
+scroll_char_col:                                ;pointer to the next column of the char is cache
         db 0
 scroll_pixel_color_tbl:                         ;the colors for the scroll letters
         db      0x00                            ;0000 - black/black
-        db      0x01                            ;0001 - black/white
-        db      0x02                            ;0010 - white/black
-        db      0x03                            ;0011 - white/white
-        db      0x10                            ;0100 - black/black
-        db      0x11                            ;0101 - black/white
-        db      0x12                            ;0110 - white/black
-        db      0x13                            ;0111 - white/white
-        db      0x20                            ;1000 - black/black
-        db      0x21                            ;1001 - black/white
-        db      0x22                            ;1010 - white/black
-        db      0x23                            ;1011 - white/white
-        db      0x30                            ;1100 - black/black
-        db      0x31                            ;1101 - black/white
-        db      0x32                            ;1110 - white/black
-        db      0x33                            ;1111 - white/white
+        db      0x0c                            ;0001 - black/white
+        db      0x09                            ;0010 - white/black
+        db      0x0d                            ;0011 - white/white
+        db      0xc0                            ;0100 - black/black
+        db      0xcc                            ;0101 - black/white
+        db      0xc9                            ;0110 - white/black
+        db      0xcd                            ;0111 - white/white
+        db      0x90                            ;1000 - black/black
+        db      0x9c                            ;1001 - black/white
+        db      0x99                            ;1010 - white/black
+        db      0x9d                            ;1011 - white/white
+        db      0xd0                            ;1100 - black/black
+        db      0xdc                            ;1101 - black/white
+        db      0xd9                            ;1110 - white/black
+        db      0xdd                            ;1111 - white/white
 
 scroll_enabled:                                 ;boolean: enabled?
         db      0

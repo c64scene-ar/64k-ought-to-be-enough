@@ -86,10 +86,14 @@ class ParseBigCharset:
         """converts 4 bytes into 1 byte. Expects that each pixels has a value
         between 0 and 3. Otherwise the conversion won't work as expected
         """
-        b0 = self._array[offset + 0] & 0x03
-        b1 = self._array[offset + 1] & 0x03
-        b2 = self._array[offset + 2] & 0x03
-        b3 = self._array[offset + 3] & 0x03
+        b0 = self._array[offset + 0]
+        assert(b0 <= 3)
+        b1 = self._array[offset + 1]
+        assert(b1 <= 3)
+        b2 = self._array[offset + 2]
+        assert(b2 <= 3)
+        b3 = self._array[offset + 3]
+        assert(b3 <= 3)
         return (b0 << 6) | (b1 << 4) | (b2 << 2) | b3
 
 
