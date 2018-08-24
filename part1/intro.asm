@@ -8,12 +8,7 @@
 
 bits    16
 cpu     8086
-
-extern irq_8_cleanup, irq_8_init
-extern wait_vertical_retrace
-extern music_init, music_play, music_cleanup
-
-%include 'part1/externs.inc'
+org     0x100
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
@@ -26,12 +21,15 @@ GFX_SEG         equ     0xb800                  ;0x1800 for PCJr with 32k video 
 CHAR_OFFSET     equ     (24*8/2)*80             ;start drawing at row 24
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+section .text
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
 ; CODE
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-..start:
-        resb    0x100                           ;cannot use "org 0x100" when using multiple .o files
+start:
         cld                                     ;forward direction
 
         push    cs
@@ -112,7 +110,7 @@ delete_640:
         mov     dx,150                          ;initial values. row
         sub     bx,bx                           ;page 0
 
-.l0: 
+.l0:
         mov     ax,0x0c04                       ;draw dot, color red
         int     0x10
 
@@ -142,7 +140,7 @@ delete_640:
         mov     cx,16                           ;initial values. col
         mov     dx,150                          ;initial values. row
 
-.l1: 
+.l1:
         mov     ax,0x0c04                       ;draw dot, color red
         int     0x10
         inc     dx                              ;row++
@@ -159,7 +157,7 @@ delete_640:
         dec     cx                              ;col--
         mov     ax,0x0c04                       ;draw dot, color red
         int     0x10                            ;draw dot
-        
+
         inc     dx                              ;row++
 
         call    beep
@@ -574,6 +572,14 @@ text_writer_clean_bottom_line:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; Rest of code: includes
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+%include 'common/utils.asm'
+%include 'common/music_player.asm'
+%include 'part1/segment55_data.asm'
+%include 'part1/segment55_table.asm'
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
 ; DATA
 ;
@@ -840,4 +846,5 @@ TEXT_CMD_CHANGE_PALETTE equ 4
         db '                BYE  BYE                ',1
         db '$%$%'
         db 0
+
 

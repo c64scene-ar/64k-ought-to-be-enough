@@ -1,21 +1,16 @@
-.PHONY: res runme part2 part2a part1a
+.PHONY: res runme part2 part2a part1 part1a
 
-TARGET_NAME_P1 = part1.com
 TARGET_NAME_DETECT = detect.com
-TARGET_P1 = bin/${TARGET_NAME_P1}
 TARGET_DETECT = bin/${TARGET_NAME_DETECT}
 ASM = nasm
 ASMFLAGS = -fobj -Wall
 LD = alink
 LDFLAGS = -oCOM -m
 
-part1: $(TARGET_P1)
 detect: $(TARGET_DETECT)
 
 all: res test_boot
 
-SRCFILES_P1 = part1/intro.asm common/music_player.asm common/utils.asm part1/segment55_table.asm part1/segment55_data.asm
-OBJECTS_P1 = $(patsubst %.asm, %.o, $(SRCFILES_P1))
 SRCFILES_DETECT = detect/detect.asm common/pztimer.asm
 OBJECTS_DETECT = $(patsubst %.asm, %.o, $(SRCFILES_DETECT))
 
@@ -23,10 +18,6 @@ OBJECTS_DETECT = $(patsubst %.asm, %.o, $(SRCFILES_DETECT))
 	$(ASM) $(ASMFLAGS) $< -o $@
 
 .PRECIOUS: $(TARGET_P1) $(OBJECTS_P1) $(TARGET_DETECT) $(OBJECTS_DETECT)
-
-$(TARGET_P1): $(OBJECTS_P1)
-	@echo "Linking..."
-	$(LD) $(OBJECTS_P1) $(LDFLAGS) -o $@
 
 $(TARGET_DETECT): $(OBJECTS_DETECT)
 	echo "Linking..."
@@ -37,22 +28,18 @@ clean:
 	-rm -f */*.o
 	-rm -f bin/*.map
 
+part1:
+	@echo "Generating part1.com"
+	nasm -Wall part1/intro.asm -fbin -o bin/part1.com
+
 part1a: part1
 	@echo "Appending GFX to .com..."
 	@python3 tools/append_gfx_to_com.py part1/image_320_200.raw -c bin/part1.com -o bin/part1gfx.com -s 48
 	@echo "Done."
 
-test_part1: $(TARGET_P1)
+test_part1: part1a
 	@echo "Running..."
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c part1gfx.com
-
-part1x: $(TARGET_P1)
-	@echo "Compressing game..."
-	-upx -9 --8086 $(TARGET_P1)
-
-test_part1x: part1x
-	@echo "Running..."
-	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c ${TARGET_NAME_P1}
 
 part2:
 	@echo "Generating part2.com"
@@ -67,17 +54,6 @@ test_part2: part2a
 	@echo "Running..."
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c part2gfx.com
 
-dist: x
-	@echo "Generating distribution .zip"
-	-rm intro.zip
-	-rm intro/intro.com
-	cp bin/intro.com intro/
-	zip intro.zip -r intro
-
-boot: fat_image
-	nasm -Wall boot_loader/boot_loader.asm -fbin -o boot_loader/boot.bin
-	cat boot_loader/boot.bin boot_loader/fat_without_boot.bin > bin/demo_pvm.360
-
 runme:
 	@echo "Generating runme.com"
 	nasm -Wall runme/runme.asm -fbin -o bin/runme.com
@@ -89,8 +65,33 @@ test_runme: runme
 test_detect: detect
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/" -c "c:" -c dir
 
+fat_image: runme detect part1a part2a
+	@echo "Generating FAT image with needed files"
+	-rm -f boot_loader/fat_image.360
+	sudo mkfs.msdos -n PVM_BOOT -C boot_loader/fat_image.360 360
+	-sudo mkdir /media/floppy
+	sudo mount -o loop boot_loader/fat_image.360 /media/floppy
+	sudo cp bin/runme.com /media/floppy/
+	sudo cp bin/detect.com /media/floppy/
+	sudo cp bin/part1gfx.com /media/floppy/part1.com
+	sudo cp bin/part2gfx.com /media/floppy/part2.com
+	sudo umount /media/floppy
+	sudo rmdir /media/floppy
+	dd if=boot_loader/fat_image.360 of=boot_loader/fat_without_boot.bin bs=512 skip=1 count=719
+
+boot: fat_image
+	nasm -Wall boot_loader/boot_loader.asm -fbin -o boot_loader/boot.bin
+	cat boot_loader/boot.bin boot_loader/fat_without_boot.bin > bin/demo_pvm.360
+
 test_boot: boot
 	dosbox-x -conf conf/dosbox-x_pcjr.conf
+
+dist: x
+	@echo "Generating distribution .zip"
+	-rm intro.zip
+	-rm intro/intro.com
+	cp bin/intro.com intro/
+	zip intro.zip -r intro
 
 res:
 	@echo "Generating resources..."
@@ -135,19 +136,6 @@ res:
 
 dis:
 	@echo "Dissassembling..."
-	ndisasm -b 16 -o 100h bin/${TARGET_NAME} | gvim -
+	ndisasm -b 16 -o 100h bin/part1.com | gvim -
 
 
-fat_image: runme detect part1a part2a
-	@echo "Generating FAT image with needed files"
-	-rm -f boot_loader/fat_image.360
-	sudo mkfs.msdos -n PVM_BOOT -C boot_loader/fat_image.360 360
-	-sudo mkdir /media/floppy
-	sudo mount -o loop boot_loader/fat_image.360 /media/floppy
-	sudo cp bin/runme.com /media/floppy/
-	sudo cp bin/detect.com /media/floppy/
-	sudo cp bin/part1gfx.com /media/floppy/part1.com
-	sudo cp bin/part2gfx.com /media/floppy/part2.com
-	sudo umount /media/floppy
-	sudo rmdir /media/floppy
-	dd if=boot_loader/fat_image.360 of=boot_loader/fat_without_boot.bin bs=512 skip=1 count=719

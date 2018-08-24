@@ -302,21 +302,40 @@ image1:
         incbin 'part2/alakran-cara.raw.zx7'
 
 charset:
-        incbin 'part2/charset_bigfont.bin'
+        incbin 'part2/charset_bigfont.bin'              ;letters A-Z
+charset_numbers:
+;        incbin 'part2/charset_bigfont_numbers.bin'      ;numbers 0-9
 
 end_condition:
         db 0                                    ;1 if demo should end
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; scroll related
 scroll_text:
-        db 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        db '    '
-        db 'THE PCJR WITH SIXTY FOUR KILOBYTES OF RAM DOES NOT SUPPORT '
-        db 'SIXTEEN COLOR MODES, AT LEAST IN THEORY. IN PRACTICE IF YOU TELL '
-        db 'THE COMPUTER THAT YOU HAVE ONE HUNDRED TWENTY EIGHT KILOBYTES OF '
-        db 'RAM, EVEN YOU HAVE SIXTY FOUR, THEN YOU CAN USE THE SIXTEEN COLOR '
-        db 'VIDEO MODES. AND THAT IS WHAT WE ARE DOING IN THIS SCROLL. '
-        db 'THIS IS JUST THE 320 X 200 WITH SIXTEEN COLORS RUNNING. '
+        db 'THE PCJR THAT CAME WITH ONLY 64 KILOBYTES OF RAM HAS ALL '
+        db 'THE HI-RES RAM VIDEO MODES DISABLED IN BIOS '
+        db '  '
+        db 'IT KIND OF MAKE SENSE WHEN YOU THINK ABOUT IT '
+        db '  '
+        db 'THE MACHINE HAD ONLY 64K RAM THAT HAD TO BE SHARED WITH THE VIDEO '
+        db 'CARD '
+        db '  '
+        db 'IF YOU USE A 32K VIDEO MODE, THAT ONLY LEAVES 32K FOR TRADIONAL RAM '
+        db '  '
+        db 'OR MORE LIKE 30K BECAUSE YOU HAVE TO SUBSTRACT THE INTERRUPT TABLE '
+        db 'AND BIOS VARIABLES. THAT IS WITHOUT TAKING INTO ACCOUNT THE SPACE FOR '
+        db 'THE OPERATING SYSTEM '
+        db '   '
+        db 'TO BE FAIR, THE 64K RAM VERSION DID NOT COME WITH DOS OR ANY OTHER '
+        db 'OPERATING SYSTEM '
+        db '   '
+        db 'IT KIND OF MAKE SENSE WHEN YOU THINK ABOUT IT   '
+        db '16 COLOR VIDEO MODES, AT LEAST IN THEORY    '
+        db 'IN PRACTICE IF YOU TELL THE COMPUTER THAT YOU HAVE MORE THAN THAT, '
+        db 'YOU ARE FINE   '
+        db 'ONE WONDERS WHAT WAS THE MARKET FOR THE 64K PCJR   '
+        db 'IN THIS PART WE ARE USING 320X200 WITH 16 COLORS, '
+        db 'THAT MEANS THAT 32K RAM ARE USED ONLY FOR THE FRAMEBUFFER '
+        db 'LEAVING 32K RAM FOR THE REST '
 SCROLL_TEXT_LEN equ $-scroll_text
 
 scroll_char_idx:                                ;pointer to the next char in text
