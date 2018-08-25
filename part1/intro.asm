@@ -628,7 +628,7 @@ back_fore_color:        dw 0x000f               ;background / foreground colors
                                                 ;   background/foreground
 palette_tbl:            dw 0x000f               ;0: white/black
                         dw 0x010f               ;1: white/blue
-                        dw 0x040f               ;2: cyan/magenta
+                        dw 0x0400               ;2: black/red
                         dw 0x0d0b               ;3: magenta/cyan
                         dw 0x0e09               ;4: yellow/blue
                         dw 0x090e               ;5: blue/yellow
@@ -822,17 +822,17 @@ TEXT_CMD_DELAY equ 6
         db TEXT_CMD_START_POS,9                         ;set start pos
            ;0123456789012345678901234567890123456789',
         db          '%&THE SLOWEST PC EVER! '
-        db TEXT_CMD_START_POS,20
+        db TEXT_CMD_START_POS,30
         db '! '
-        db TEXT_CMD_START_POS,20
+        db TEXT_CMD_START_POS,30
         db '! '
-        db TEXT_CMD_START_POS,20
+        db TEXT_CMD_START_POS,30
         db '! '
-        db TEXT_CMD_START_POS,20
+        db TEXT_CMD_START_POS,30
         db '! '
-        db TEXT_CMD_START_POS,20
+        db TEXT_CMD_START_POS,30
         db '! '
-        db TEXT_CMD_START_POS,20
+        db TEXT_CMD_START_POS,30
         db '! '
         db TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
 
@@ -844,7 +844,7 @@ TEXT_CMD_DELAY equ 6
 
         db TEXT_CMD_START_POS,18                        ;set start pos
            ;0123456789012345678901234567890123456789',
-        db                   'AND%&'
+        db                   'AND%& '
         db TEXT_CMD_DELAY,TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
            ;0123456789012345678901234567890123456789',
         db 'DID YOU KNOW THAT EVEN THE COMMODORE 64 '
@@ -858,7 +858,7 @@ TEXT_CMD_DELAY equ 6
         db           'LET ME SAY THAT AGAIN: '
         db TEXT_CMD_DELAY
         db TEXT_CMD_START_POS,10                         ;set start pos
-        db           '                       '
+        db           '                      '
         db TEXT_CMD_CLEAR_LINE
 
         db TEXT_CMD_CHANGE_PALETTE,2
@@ -873,7 +873,7 @@ TEXT_CMD_DELAY equ 6
 
         db TEXT_CMD_START_POS,4                         ;set start pos
            ;0123456789012345678901234567890123456789',
-        db     "I BET YOU DIDN'T KNOW ABOUT THAT"
+        db     "I BET YOU DIDN'T KNOW ABOUT THAT "
         db TEXT_CMD_DELAY
         db TEXT_CMD_CLEAR_LINE
 
@@ -883,85 +883,68 @@ TEXT_CMD_DELAY equ 6
         db TEXT_CMD_DELAY
         db TEXT_CMD_CLEAR_LINE
 
+        db TEXT_CMD_START_POS,2                         ;set start pos
            ;0123456789012345678901234567890123456789',
-        db ' %&A 320 X 200 WITH 16-COLOR VIDEO MODE '
+        db   '%&A 320 X 200 @ 16-COLOR VIDEO MODE '
         db TEXT_CMD_DELAY
         db TEXT_CMD_CLEAR_LINE
 
-        db TEXT_CMD_START_POS,18                        ;set start pos
-        dw 0x0104                                       ;change palette
-        db 'P'
-        dw 0x0304                                       ;change palette
-        db 'V'
-        dw 0x0504                                       ;change palette
-        db 'M'
-        dw 0x0c04
-        db '  '
 
-        db TEXT_CMD_START_POS,18                        ;set start pos
-        dw 0x0204
-        db 'P'
-        dw 0x0404
-        db 'V'
-        dw 0x0604
-        db 'M'
-        dw 0x0004                               ;default color
-        db '    '                               ;wait
-
-        db TEXT_CMD_START_POS,18                        ;set start pos
-        dw 0x0104                                       ;change palette
-        db 'P'
-        dw 0x0304                                       ;change palette
-        db 'V'
-        dw 0x0504                                       ;change palette
-        db 'M'
-        dw 0x0c04
-        db '  '
-
-        db TEXT_CMD_START_POS,18                        ;set start pos
-        dw 0x0204
-        db 'P'
-        dw 0x0404
-        db 'V'
-        dw 0x0604
-        db 'M'
-        dw 0x0004                               ;default color
-        db '    '                               ;wait
-
-
-        db 1                                    ;clean line
-
+           ;0123456789012345678901234567890123456789',
         db 2                                    ;turn off "flicker-free"
         db '$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#',1         ;bat animation
         db 3                                    ;turn on "flicker-free" again
 
         db 1                                    ;clean line
 
-        ;---2nd time flash party
-        db '              '
-        dw 0x0204                               ;flash
+        db TEXT_CMD_START_POS,18                        ;set start pos
+        dw 0x0104                                       ;change palette
+        db 'P'
+        dw 0x0304                                       ;change palette
+        db 'V'
+        dw 0x0504                                       ;change palette
+        db 'M'
+        dw 0x0c04
+        db '  '
+        db TEXT_CMD_DELAY
+
+        db TEXT_CMD_START_POS,18                        ;set start pos
+        dw 0x0204
         db 'P'
         dw 0x0404
         db 'V'
         dw 0x0604
         db 'M'
+        dw 0x0004                               ;default color
+        db '    '                               ;wait
+        db TEXT_CMD_DELAY
+
+        db TEXT_CMD_START_POS,18                        ;set start pos
+        dw 0x0104                                       ;change palette
+        db 'P'
+        dw 0x0304                                       ;change palette
+        db 'V'
+        dw 0x0504                                       ;change palette
+        db 'M'
         dw 0x0c04
         db '  '
+        db TEXT_CMD_DELAY
 
-        dw 0x0104                               ;party
+        db TEXT_CMD_START_POS,18                        ;set start pos
+        dw 0x0204
         db 'P'
-        dw 0x0304
+        dw 0x0404
         db 'V'
-        dw 0x0504
+        dw 0x0604
         db 'M'
-        dw 0x0004
-        db '    '
+        dw 0x0004                               ;default color
+        db '    '                               ;wait
+        db TEXT_CMD_DELAY
+
+
         db 1                                    ;clean line
 
-        ;----
 
-        db '                BYE  BYE                ',1
-        db '$#$#'
         db 0
 
 
