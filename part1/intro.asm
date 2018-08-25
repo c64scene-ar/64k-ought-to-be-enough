@@ -757,49 +757,52 @@ TEXT_CMD_CLEAR_LINE equ 1
 TEXT_CMD_FLICKER_FREE_OFF equ 2
 TEXT_CMD_FLICKER_FREE_ON equ 3
 TEXT_CMD_CHANGE_PALETTE equ 4
+TEXT_CMD_START_POS equ 5
+TEXT_CMD_DELAY equ 6
 
            ;0123456789012345678901234567890123456789
 ;        db 2                                            ;turn off "flicker-free"
 ;        db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1
 ;        db 3                                            ;re-enable "flicker-free"
-        db '        PUNGAS DE VILLA MARTELLI        ',1
-        db '                PRESENTS                ',1
-        db '  AN INVITE DEMO FOR THE GLORIOUS PCJR  ',1
-        db '  WE INVITE YOU TO THE FLASHPARTY 2018  ',1
-        db '            SEPTEMBER 21,22,23          ',1
-        db 'TO BE HOSTED IN BUENOS AIRES, ARGENTINA.',1
-        db '         (SOUTH OF SOUTH AMERICA)       ',1
-        db '        REMOTE ENTRIES ARE WELCOME!     ',1
-        db 'GREETINGS TO: XXX,YYY,ZZZ,AAA,BBB,CCC   ',1
-        db 'DID WE MENTION THIS INVITE-INTRO RUNS IN',1
-        db 'UNEXPANDED PCJR (ONLY 64KB RAM NEEDED!)?',1
+        db TEXT_CMD_START_POS,8                         ;set start pos
+        db         'PUNGAS DE VILLA MARTELLI'        ,1
+        db TEXT_CMD_START_POS,16                         ;set start pos
+        db                 'PRESENTS'                ,1
+        db TEXT_CMD_START_POS,5                         ;set start pos
+        db      'A DEMO FOR THE SLOWEST PC EVER'     ,1
+        db TEXT_CMD_START_POS,8                         ;set start pos
+        db           'THE 64K-RAM IBM PCJR'          ,1
+           ;0123456789012345678901234567890123456789
+        db    'WHY THE SLOWEST YOU MIGHT WONDER'
+        db 'BECAUSE THE VIDEO AND CPU RAM ARE SHARED',1
+        db 'THAT MEANS THERE IS NO SPECIAL VIDEO RAM',1
+        db 'YOU ONLY HAVE 64K RAM AND YOU HAVE TO USE',1
+        db           'IT FOR CODE, VIDEO, ETC.'
+        db 'AT LEAST IN THE COMMODORE 64 HAS BANKS'   ,1
+        db     'TO SWITH BETWEEN RAM AND VIDEO'
+        db 'BUT NOT IN THE PCJR'
+        db 'ON THE BRIGHT SIDE THE PCJR HAS:',1
+        db '16-COLOR VIDEO MODES',1
+        db '3-VOICE SOUND + NOISE',1
+        db "AND THAT'S IT"
 
 ;       db '              FLASH  PARTY              '
         db '              '                             ;flash party - 1st time
         dw 0x0104                                       ;change palette
-        db 'F'
+        db 'P'
         dw 0x0304                                       ;change palette
-        db 'L'
+        db 'V'
         dw 0x0504                                       ;change palette
-        db 'A'
-        dw 0x0704                                       ;change palette
-        db 'S'
-        dw 0x0904                                       ;change palette
-        db 'H'
-        dw 0x0104                                       ;change palette
-
+        db 'M'
+        dw 0x0c04
         db '  '
 
         dw 0x0204
         db 'P'
         dw 0x0404
-        db 'A'
+        db 'V'
         dw 0x0604
-        db 'R'
-        dw 0x0804
-        db 'T'
-        dw 0x0a04
-        db 'Y'
+        db 'M'
         dw 0x0004                               ;default color
         db '    '                               ;wait
 
@@ -815,28 +818,20 @@ TEXT_CMD_CHANGE_PALETTE equ 4
         ;---2nd time flash party
         db '              '
         dw 0x0204                               ;flash
-        db 'F'
+        db 'P'
         dw 0x0404
-        db 'L'
+        db 'V'
         dw 0x0604
-        db 'A'
-        dw 0x0804
-        db 'S'
-        dw 0x0a04
-        db 'H'
+        db 'M'
         dw 0x0c04
         db '  '
 
         dw 0x0104                               ;party
         db 'P'
         dw 0x0304
-        db 'A'
+        db 'V'
         dw 0x0504
-        db 'R'
-        dw 0x0704
-        db 'T'
-        dw 0x0904
-        db 'Y'
+        db 'M'
         dw 0x0004
         db '    '
         db 1                                    ;clean line
