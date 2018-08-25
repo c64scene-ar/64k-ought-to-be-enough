@@ -1,4 +1,5 @@
-# 64k ought to be enough demo
+# 64k ought to be enough
+A demo for the IBM PCjr
 
 
 ## Compile et al.

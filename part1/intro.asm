@@ -14,7 +14,7 @@ org     0x100
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 0                              ;1=run on emulator
+%define EMULATOR 1                              ;1=run on emulator
 
 GFX_SEG         equ     0xb800                  ;0x1800 for PCJr with 32k video ram
                                                 ;0xb800 for 16k modes
@@ -526,8 +526,12 @@ text_writer_update:
         jz      .disable_flicker_free
         dec     al                              ;al == 3?
         jz      .enable_flicker_free
-        dec     al
+        dec     al                              ;al == 4?
         jz      .change_palette
+        dec     al                              ;al == 5?
+        jz      .set_horizontal_pos
+        dec     al                              ;al == 6?
+        jz      .set_delay
 
         ;fall-through. draw char
 .write:
@@ -553,6 +557,25 @@ text_writer_update:
         mov     [back_fore_color],cx            ;replace palette with new one
         jmp     .read_char                      ;read next char
 
+.set_horizontal_pos:
+        ;bx contains index, re-use it
+        inc     word [text_writer_offset]       ;update index to text
+        inc     bx                              ;update bx (used as index)
+        mov     al,[text_writer_msg + bx]       ;get new horizontal position
+        sub     ah,ah                           ;ax contains new pos
+        shl     ax,1                            ;multiply by 2: each char takes 2 bytes
+                                                ; 1 pixels == 2 bits
+        add     ax,CHAR_OFFSET                  ;update offset
+        mov     word [char_offset], ax
+        jmp     .read_char                      ;read next char
+
+.set_delay:
+        inc     word [text_writer_offset]       ;update index to text
+        inc     bx                              ;update bx (used as index)
+        mov     al,[text_writer_msg + bx]       ;get new horizontal position
+        mov     [text_writer_delay],al          ;set new writer delay (measured in ticks)
+        jmp     .read_char                      ;read next char
+
 .start_again:
         mov     byte [end_condition],1          ;end animation
         ;mov     word [text_writer_offset],0     ;reset offset
@@ -569,6 +592,9 @@ text_writer_clean_bottom_line:
         mov     di,CHAR_OFFSET + 8192
         mov     cx,40*4
         rep stosw
+
+        mov     byte [text_writer_delay],40     ;set a "big" delay after each
+                                                ; paragraph
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -604,8 +630,9 @@ palette_default:        db 0, 15, 0, 15         ;black/white, black/white
 back_fore_color:        dw 0x000f               ;background / foreground colors
                                                 ; used for the big letters
 
+                                                ;   background/foreground
 palette_tbl:            dw 0x000f               ;0: white/black
-                        dw 0x0f00               ;1: black/white
+                        dw 0x090f               ;1: white/blue
                         dw 0x0b0d               ;2: cyan/magenta
                         dw 0x0d0b               ;3: magenta/cyan
                         dw 0x0e09               ;4: yellow/blue
@@ -765,26 +792,40 @@ TEXT_CMD_DELAY equ 6
 ;        db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1
 ;        db 3                                            ;re-enable "flicker-free"
         db TEXT_CMD_START_POS,8                         ;set start pos
-        db         'PUNGAS DE VILLA MARTELLI'        ,1
-        db TEXT_CMD_START_POS,16                         ;set start pos
-        db                 'PRESENTS'                ,1
-        db TEXT_CMD_START_POS,5                         ;set start pos
-        db      'A DEMO FOR THE SLOWEST PC EVER'     ,1
-        db TEXT_CMD_START_POS,8                         ;set start pos
-        db           'THE 64K-RAM IBM PCJR'          ,1
            ;0123456789012345678901234567890123456789
-        db    'WHY THE SLOWEST YOU MIGHT WONDER'
-        db 'BECAUSE THE VIDEO AND CPU RAM ARE SHARED',1
-        db 'THAT MEANS THERE IS NO SPECIAL VIDEO RAM',1
-        db 'YOU ONLY HAVE 64K RAM AND YOU HAVE TO USE',1
-        db           'IT FOR CODE, VIDEO, ETC.'
-        db 'AT LEAST IN THE COMMODORE 64 HAS BANKS'   ,1
-        db     'TO SWITH BETWEEN RAM AND VIDEO'
-        db 'BUT NOT IN THE PCJR'
-        db 'ON THE BRIGHT SIDE THE PCJR HAS:',1
-        db '16-COLOR VIDEO MODES',1
-        db '3-VOICE SOUND + NOISE',1
-        db "AND THAT'S IT"
+        db         'PUNGAS DE VILLA MARTELLI '       ,1
+        db TEXT_CMD_START_POS,16                         ;set start pos
+           ;0123456789012345678901234567890123456789
+        db                 'PRESENTS '               ,1
+        db TEXT_CMD_START_POS,9                         ;set start pos
+           ;0123456789012345678901234567890123456789
+        db          'A DEMO FOR THE '
+        db TEXT_CMD_CHANGE_PALETTE,1                    ;set palette blue/black
+        db                          'IBM PCJR '      ,1
+        db TEXT_CMD_CHANGE_PALETTE,0                    ;set palette black/white
+
+        db TEXT_CMD_START_POS,5                         ;set start pos
+           ;0123456789012345678901234567890123456789
+        db '     A DEMO THAT WORKS IN ANY PCJR '    ,1
+
+        db TEXT_CMD_START_POS,3                         ;set start pos
+           ;0123456789012345678901234567890123456789
+        db '   INCLUDING THE 64K-RAM-ONLY VERSION ' ,1
+
+        db TEXT_CMD_START_POS,3                         ;set start pos
+           ;0123456789012345678901234567890123456789',
+        db    'AND '    ,1
+        db 'BECAUSE THE VIDEO AND CPU RAM ARE SHARED ',1
+        db 'THAT MEANS THERE IS NO SPECIAL VIDEO RAM ',1
+        db 'YOU ONLY HAVE 64K RAM AND YOU HAVE TO USE ',1
+        db           'IT FOR CODE, VIDEO, ETC. '     ,1
+        db 'AT LEAST IN THE COMMODORE 64 HAS BANKS ' ,1
+        db     'TO SWITH BETWEEN RAM AND VIDEO '     ,1
+        db 'BUT NOT IN THE PCJR '                    ,1
+        db 'ON THE BRIGHT SIDE THE PCJR HAS: '       ,1
+        db '16-COLOR VIDEO MODES '                   ,1
+        db '3-VOICE SOUND + NOISE '                  ,1
+        db "AND THAT'S IT "                          ,1
 
 ;       db '              FLASH  PARTY              '
         db '              '                             ;flash party - 1st time
