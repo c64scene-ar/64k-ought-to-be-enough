@@ -518,7 +518,7 @@ text_writer_update:
         mov     al, [text_writer_msg + bx]
 
         mov     cl,al                           ;save al in bl, to be used if drawing char
-        or      al,al                           ;al == 2? last char ?
+        or      al,al                           ;al == 0? last char ?
         jz      .start_again
         dec     al                              ;al == 1?
         jz      text_writer_clean_bottom_line
@@ -570,11 +570,9 @@ text_writer_update:
         jmp     .read_char                      ;read next char
 
 .set_delay:
-        inc     word [text_writer_offset]       ;update index to text
-        inc     bx                              ;update bx (used as index)
-        mov     al,[text_writer_msg + bx]       ;get new horizontal position
-        mov     [text_writer_delay],al          ;set new writer delay (measured in ticks)
-        jmp     .read_char                      ;read next char
+        mov     byte [text_writer_delay],30     ;sets a half-a-second delay
+        ret                                     ;dont' read next char, since it will reset
+                                                ; the delay
 
 .start_again:
         mov     byte [end_condition],1          ;end animation
@@ -592,9 +590,6 @@ text_writer_clean_bottom_line:
         mov     di,CHAR_OFFSET + 8192
         mov     cx,40*4
         rep stosw
-
-        mov     byte [text_writer_delay],40     ;set a "big" delay after each
-                                                ; paragraph
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -632,8 +627,8 @@ back_fore_color:        dw 0x000f               ;background / foreground colors
 
                                                 ;   background/foreground
 palette_tbl:            dw 0x000f               ;0: white/black
-                        dw 0x090f               ;1: white/blue
-                        dw 0x0b0d               ;2: cyan/magenta
+                        dw 0x010f               ;1: white/blue
+                        dw 0x040f               ;2: cyan/magenta
                         dw 0x0d0b               ;3: magenta/cyan
                         dw 0x0e09               ;4: yellow/blue
                         dw 0x090e               ;5: blue/yellow
@@ -793,42 +788,107 @@ TEXT_CMD_DELAY equ 6
 ;        db 3                                            ;re-enable "flicker-free"
         db TEXT_CMD_START_POS,8                         ;set start pos
            ;0123456789012345678901234567890123456789
-        db         'PUNGAS DE VILLA MARTELLI '       ,1
+        db         'PUNGAS DE VILLA MARTELLI '
+        db TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
+
         db TEXT_CMD_START_POS,16                         ;set start pos
            ;0123456789012345678901234567890123456789
-        db                 'PRESENTS '               ,1
-        db TEXT_CMD_START_POS,9                         ;set start pos
+        db                 'PRESENTS '
+        db TEXT_CMD_DELAY,TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
+
+        db TEXT_CMD_START_POS,8                         ;set start pos
            ;0123456789012345678901234567890123456789
-        db          'A DEMO FOR THE '
+        db         'A DEMO FOR THE '
         db TEXT_CMD_CHANGE_PALETTE,1                    ;set palette blue/black
-        db                          'IBM PCJR '      ,1
+        db                         'IBM PCJR%& '
+        db TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
         db TEXT_CMD_CHANGE_PALETTE,0                    ;set palette black/white
 
-        db TEXT_CMD_START_POS,5                         ;set start pos
+        db TEXT_CMD_START_POS,15                        ;set start pos
            ;0123456789012345678901234567890123456789
-        db '     A DEMO THAT WORKS IN ANY PCJR '    ,1
+        db                '%&ANY PCJR '
+        db TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
 
         db TEXT_CMD_START_POS,3                         ;set start pos
            ;0123456789012345678901234567890123456789
-        db '   INCLUDING THE 64K-RAM-ONLY VERSION ' ,1
+        db    'INCLUDING THE 64K-RAM-ONLY VERSION '
+        db TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
 
-        db TEXT_CMD_START_POS,3                         ;set start pos
+        db TEXT_CMD_START_POS,8                         ;set start pos
            ;0123456789012345678901234567890123456789',
-        db    'AND '    ,1
-        db 'BECAUSE THE VIDEO AND CPU RAM ARE SHARED ',1
-        db 'THAT MEANS THERE IS NO SPECIAL VIDEO RAM ',1
-        db 'YOU ONLY HAVE 64K RAM AND YOU HAVE TO USE ',1
-        db           'IT FOR CODE, VIDEO, ETC. '     ,1
-        db 'AT LEAST IN THE COMMODORE 64 HAS BANKS ' ,1
-        db     'TO SWITH BETWEEN RAM AND VIDEO '     ,1
-        db 'BUT NOT IN THE PCJR '                    ,1
-        db 'ON THE BRIGHT SIDE THE PCJR HAS: '       ,1
-        db '16-COLOR VIDEO MODES '                   ,1
-        db '3-VOICE SOUND + NOISE '                  ,1
-        db "AND THAT'S IT "                          ,1
+        db         'WHICH HAPPENS TO BE%& '
+        db TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
 
-;       db '              FLASH  PARTY              '
-        db '              '                             ;flash party - 1st time
+        db TEXT_CMD_START_POS,9                         ;set start pos
+           ;0123456789012345678901234567890123456789',
+        db          '%&THE SLOWEST PC EVER! '
+        db TEXT_CMD_START_POS,20
+        db '! '
+        db TEXT_CMD_START_POS,20
+        db '! '
+        db TEXT_CMD_START_POS,20
+        db '! '
+        db TEXT_CMD_START_POS,20
+        db '! '
+        db TEXT_CMD_START_POS,20
+        db '! '
+        db TEXT_CMD_START_POS,20
+        db '! '
+        db TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
+
+
+        db TEXT_CMD_START_POS,4                         ;set start pos
+           ;0123456789012345678901234567890123456789',
+        db     'EVEN SLOWER THAN THE IBM PC 5150 '
+        db TEXT_CMD_DELAY, TEXT_CMD_DELAY, TEXT_CMD_CLEAR_LINE
+
+        db TEXT_CMD_START_POS,18                        ;set start pos
+           ;0123456789012345678901234567890123456789',
+        db                   'AND%&'
+        db TEXT_CMD_DELAY,TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
+           ;0123456789012345678901234567890123456789',
+        db 'DID YOU KNOW THAT EVEN THE COMMODORE 64 '
+        db TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
+
+        db 'HAS MORE MEMORY THAN THE 64K-ONLY PCJR? '
+        db TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
+
+        db TEXT_CMD_START_POS,10                         ;set start pos
+           ;0123456789012345678901234567890123456789',
+        db           'LET ME SAY THAT AGAIN: '
+        db TEXT_CMD_DELAY
+        db TEXT_CMD_START_POS,10                         ;set start pos
+        db           '                       '
+        db TEXT_CMD_CLEAR_LINE
+
+        db TEXT_CMD_CHANGE_PALETTE,2
+           ;0123456789012345678901234567890123456789',
+        db ' THE 64K-RAM-ONLY PCJR IS SO BAD THAT%& '
+        db TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
+
+           ;0123456789012345678901234567890123456789',
+        db ' EVEN THE COMMODORE 64 HAS MORE MEMORY! '
+        db TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
+        db TEXT_CMD_CHANGE_PALETTE,0
+
+        db TEXT_CMD_START_POS,4                         ;set start pos
+           ;0123456789012345678901234567890123456789',
+        db     "I BET YOU DIDN'T KNOW ABOUT THAT"
+        db TEXT_CMD_DELAY
+        db TEXT_CMD_CLEAR_LINE
+
+        db TEXT_CMD_START_POS,2                         ;set start pos
+           ;0123456789012345678901234567890123456789',
+        db   'ON THE POSITIVE SIDE THE PCJR HAS%& '
+        db TEXT_CMD_DELAY
+        db TEXT_CMD_CLEAR_LINE
+
+           ;0123456789012345678901234567890123456789',
+        db ' %&A 320 X 200 WITH 16-COLOR VIDEO MODE '
+        db TEXT_CMD_DELAY
+        db TEXT_CMD_CLEAR_LINE
+
+        db TEXT_CMD_START_POS,18                        ;set start pos
         dw 0x0104                                       ;change palette
         db 'P'
         dw 0x0304                                       ;change palette
@@ -838,6 +898,27 @@ TEXT_CMD_DELAY equ 6
         dw 0x0c04
         db '  '
 
+        db TEXT_CMD_START_POS,18                        ;set start pos
+        dw 0x0204
+        db 'P'
+        dw 0x0404
+        db 'V'
+        dw 0x0604
+        db 'M'
+        dw 0x0004                               ;default color
+        db '    '                               ;wait
+
+        db TEXT_CMD_START_POS,18                        ;set start pos
+        dw 0x0104                                       ;change palette
+        db 'P'
+        dw 0x0304                                       ;change palette
+        db 'V'
+        dw 0x0504                                       ;change palette
+        db 'M'
+        dw 0x0c04
+        db '  '
+
+        db TEXT_CMD_START_POS,18                        ;set start pos
         dw 0x0204
         db 'P'
         dw 0x0404
@@ -851,7 +932,7 @@ TEXT_CMD_DELAY equ 6
         db 1                                    ;clean line
 
         db 2                                    ;turn off "flicker-free"
-        db '$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%',1         ;bat animation
+        db '$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#',1         ;bat animation
         db 3                                    ;turn on "flicker-free" again
 
         db 1                                    ;clean line
@@ -880,7 +961,7 @@ TEXT_CMD_DELAY equ 6
         ;----
 
         db '                BYE  BYE                ',1
-        db '$%$%'
+        db '$#$#'
         db 0
 
 
