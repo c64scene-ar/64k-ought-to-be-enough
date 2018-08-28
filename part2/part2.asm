@@ -28,6 +28,9 @@ CHARSET_CHAR_WIDTH      equ 24
 CHARSET_CHAR_HEIGHT     equ 32
 CHARSET_COLS_PER_CHAR   equ 6                   ;each char has 6 columns
 
+CHARSET_SPACE           equ charset + (192 * 3) ;space is defined in position 3
+                                                ; and each char takes 192 bytes
+
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 section .text
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -95,25 +98,8 @@ start:
         out     0xf2,al                         ;turn off floppy motor
         mov     ds,bp                           ;restore ds
 
-        ;delay
-        mov     cx,0xf000                       ;delay to display the graphics for a few ms
-.l0:
-        mul     ax
-        mul     ax
-        mul     ax
-        mul     ax
-        loop    .l0
-
         push    cs
-        pop     ds                              ;ds=cs
-        mov     si,image1                       ;ds:si source
-
-        mov     ax,GFX_SEG
-        mov     es,ax                           ;es=GFX seg
-        sub     di,di                           ;es:di destination
-
-        call    dzx7_speed                      ;uncompress image in GFX segment
-
+        pop     ds
 
         mov     ax,pvm_song                     ;start music offset
         call    music_init
@@ -217,15 +203,28 @@ scroll_anim:
         mov     bl,byte [scroll_text+bx]        ;char to print
 
         cmp     bl,0x20                         ;special case for space
-        jnz     .is_regular_char
+        jnz     .is_alphanumeric
 
         ; Is space
-        mov     word [scroll_char_offset],charset_space
+        mov     word [scroll_char_offset],CHARSET_SPACE
         jmp     .render_bits
 
 
-.is_regular_char:
-        sub     bl,0x41                         ;offset to 0. first char is 'A'
+.is_alphanumeric:
+        cmp     bl,0x40                         ;is char [A-Z] ?
+        jb      .is_digit
+
+.is_char:
+        sub     bl,0x32                         ;offset to 15. first char is 'A'
+                                                ; positions 0-14 reserved to digits, dot and space et al.
+                                                ; so use 0x41 - 15 = 0x32
+        jmp     .process_alphanumeric
+
+.is_digit:                                      ;is number [0-9], dot or space
+        sub     bl,0x2c                         ; ',' is 0x2c and is the first char
+        ; fall-trhough                          ; and 'space' is placed in '/' position
+
+.process_alphanumeric:
         sub     bh,bh
 
         push    bx                              ;save bx
@@ -275,7 +274,7 @@ scroll_anim:
         dec     byte [scroll_force_spacer]      ;next should be regular char
         inc     byte [scroll_char_col]          ;set bit idx to 1, so only one
                                                 ; space column is rendered
-        mov     word [scroll_char_offset],charset_space    ;reset cache offset
+        mov     word [scroll_char_offset],CHARSET_SPACE         ;reset cache offset
                                                 ; so that it points to an empty char
         ret                                     ;end.
 
@@ -298,9 +297,6 @@ scroll_anim:
 pvm_song:
         incbin 'part2/uctumi-libertango.pvm'
 
-image1:
-        incbin 'part2/alakran-cara.raw.zx7'
-
 charset:
         incbin 'part2/charset_bigfont.bin'              ;letters A-Z
 charset_numbers:
@@ -311,10 +307,13 @@ end_condition:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; scroll related
 scroll_text:
-        db 'THE PCJR THAT CAME WITH ONLY 64 KILOBYTES OF RAM HAS ALL '
-        db 'THE HI-RES RAM VIDEO MODES DISABLED IN BIOS '
-        db '  '
-        db 'IT KIND OF MAKE SENSE WHEN YOU THINK ABOUT IT '
+        db 'WE SAID THAT THE GOOD THING OF THE PCJR WAS THAT IT'
+        db 'HAS A 320 X 200 WITH 16 COLORS VIDEO MODE.     '
+        db 'WELL... WE LIED. THAT VIDEO MODE IS DISABLED IN THE 64K-RAM PCJR. '
+        db 'AND WHEN YOU THINK ABOUT IT, IT MAKES SENSE TO HAVE IT DISABLED '
+        db 'SINCE THE VIDEO RAM AND THE CPU RAM ARE SHARED IN THE PCJR. '
+        db 'THAT CAUSES TWO VERY BAD THINGS. '
+        db 'FIRSTLY, THERE ARE NOT EXTRA RAM '
         db '  '
         db 'THE MACHINE HAD ONLY 64K RAM THAT HAD TO BE SHARED WITH THE VIDEO '
         db 'CARD '
@@ -370,13 +369,10 @@ scroll_force_spacer:
                                                 ; rendering a char.
 scroll_char_offset:                             ;Pointer to the char definition. Will get
         dw      0                               ; updated after each pass.
-charset_space:
-        resb    192                             ;the 192 bytes that it takes to represent
-                                                ; a space
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; includes
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %include 'common/utils.asm'
 %include 'common/music_player.asm'
-%include 'common/zx7_8086.asm'
+;%include 'common/zx7_8086.asm'
 

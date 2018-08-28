@@ -47,7 +47,7 @@ part2:
 
 part2a: part2
 	@echo "Appending GFX to .com..."
-	@python3 tools/append_gfx_to_com.py part2/image_320_200.raw -c bin/part2.com -o bin/part2gfx.com -s 32
+	@python3 tools/append_gfx_to_com.py part2/alakran-cara.raw -c bin/part2.com -o bin/part2gfx.com -s 32
 	@echo "Done."
 
 test_part2: part2a
@@ -105,8 +105,8 @@ res:
 	python3 tools/parse_55_segment_font.py -o part1/segment55_table.asm
 	python3 tools/parse_ibm_charset.py -m 4 res/tandy_1000_hx_charset-charset.bin -o part1/charset_0x20_0x60.bin
 	@#python3 tools/parse_ibm_charset.py -m 9 res/arleka_font_caren_remix0C-charset.bin -o part2/charset_0x00_0x40.bin
-	python3 tools/convert_gfx_to_bios_format.py -g 9 -o res/alakran-cara.raw "res/alakran-cara.png"
-	python3 tools/convert_gfx_to_bios_format.py -g 9 -o part2/image_320_200.raw res/part2_image.png
+	python3 tools/convert_gfx_to_bios_format.py -g 9 -o part2/alakran-cara.raw "res/alakran-cara.png"
+	@#python3 tools/convert_gfx_to_bios_format.py -g 9 -o part2/image_320_200.raw res/part2_image.png
 	python3 tools/convert_gfx_to_bios_format.py -g 8 -o part1/image_320_200.raw res/part1_image.png
 	python3 tools/parse_big_charset.py -o part2/charset_bigfont.bin res/part2_font_arleka-4colors.png
 	@#python3 tools/convert_gfx_to_bios_format.py -g 10 -o src/flashparty.bin res/flashparty.data
@@ -131,7 +131,7 @@ res:
 	@#lz4 -9 -f res/2018.raw src/2018.raw.lz4
 	@#lz4 -9 -f res/tango_silueta.raw src/tango_silueta.raw.lz4
 	@#lz4 -9 -f res/satelite.raw src/satelite.raw.lz4
-	zx7 -f res/alakran-cara.raw part2/alakran-cara.raw.zx7
+	@#zx7 -f res/alakran-cara.raw part2/alakran-cara.raw.zx7
 	@echo "Done"
 
 dis:
