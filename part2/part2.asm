@@ -14,7 +14,7 @@ org     0x100
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 1                              ;1=run on emulator
+%define EMULATOR 0                              ;1=run on emulator
 
 GFX_SEG         equ     0x0800                  ;graphics segment (32k offset)
 
@@ -307,37 +307,35 @@ end_condition:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; scroll related
 scroll_text:
-        db 'WE SAID THAT THE GOOD THING OF THE PCJR WAS THAT IT '
+        db '... WE SAID THAT THE GOOD THING OF THE PCJR WAS THAT IT '
         db 'HAS A 320 X 200 WITH 16 COLORS VIDEO MODE.     '
         db 'WELL... WE LIED. THAT VIDEO MODE IS DISABLED IN THE 64K-RAM PCJR. '
         db 'AND WHEN YOU THINK ABOUT IT, IT MAKES SENSE. '
         db 'THE VIDEO RAM AND THE CPU RAM ARE SHARED IN THE PCJR. '
-        db 'THAT CAUSES TWO VERY BAD THINGS: '
-        db 'FIRSTLY, THERE IS NO VIDEO-RAM IN THE PCJR, LIKE IN THE CGA VIDEO CARD. '
+        db 'THAT CAUSES TWO VERY BAD THINGS:   '
+        db 'FIRST: THERE IS NO VIDEO-RAM IN THE PCJR. '
         db 'THE CPU RAM IS USED FOR THE VIDEO AS WELL. SO, IF YOU USE 16K-RAM VIDEO MODE, '
-        db 'YOU ONLY HAVE 48K-RAM LEFT FOR YOUR PROGRAM. '
+        db 'YOU ONLY HAVE 48K-RAM LEFT FOR THE REST.'
         db '  '
-        db 'AND SECONDLY, EVERYTIME THE VIDEO CARD ACCESSES THE RAM, '
-        db 'IT ADDS SOME WAIT-STATES, '
-        db 'MAKING EVERYTHING UP TO 2.5 TIMES SLOWER. '
+        db 'AND THE SECOND THING IS: EVERYTIME THE VIDEO CARD ACCESSES THE RAM, '
+        db 'IT ADDS SOME WAIT-STATES, MAKING THE MACHINE UP TO 2.5 TIMES SLOWER. '
 
         db '    '
-        db 'THAT IS WHY WE LIKE THE 64K-RAM PCJR: THERE IS NO PC AS RAM-CONSTRAINED, '
-        db 'AND SLOW AS THE 64K-RAM PCJR. '
+        db 'THERE IS NO PC AS RAM-CONSTRAINED, AND SLOW AS THE 64K-RAM PCJR. '
+        db 'AND THAT IS WHY WE LIKE IT. '
         db '    '
 
         db 'GOING BACK THE VIDEO MODES... '
         db 'THE 320 X 200 WITH 16 COLORS VIDEO MODE TAKES 32K-RAM. SO ONLY 32K-RAM '
-        db 'IS LEFT FOR EVERYTHING ELSE: INTERRUPT VECTOR TABLE, BIOS VARIABLES, '
+        db 'IS LEFT FOR THE REST: INTERRUPT VECTOR TABLE, BIOS VARIABLES, '
         db ' AND DOS. '
-        db 'AFTER THAT, YOU WILL ONLY HAVE ABOUT 10K RAM LEFT FOR YOUR PROGRAM. '
-        db '... AND THAT IS PRETTY MUCH WHY IT IS DISABLED. '
+        db 'AFTER THAT, YOU WILL ONLY HAVE ABOUT 10K RAM LEFT FOR YOUR PROGRAM.'
+        db '... AND THAT IS PRETTY MUCH WHY THE VIDEO MODE IS DISABLED. '
 
         db '     '
 
         db 'BUT AS YOU CAN SEE IN THIS PART, YOU CAN STILL USE THE 320 X 200 WITH 16 COLORS '
-        db 'VIDEO MODE... YOU JUST NEED TO TELL BIOS '
-        db 'THE MACHINE HAS 128K RAM OR MORE, AND IT WILL LET YOU USE ANY VIDEO MODE. '
+        db 'VIDEO MODE... YOU JUST NEED TO BYPASS BIOS.'
 
         db '      '
         db 'ONE WONDERS WHAT WAS THE MARKET FOR THE 64K-RAM PCJR   '
