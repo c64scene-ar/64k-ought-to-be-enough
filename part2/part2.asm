@@ -1,5 +1,5 @@
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; "Ought to be enough" - Part 2
+; "64K RAM Ought to be enough" - Part 2
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; Pungas de Villa Martelli - http://pungas.space
 ;
@@ -222,7 +222,7 @@ scroll_anim:
 
 .is_digit:                                      ;is number [0-9], dot or space
         sub     bl,0x2c                         ; ',' is 0x2c and is the first char
-        ; fall-trhough                          ; and 'space' is placed in '/' position
+        ; fall-through                          ; and 'space' is placed in '/' position
 
 .process_alphanumeric:
         sub     bh,bh
@@ -335,10 +335,10 @@ scroll_text:
         db '     '
 
         db 'BUT AS YOU CAN SEE IN THIS PART, YOU CAN STILL USE THE 320 X 200 WITH 16 COLORS '
-        db 'VIDEO MODE... YOU JUST NEED TO BYPASS BIOS.'
+        db 'VIDEO MODE... YOU JUST NEED TO BYPASS SOME BIOS CHECKS.'
 
         db '      '
-        db 'ONE WONDERS WHAT WAS THE MARKET FOR THE 64K-RAM PCJR   '
+        db 'ONE WONDERS WHAT WAS THE MARKET FOR THE 64K-RAM PCJR.   '
         db '              '
 SCROLL_TEXT_LEN equ $-scroll_text
 
