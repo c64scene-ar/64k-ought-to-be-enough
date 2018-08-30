@@ -30,7 +30,7 @@ clean:
 
 part1:
 	@echo "Generating part1.com"
-	nasm -Wall part1/intro.asm -fbin -o bin/part1.com
+	nasm -Wall part1/part1.asm -fbin -o bin/part1.com
 
 part1a: part1
 	@echo "Appending GFX to .com..."
