@@ -145,5 +145,5 @@ end_condition:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %include 'common/utils.asm'
 %include 'common/music_player.asm'
-;%include 'common/zx7_8086.asm'
+%include 'common/draw_line_320_200_16color.asm'
 

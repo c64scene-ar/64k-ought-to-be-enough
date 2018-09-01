@@ -3,7 +3,7 @@
 TARGET_NAME_DETECT = detect.com
 TARGET_DETECT = bin/${TARGET_NAME_DETECT}
 ASM = nasm
-ASMFLAGS = -fobj -Wall
+ASMFLAGS = -fobj -Wall -Ox
 LD = alink
 LDFLAGS = -oCOM -m
 
@@ -30,7 +30,7 @@ clean:
 
 part1:
 	@echo "Generating part1.com"
-	nasm -Wall part1/part1.asm -fbin -o bin/part1.com
+	nasm -Ox -Wall part1/part1.asm -fbin -o bin/part1.com
 
 part1a: part1
 	@echo "Appending GFX to .com..."
@@ -43,7 +43,7 @@ test_part1: part1a
 
 part2:
 	@echo "Generating part2.com"
-	nasm -Wall part2/part2.asm -fbin -o bin/part2.com
+	nasm -Ox -Wall part2/part2.asm -fbin -o bin/part2.com
 
 part2a: part2
 	@echo "Appending GFX to .com..."
@@ -56,7 +56,7 @@ test_part2: part2a
 
 part3:
 	@echo "Generating part3.com"
-	nasm -Wall part3/part3.asm -fbin -o bin/part3.com
+	nasm -Ox -Wall part3/part3.asm -fbin -o bin/part3.com
 
 part3a: part3
 	@echo "Appending GFX to .com..."
@@ -69,7 +69,7 @@ test_part3: part3a
 
 runme:
 	@echo "Generating runme.com"
-	nasm -Wall runme/runme.asm -fbin -o bin/runme.com
+	nasm -Ox -Wall runme/runme.asm -fbin -o bin/runme.com
 
 test_runme: runme
 	@echo "Running..."
@@ -93,7 +93,7 @@ fat_image: runme detect part1a part2a
 	dd if=boot_loader/fat_image.360 of=boot_loader/fat_without_boot.bin bs=512 skip=1 count=719
 
 boot: fat_image
-	nasm -Wall boot_loader/boot_loader.asm -fbin -o boot_loader/boot.bin
+	nasm -Ox -Wall boot_loader/boot_loader.asm -fbin -o boot_loader/boot.bin
 	cat boot_loader/boot.bin boot_loader/fat_without_boot.bin > bin/demo_pvm.360
 
 test_boot: boot
