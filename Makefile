@@ -7,9 +7,8 @@ ASMFLAGS = -fobj -Wall -Ox
 LD = alink
 LDFLAGS = -oCOM -m
 
-detect: $(TARGET_DETECT)
-
 all: res test_boot
+detect: $(TARGET_DETECT)
 
 SRCFILES_DETECT = detect/detect.asm common/pztimer.asm
 OBJECTS_DETECT = $(patsubst %.asm, %.o, $(SRCFILES_DETECT))
@@ -78,7 +77,7 @@ test_runme: runme
 test_detect: detect
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/" -c "c:" -c dir
 
-fat_image: runme detect part1a part2a
+fat_image: runme detect part1a part2a part3a
 	@echo "Generating FAT image with needed files"
 	-rm -f boot_loader/fat_image.360
 	sudo mkfs.msdos -n PVM_BOOT -C boot_loader/fat_image.360 360
@@ -88,6 +87,7 @@ fat_image: runme detect part1a part2a
 	sudo cp bin/detect.com /media/floppy/
 	sudo cp bin/part1gfx.com /media/floppy/part1.com
 	sudo cp bin/part2gfx.com /media/floppy/part2.com
+	sudo cp bin/part3gfx.com /media/floppy/part3.com
 	sudo umount /media/floppy
 	sudo rmdir /media/floppy
 	dd if=boot_loader/fat_image.360 of=boot_loader/fat_without_boot.bin bs=512 skip=1 count=719
