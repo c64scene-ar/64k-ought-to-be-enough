@@ -1,16 +1,16 @@
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
-; Name:     PixelAddr04
+; Name:     PixelAddr16
 ;
 ; Function: Determine buffer address of pixel in 320x200 4-color mode
 ;
-; Caller:   AX = y-coordinate (0-199)
-;       BX = x-coordinate (0-319)
+; Caller:       AX = y-coordinate (0-199)
+;               BX = x-coordinate (0-319)
 ;
-; Returns:  AH = bit mask
-;       BX = byte offset in buffer
-;       CL = number of bits to shift left
-;       ES = video buffer segment
+; Returns:      AH = bit mask
+;               BX = byte offset in buffer
+;               CL = number of bits to shift left
+;               ES = video buffer segment
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;

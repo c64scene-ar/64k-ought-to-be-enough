@@ -42,11 +42,11 @@ start:
 ;        mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
 ;        int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
 
-        mov     ax,0x0004                       ;320x200 4 colors
-        int     0x10
 
         push    cs
         pop     ds
+
+        call    set_vid_160_100_16
 
         call    scroll_anim
 
@@ -172,6 +172,27 @@ scroll_anim:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; set_vid_160_100_16
+; Trixter's 160x100 @ 16 color video mode
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+set_vid_160_100_16:
+        mov     ax,0x0008                       ;160x200x16 mode
+        int     0x10
+        mov     ax,0x0580                       ;grab CRT/CPU page registers
+        int     0x10
+
+        ; We need to set CRT and CPU page registers with "wrong" video addressing
+        ; bits to get the double-pixels to show up}
+        sub     al,al                           ;addrssing mode
+        mov     cl,3
+        shl     bl,cl                           ;cpu page into bits 5-3
+        or      al,bl                           ;vv888???
+        or      al,bh                           ;vv888ccc
+        mov     dx,0x03df
+        out     dx,al                           ;set CRT and CPU page registers
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;DATA
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 pvm_song:
@@ -188,5 +209,5 @@ line_color:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %include 'common/utils.asm'
 %include 'common/music_player.asm'
-%include 'common/draw_line_320_200_4color.asm'
+%include 'common/draw_line_160_200_16color.asm'
 
