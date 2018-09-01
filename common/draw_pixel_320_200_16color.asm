@@ -25,22 +25,22 @@
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 
 
-OriginOffset    EQU 0       ; byte offset of (0,0)
-VideoBufferSeg  EQU 0B800h
+OriginOffset    equ 0       ; byte offset of (0,0)
+VideoBufferSeg  equ 0xb800
 
 PixelAddr04:
         mov     cl,bl       ; CL := low-order byte of x
 
-        xchg    ah,al       ; AX := 100h * y
-        shr     ax,1        ; AL := 80h * (y&1)
-        add     bh,al       ; BX := x + 8000h*(y&1)
-        xor     al,al       ; AX := 100h*(y/2)
-        add     bx,ax       ; BX := x + 8000h*(y&1) + 100h*(y/2)
+        xchg    ah,al       ; AX := 0x100 * y
+        shr     ax,1        ; AL := 0x80 * (y&1)
+        add     bh,al       ; BX := x + 0x8000*(y&1)
+        xor     al,al       ; AX := 0x100*(y/2)
+        add     bx,ax       ; BX := x + 0x8000*(y&1) + 0x100*(y/2)
         shr     ax,1
-        shr     ax,1        ; AX := 40h*(y/2)
-        add     bx,ax       ; BX := x + 8000h*(y&1) + 140h*(y/2)
+        shr     ax,1        ; AX := 0x40*(y/2)
+        add     bx,ax       ; BX := x + 0x8000*(y&1) + 0x140*(y/2)
         shr     bx,1
-        shr     bx,1        ; BX := x/4 + 2000h*(y&1) + 50h*(y/2)
+        shr     bx,1        ; BX := x/4 + 0x2000*(y&1) + 0x50*(y/2)
         add     bx,OriginOffset ; BX := byte offset in video buffer
 
         mov     ax,VideoBufferSeg

@@ -4,13 +4,12 @@
 ;
 ; Function: Draw a line in 320x200 16-color mode
 ;
-; Caller:   Microsoft C:
-;
-;           void Line04(x1,y1,x2,y2,n);
-;
-;           int x1,y1,x2,y2;    /* pixel coordinates */
-;
-;           int n;              /* pixel value */
+; Caller:
+;       ax =    x1
+;       bl =    y1
+;       cx =    x2
+;       dx =    y2
+;       bp =    color
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
@@ -24,142 +23,137 @@
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 
-%define ARGx1       [bp+4]      ; stack frame addressing
-%define ARGy1       [bp+6]
-%define ARGx2       [bp+8]
-%define ARGy2       [bp+10]
-%define ARGn        [bp+12]
-
-
 ByteOffsetShift EQU 2       ; used to convert pixels to byte offset
 
 Line04:
-        push    bp                      ; preserve caller registers
-        mov     bp,sp
-        sub     sp,8                    ; stack space for local variables
         push    si
         push    di
 
+        mov     [ARGx1],ax              ;tmp for x1
+        mov     [ARGy1],bx              ;tmp for both y1 and y2
+        mov     [ARGx2],cx              ;tmp for x2
+        mov     [ARGy2],dx              ;tmp for x2
+        mov     dx,bp
+        mov     [ARGn],dl               ;tmp for color
 
-        mov     si,2000h                    ; increment for video buffer interleave
-        mov     di,80-2000h                 ; increment from last to first interleave
+        mov     si,0x2000               ; increment for video buffer interleave
+        mov     di,80-0x2000            ; increment from last to first interleave
 
-        mov     cx,ARGx2
-        sub     cx,ARGx1    ; CX := x2 - x1
-        jz      VertLine04  ; jump if vertical line
+        sub     cx,ax                   ; CX := x2 - x1
+        jz      VertLine04              ; jump if vertical line
 
 ; force x1 < x2
 
-        jns     L01     ; jump if x2 > x1
+        jns     L01                     ; jump if x2 > x1
 
-        neg     cx      ; CX := x1 - x2
+        neg     cx                      ; CX := x1 - x2
 
-        mov     bx,ARGx2    ; exchange x1 and x2
-        xchg    bx,ARGx1
-        mov     ARGx2,bx
+        mov     bx,[ARGx2]              ; exchange x1 and x2
+        xchg    bx,[ARGx1]
+        mov     [ARGx2],bx
 
-        mov     bx,ARGy2    ; exchange y1 and y2
-        xchg    bx,ARGy1
-        mov     ARGy2,bx
+        mov     bx,[ARGy2]               ; exchange y1 and y2
+        xchg    bx,[ARGy1]
+        mov     [ARGy2],bx
 
 ; calculate dy = ABS(y2-y1)
 
-L01:    mov     bx,ARGy2
-        sub     bx,ARGy1    ; BX := y2 - y1
+L01:    mov     bx,[ARGy2]
+        sub     bx,[ARGy1]              ;BX := y2 - y1
         jnz     L02
 
-        jmp     HorizLine04 ; jump if horizontal line
+        jmp     HorizLine04             ; jump if horizontal line
 
 L02:    jns     L03
 
-        neg     bx      ; BX := y1 - y2
-        neg     si      ; negate increments for buffer interleave
+        neg     bx                      ; BX := y1 - y2
+        neg     si                      ; negate increments for buffer interleave
         neg     di
-        xchg    si,di       ; exchange increments
+        xchg    si,di                   ; exchange increments
 
 ; select appropriate routine for slope of line
 
-L03:    mov     [VARleafincr],di  ; save increment for buffer interleave
+L03:    mov     [VARleafincr],di        ; save increment for buffer interleave
 
         mov     word [VARroutine],LoSlopeLine04
         cmp     bx,cx
-        jle     L04     ; jump if dy <= dx (slope <= 1)
+        jle     L04                     ; jump if dy <= dx (slope <= 1)
         mov     word [VARroutine],HiSlopeLine04
-        xchg    bx,cx       ; exchange dy and dx
+        xchg    bx,cx                   ; exchange dy and dx
 
 ; calculate initial decision variable and increments
 
-L04:    shl     bx,1        ; BX := 2 * dy
-        mov     [VARincr1],bx ; incr1 := 2 * dy
+L04:    shl     bx,1                    ; BX := 2 * dy
+        mov     [VARincr1],bx           ; incr1 := 2 * dy
         sub     bx,cx
-        mov     di,bx       ; DI := d = 2 * dy - dx
+        mov     di,bx                   ; DI := d = 2 * dy - dx
         sub     bx,cx
-        mov     [VARincr2],bx ; incr2 := 2 * (dy - dx)
+        mov     [VARincr2],bx           ; incr2 := 2 * (dy - dx)
 
 ; calculate first pixel address
 
-        push    cx              ; preserve this register
-        mov     ax,ARGy1        ; AX := y
-        mov     bx,ARGx1        ; BX := x
-        call    PixelAddr04     ; AH := bit mask
-                                ; ES:BX -> buffer
-                                ; CL := # bits to shift left
+        push    cx                      ; preserve this register
+        mov     ax,[ARGy1]              ; AX := y
+        mov     bx,[ARGx1]              ; BX := x
+        call    PixelAddr04             ; AH := bit mask
+                                        ; ES:BX -> buffer
+                                        ; CL := # bits to shift left
 
-        mov     al,ARGn         ; AL := unshifted pixel value
-        shl     ax,cl           ; AH := bit mask in proper position
-                                ; AL := pixel value in proper position
+        mov     al,[ARGn]               ; AL := unshifted pixel value
+        shl     ax,cl                   ; AH := bit mask in proper position
+                                        ; AL := pixel value in proper position
 
-        mov     dx,ax           ; DH := bit mask
-                                ; DL := pixel value
-        not     dh              ; DH := inverse bit mask
+        mov     dx,ax                   ; DH := bit mask
+                                        ; DL := pixel value
+        not     dh                      ; DH := inverse bit mask
 
-        pop     cx      ; restore this register
-        inc     cx      ; CX := # of pixels to draw
+        pop     cx                      ; restore this register
+        inc     cx                      ; CX := # of pixels to draw
 
-        test    bx,2000h    ; set zero flag if BX in 1st interleave
+        test    bx,0x2000               ; set zero flag if BX in 1st interleave
         jz      L05
 
-        xchg    si,[VARleafincr]  ; exchange increment values if 1st pixel
-                    ;  lies in 1st interleave
+        xchg    si,[VARleafincr]        ; exchange increment values if 1st pixel
+                                        ;  lies in 1st interleave
 
-L05:    jmp     [VARroutine]  ; jump to appropriate routine for slope
+L05:    jmp     [VARroutine]            ; jump to appropriate routine for slope
 
 
 ; routine for vertical lines
 
 VertLine04:
-        mov     ax,ARGy1    ; AX := y1
-        mov     bx,ARGy2    ; BX := y2
+        mov     ax,[ARGy1]              ; AX := y1
+        mov     bx,[ARGy2]              ; BX := y2
         mov     cx,bx
-        sub     cx,ax       ; CX := dy
-        jge     L31     ; jump if dy >= 0
+        sub     cx,ax                   ; CX := dy
+        jge     L31                     ; jump if dy >= 0
 
-        neg     cx      ; force dy >= 0
-        mov     ax,bx       ; AX := y2
+        neg     cx                      ; force dy >= 0
+        mov     ax,bx                   ; AX := y2
 
-L31:    inc     cx      ; CX := # of pixels to draw
-        mov     bx,ARGx1    ; BX := x
-        push    cx      ; preserve this register
-        call    PixelAddr04 ; AH := bit mask
-                    ; ES:BX -> video buffer
-                    ; CL := # bits to shift left
-        mov     al,ARGn     ; AL := pixel value
-        shl     ax,cl       ; AH := bit mask in proper position
-                    ; AL := pixel value in proper position
-        not     ah      ; AH := inverse bit mask
-        pop     cx      ; restore this register
+L31:    inc     cx                      ; CX := # of pixels to draw
+        mov     bx,[ARGx1]              ; BX := x
+        push    cx              ; preserve this register
+        call    PixelAddr04     ; AH := bit mask
+                                ; ES:BX -> video buffer
+                                ; CL := # bits to shift left
+        mov     al,[ARGn]       ; AL := pixel value
+        shl     ax,cl           ; AH := bit mask in proper position
+                                ; AL := pixel value in proper position
+        not     ah              ; AH := inverse bit mask
+        pop     cx              ; restore this register
 
-        test    bx,si       ; set zero flag if BX in 1st interleave
+        test    bx,si           ; set zero flag if BX in 1st interleave
         jz      L32
 
-        xchg    si,di       ; exchange increment values if 1st pixel
-                    ;  lies in 1st interleave
+        xchg    si,di           ; exchange increment values if 1st pixel
+                                ;  lies in 1st interleave
 
-L32:    and     [es:bx],ah  ; zero pixel in buffer
-        or      [es:bx],al  ; set pixel value in buffer
+L32:    and     [es:bx],ah      ; zero pixel in buffer
+        or      [es:bx],al      ; set pixel value in buffer
 
-        add     bx,si       ; increment to next portion of interleave
-        xchg    si,di       ; toggle between increment values
+        add     bx,si           ; increment to next portion of interleave
+        xchg    si,di           ; toggle between increment values
 
         loop    L32
 
@@ -170,23 +164,23 @@ L32:    and     [es:bx],ah  ; zero pixel in buffer
 ; routine for horizontal lines (slope = 0)
 
 HorizLine04:
-        mov     ax,ARGy1
-        mov     bx,ARGx1
-        call    PixelAddr04 ; AH := bit mask
-                    ; ES:BX -> video buffer
-                    ; CL := # bits to shift left
+        mov     ax,[ARGy1]
+        mov     bx,[ARGx1]
+        call    PixelAddr04             ; AH := bit mask
+                                        ; ES:BX -> video buffer
+                                        ; CL := # bits to shift left
         mov     di,bx       ; ES:DI -> buffer
 
         mov     dh,ah
         not     dh      ; DH := unshifted bit mask for leftmost
                     ;        byte
-        mov     dl,0FFh     ; DL := unshifted bit mask for
+        mov     dl,0xff     ; DL := unshifted bit mask for
                     ;    rightmost byte
 
         shl     dh,cl       ; DH := reverse bit mask for first byte
         not     dh      ; DH := bit mask for first byte
 
-        mov     cx,ARGx2
+        mov     cx,[ARGx2]
         and     cl,3
         xor     cl,3
         shl     cl,1        ; CL := number of bits to shift left
@@ -194,8 +188,8 @@ HorizLine04:
 
 ; determine byte offset of first and last pixel in the line
 
-        mov     ax,ARGx2    ; AX := x2
-        mov     bx,ARGx1    ; BX := x1
+        mov     ax,[ARGx2]    ; AX := x2
+        mov     bx,[ARGx1]    ; BX := x1
 
         mov     cl,ByteOffsetShift  ; number of bits to shift to
                         ;  convert pixels to bytes
@@ -208,7 +202,7 @@ HorizLine04:
 ; propagate pixel value throughout one byte
 
         mov     bx,PropagatedPixel
-        mov     al,ARGn         ; AL := pixel value
+        mov     al,[ARGn]       ; AL := pixel value
         xlatb                   ; AL := propagated pixel value
 
 ; set pixels in leftmost byte of the line
@@ -261,8 +255,8 @@ L11:    and     ah,dh       ; zero pixel value at current bit offset
         ror     dl,1
         ror     dh,1        ; rotate bit mask
         ror     dh,1
-        jnc     L14     ; jump if bit mask rotated to
-                    ;  leftmost pixel position
+        jnc     L14                     ; jump if bit mask rotated to
+                                        ;  leftmost pixel position
 
 ; bit mask not shifted out
 
@@ -345,8 +339,6 @@ L23:    add     di,[VARincr2] ; d := d + incr2
 
 Lexit:  pop     di      ; restore registers and return
         pop     si
-        mov     sp,bp
-        pop     bp
         ret
 
 PropagatedPixel:
@@ -359,6 +351,14 @@ VARleafincr:    dw      0
 VARincr1:       dw      0
 VARincr2:       dw      0
 VARroutine:     dw      0
+
+ARGx1:          dw      0       ;x1
+ARGx2:          dw      0       ;x2
+ARGy1:          dw      0       ;y1
+ARGy2:          dw      0       ;y2
+ARGn:           db      0       ;color
+
+
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;

@@ -35,12 +35,24 @@ start:
                                                 ; have at least 128K RAM, otherwise it won't let
                                                 ; us set video mode 9
 
-        mov     ax,0x0089                       ;set video mode 9, don't clean screen
-        int     0x10                            ;320x200 16 colors
+;        mov     ax,0x0089                       ;set video mode 9, don't clean screen
+;        int     0x10                            ;320x200 16 colors
+;
+;        mov     ax,0x0583                       ;set CPU/CRT pages
+;        mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
+;        int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
 
-        mov     ax,0x0583                       ;set CPU/CRT pages
-        mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
-        int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
+        mov     ax,0x0004                       ;320x200 4 colors
+        int     0x10
+
+        push    cs
+        pop     ds
+
+        call    scroll_anim
+
+        mov     ax,1
+        int     0x16
+        int     0x20
 
 
         ;turning off the drive motor is needed to prevent
@@ -129,6 +141,34 @@ irq_8_handler:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 scroll_anim:
+        mov     ax,0                            ;x0
+        mov     bx,0                            ;y0
+        mov     cx,319                          ;x1
+        mov     dx,199                          ;y1
+        mov     bp,1
+        call    Line04
+
+        mov     ax,319                          ;x0
+        mov     bx,0                            ;y0
+        mov     cx,0                            ;x1
+        mov     dx,199                          ;y1
+        mov     bp,1
+        call    Line04
+
+        mov     ax,159                          ;x0
+        mov     bx,0                            ;y0
+        mov     cx,159                          ;x1
+        mov     dx,199                          ;y1
+        mov     bp,1
+        call    Line04
+
+        mov     ax,0                            ;x0
+        mov     bx,99                           ;y0
+        mov     cx,319                          ;x1
+        mov     dx,99                           ;y1
+        mov     bp,1
+        call    Line04
+
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -139,6 +179,9 @@ pvm_song:
 
 end_condition:
         db      0                               ;if 0, part3 ends
+
+line_color:
+        dw      0
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; includes
