@@ -1,4 +1,4 @@
-.PHONY: res runme part2 part2a part1 part1a
+.PHONY: res runme part2 part2a part1 part1a part3 part3a
 
 TARGET_NAME_DETECT = detect.com
 TARGET_DETECT = bin/${TARGET_NAME_DETECT}
@@ -54,6 +54,19 @@ test_part2: part2a
 	@echo "Running..."
 	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c part2gfx.com
 
+part3:
+	@echo "Generating part3.com"
+	nasm -Wall part3/part3.asm -fbin -o bin/part3.com
+
+part3a: part3
+	@echo "Appending GFX to .com..."
+	@python3 tools/append_gfx_to_com.py part3/image_pampa.raw -c bin/part3.com -o bin/part3gfx.com -s 32
+	@echo "Done."
+
+test_part3: part3a
+	@echo "Running..."
+	dosbox-x -conf conf/dosbox-x_pcjr.conf -c "mount c bin/ && dir" -c "c:" -c part3gfx.com
+
 runme:
 	@echo "Generating runme.com"
 	nasm -Wall runme/runme.asm -fbin -o bin/runme.com
@@ -107,6 +120,7 @@ res:
 	@#python3 tools/parse_ibm_charset.py -m 9 res/arleka_font_caren_remix0C-charset.bin -o part2/charset_0x00_0x40.bin
 	python3 tools/convert_gfx_to_bios_format.py -g 9 -o part2/alakran-cara.raw "res/alakran-cara.png"
 	@#python3 tools/convert_gfx_to_bios_format.py -g 9 -o part2/image_320_200.raw res/part2_image.png
+	python3 tools/convert_gfx_to_bios_format.py -g 9 -o part3/image_pampa.raw "res/part3_pampa.png"
 	python3 tools/convert_gfx_to_bios_format.py -g 8 -o part1/image_320_200.raw res/part1_image.png
 	python3 tools/parse_big_charset.py -o part2/charset_bigfont.bin res/part2_font_arleka-4colors.png
 	@#python3 tools/convert_gfx_to_bios_format.py -g 10 -o src/flashparty.bin res/flashparty.data
