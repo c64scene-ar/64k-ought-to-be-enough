@@ -32,7 +32,7 @@ PixelAddr04:
         mov     cl,bl       ; CL := low-order byte of x
 
         xchg    ah,al       ; AX := 0x100 * y
-        shr     ax,1        ; AL := 0x80 * (y&1)
+        shr     ax,1        ; AL := 80 * (y&1)
         add     bh,al       ; BX := x + 0x8000*(y&1)
         xor     al,al       ; AX := 0x100*(y/2)
         add     bx,ax       ; BX := x + 0x8000*(y&1) + 0x100*(y/2)

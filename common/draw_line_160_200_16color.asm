@@ -23,16 +23,16 @@
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 
-ByteOffsetShift EQU 2       ; used to convert pixels to byte offset
+ByteOffsetShift EQU 1       ; used to convert pixels to byte offset
 
 Line04:
         push    si
         push    di
 
         mov     [ARGx1],ax              ;tmp for x1
-        mov     [ARGy1],bx              ;tmp for both y1 and y2
+        mov     [ARGy1],bx              ;tmp for y1
         mov     [ARGx2],cx              ;tmp for x2
-        mov     [ARGy2],dx              ;tmp for x2
+        mov     [ARGy2],dx              ;tmp for y2
         mov     dx,bp
         mov     [ARGn],dl               ;tmp for color
 
@@ -119,6 +119,7 @@ L04:    shl     bx,1                    ; BX := 2 * dy
 L05:    jmp     [VARroutine]            ; jump to appropriate routine for slope
 
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; routine for vertical lines
 
 VertLine04:
@@ -133,27 +134,27 @@ VertLine04:
 
 L31:    inc     cx                      ; CX := # of pixels to draw
         mov     bx,[ARGx1]              ; BX := x
-        push    cx              ; preserve this register
-        call    PixelAddr04     ; AH := bit mask
-                                ; ES:BX -> video buffer
-                                ; CL := # bits to shift left
-        mov     al,[ARGn]       ; AL := pixel value
-        shl     ax,cl           ; AH := bit mask in proper position
-                                ; AL := pixel value in proper position
-        not     ah              ; AH := inverse bit mask
-        pop     cx              ; restore this register
+        push    cx                      ; preserve this register
+        call    PixelAddr04             ; AH := bit mask
+                                        ; ES:BX -> video buffer
+                                        ; CL := # bits to shift left
+        mov     al,[ARGn]               ; AL := pixel value
+        shl     ax,cl                   ; AH := bit mask in proper position
+                                        ; AL := pixel value in proper position
+        not     ah                      ; AH := inverse bit mask
+        pop     cx                      ; restore this register
 
-        test    bx,si           ; set zero flag if BX in 1st interleave
+        test    bx,si                   ; set zero flag if BX in 1st interleave
         jz      L32
 
-        xchg    si,di           ; exchange increment values if 1st pixel
-                                ;  lies in 1st interleave
+        xchg    si,di                   ; exchange increment values if 1st pixel
+                                        ;  lies in 1st interleave
 
-L32:    and     [es:bx],ah      ; zero pixel in buffer
-        or      [es:bx],al      ; set pixel value in buffer
+L32:    and     [es:bx],ah              ; zero pixel in buffer
+        or      [es:bx],al              ; set pixel value in buffer
 
-        add     bx,si           ; increment to next portion of interleave
-        xchg    si,di           ; toggle between increment values
+        add     bx,si                   ; increment to next portion of interleave
+        xchg    si,di                   ; toggle between increment values
 
         loop    L32
 
@@ -161,6 +162,7 @@ L32:    and     [es:bx],ah      ; zero pixel in buffer
 
 
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; routine for horizontal lines (slope = 0)
 
 HorizLine04:
@@ -169,75 +171,77 @@ HorizLine04:
         call    PixelAddr04             ; AH := bit mask
                                         ; ES:BX -> video buffer
                                         ; CL := # bits to shift left
-        mov     di,bx       ; ES:DI -> buffer
+        mov     di,bx                   ; ES:DI -> buffer
 
         mov     dh,ah
-        not     dh      ; DH := unshifted bit mask for leftmost
-                    ;        byte
-        mov     dl,0xff     ; DL := unshifted bit mask for
-                    ;    rightmost byte
+        not     dh                      ; DH := unshifted bit mask for leftmost
+                                        ;        byte
+        mov     dl,0xff                 ; DL := unshifted bit mask for
+                                        ;    rightmost byte
 
-        shl     dh,cl       ; DH := reverse bit mask for first byte
-        not     dh      ; DH := bit mask for first byte
+        shl     dh,cl                   ; DH := reverse bit mask for first byte
+        not     dh                      ; DH := bit mask for first byte
 
         mov     cx,[ARGx2]
-        and     cl,3
-        xor     cl,3
-        shl     cl,1        ; CL := number of bits to shift left
-        shl     dl,cl       ; DL := bit mask for last byte
+        and     cl,1
+        xor     cl,1
+        shl     cl,1                    ; CL := number of bits to shift left
+        shl     cl,1                    ; CL := number of bits to shift left
+        shl     cl,1                    ; CL := number of bits to shift left
+        shl     dl,cl                   ; DL := bit mask for last byte
 
 ; determine byte offset of first and last pixel in the line
 
-        mov     ax,[ARGx2]    ; AX := x2
-        mov     bx,[ARGx1]    ; BX := x1
+        mov     ax,[ARGx2]              ; AX := x2
+        mov     bx,[ARGx1]              ; BX := x1
 
-        mov     cl,ByteOffsetShift  ; number of bits to shift to
-                        ;  convert pixels to bytes
+        mov     cl,ByteOffsetShift      ; number of bits to shift to
+                                        ;  convert pixels to bytes
 
-        shr     ax,cl       ; AX := byte offset of x2
-        shr     bx,cl       ; BX := byte offset of x1
+        shr     ax,cl                   ; AX := byte offset of x2
+        shr     bx,cl                   ; BX := byte offset of x1
         mov     cx,ax
-        sub     cx,bx       ; CX := (# bytes in line) - 1
+        sub     cx,bx                   ; CX := (# bytes in line) - 1
 
 ; propagate pixel value throughout one byte
 
         mov     bx,PropagatedPixel
-        mov     al,[ARGn]       ; AL := pixel value
-        xlatb                   ; AL := propagated pixel value
+        mov     al,[ARGn]               ; AL := pixel value
+        xlatb                           ; AL := propagated pixel value
 
 ; set pixels in leftmost byte of the line
 
         or      dh,dh
-        js      L43     ; jump if byte-aligned (x1 is leftmost
-                    ;  pixel in byte)
+        js      L43                     ; jump if byte-aligned (x1 is leftmost
+                                        ;  pixel in byte)
         or      cx,cx
-        jnz     L42     ; jump if more than one byte in the line
+        jnz     L42                     ; jump if more than one byte in the line
 
-        and     dl,dh       ; bit mask for the line
+        and     dl,dh                   ; bit mask for the line
         jmp     short L44
 
 L42:    mov     ah,al
-        and     ah,dh           ; AH := masked pixel bits
-        not     dh              ; DH := reverse bit mask for 1st byte
-        and     [es:di],dh      ; zero masked pixels in buffer
-        or      [es:di],ah      ; update masked pixels in buffer
+        and     ah,dh                   ; AH := masked pixel bits
+        not     dh                      ; DH := reverse bit mask for 1st byte
+        and     [es:di],dh              ; zero masked pixels in buffer
+        or      [es:di],ah              ; update masked pixels in buffer
         inc     di
         dec     cx
 
 ; use a fast 8086 machine instruction to draw the remainder of the line
 
-L43:    rep stosb               ; update all pixels in the line
+L43:    rep stosb                       ; update all pixels in the line
 
 ; set pixels in the rightmost byte of the line
 
-L44:    and     al,dl           ; AL := masked pixels for last byte
+L44:    and     al,dl                   ; AL := masked pixels for last byte
         not     dl
-        and     [es:di],dl      ; zero masked pixels in buffer
-        or      [es:di],al      ; update masked pixels in buffer
+        and     [es:di],dl              ; zero masked pixels in buffer
+        or      [es:di],al              ; update masked pixels in buffer
 
         jmp     Lexit
 
-
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; routine for dy <= dx (slope <= 1) ; ES:BX -> video buffer
                     ; CX = # pixels to draw
                     ; DH = inverse bit mask
@@ -299,7 +303,7 @@ L15:    add     di,[VARincr2] ; d := d + incr2
         loop    L10
         jmp short Lexit
 
-
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; routine for dy > dx (slope > 1)   ; ES:BX -> video buffer
                     ; CX = # pixels to draw
                     ; DH = inverse bit mask
@@ -337,15 +341,28 @@ L23:    add     di,[VARincr2] ; d := d + incr2
         loop    L21
 
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 Lexit:  pop     di      ; restore registers and return
         pop     si
         ret
 
 PropagatedPixel:
-        db      00000000b       ; 0
-        db      01010101b       ; 1
-        db      10101010b       ; 2
-        db      11111111b       ; 3
+        db      0b0000_0000       ; 0
+        db      0b0001_0001       ; 1
+        db      0b0010_0010       ; 2
+        db      0b0011_0011       ; 3
+        db      0b0100_0100       ; 4
+        db      0b0101_0101       ; 5
+        db      0b0110_0110       ; 6
+        db      0b0111_0111       ; 7
+        db      0b1000_1000       ; 8
+        db      0b1001_1001       ; 9
+        db      0b1010_1010       ; 10
+        db      0b1011_1011       ; 11
+        db      0b1100_1100       ; 12
+        db      0b1101_1101       ; 13
+        db      0b1110_1110       ; 14
+        db      0b1111_1111       ; 15
 
 VARleafincr:    dw      0
 VARincr1:       dw      0

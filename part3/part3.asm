@@ -141,37 +141,37 @@ irq_8_handler:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 scroll_anim:
-	; diagonal 1
+        ; diagonal 1
         mov     ax,0                            ;x0
         mov     bx,0                            ;y0
+        mov     cx,159                          ;x1
+        mov     dx,199                          ;y1
+        mov     bp,1
+        call    Line04
+
+        ; diagonal 2
+        mov     ax,159                          ;x0
+        mov     bx,0                            ;y0
+        mov     cx,0                            ;x1
+        mov     dx,199                          ;y1
+        mov     bp,1
+        call    Line04
+
+        ; vertical
+        mov     ax,79                           ;x0
+        mov     bx,0                            ;y0
+        mov     cx,79                           ;x1
+        mov     dx,199                          ;y1
+        mov     bp,1
+        call    Line04
+
+        ; horizontal
+        mov     ax,0                            ;x0
+        mov     bx,99                           ;y0
         mov     cx,159                          ;x1
         mov     dx,99                           ;y1
         mov     bp,1
         call    Line04
-
-	; diagonal 2
-;        mov     ax,159                          ;x0
-;        mov     bx,0                            ;y0
-;        mov     cx,0                            ;x1
-;        mov     dx,99                           ;y1
-;        mov     bp,1
-;        call    Line04
-;
-;	; vertical
-;        mov     ax,79                           ;x0
-;        mov     bx,0                            ;y0
-;        mov     cx,79                           ;x1
-;        mov     dx,99                           ;y1
-;        mov     bp,1
-;        call    Line04
-;
-;	; horizontal
-;        mov     ax,0                            ;x0
-;        mov     bx,49                           ;y0
-;        mov     cx,159                          ;x1
-;        mov     dx,49                           ;y1
-;        mov     bp,1
-;        call    Line04
 
         ret
 
