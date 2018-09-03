@@ -141,60 +141,85 @@ irq_8_handler:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 scroll_anim:
-        ; Triangle
-        ; diagonal 1
-        mov     ax,1                            ;x0
-        mov     bx,0                            ;y0
-        mov     cx,39                           ;x1
-        mov     dx,99                           ;y1
+
+        ; kite top-left diag
+        mov     ax,39                           ;x0
+        mov     bx,99                           ;y0
+        mov     cx,79                           ;x1
+        mov     dx,79                           ;y1
         mov     bp,1
         call    Line04
 
-        mov     ax,79                           ;x0
-        mov     bx,0                            ;y0
+        ; kite top-right diag
+        mov     ax,79                           ;x1
+        mov     bx,79                           ;y1
+        mov     cx,119                          ;x0
+        mov     dx,99                           ;y0
+        mov     bp,1
+        call    Line04
+
+        ; kite bottom-left diag
+        mov     ax,39                           ;x0
+        mov     bx,99                           ;y0
         mov     cx,79                           ;x1
-        mov     dx,199                           ;y1
+        mov     dx,179                          ;y1
+        mov     bp,1
+        call    Line04
+
+        ; kite bottom-right diag
+        mov     ax,79                           ;x1
+        mov     bx,179                          ;y1
+        mov     cx,119                          ;x0
+        mov     dx,99                           ;y0
+        mov     bp,1
+        call    Line04
+
+        ; kite horiz
+        mov     ax,39                           ;x1
+        mov     bx,99                           ;y1
+        mov     cx,119                          ;x0
+        mov     dx,99                           ;y0
         mov     bp,2
         call    Line04
 
-        mov     ax,0                            ;x0
-        mov     bx,99                           ;y0
-        mov     cx,159                          ;x1
-        mov     dx,99                           ;y1
-        mov     bp,1
+        ; kite vertical
+        mov     ax,79                           ;x1
+        mov     bx,79                           ;y1
+        mov     cx,79                           ;x0
+        mov     dx,179                          ;y0
+        mov     bp,3
         call    Line04
 
-
-        ; diagonal 1
-        mov     ax,0                            ;x0
-        mov     bx,0                            ;y0
-        mov     cx,159                          ;x1
-        mov     dx,199                          ;y1
-        mov     bp,1
+        ; test vertical 1
+        mov     ax,0                            ;x1
+        mov     bx,0                            ;y1
+        mov     cx,0                            ;x0
+        mov     dx,199                          ;y0
+        mov     bp,2
         call    Line04
 
-        ; diagonal 2
-        mov     ax,159                          ;x0
-        mov     bx,0                            ;y0
-        mov     cx,0                            ;x1
-        mov     dx,199                          ;y1
-        mov     bp,1
+        ; test vertical 2
+        mov     ax,1                            ;x1
+        mov     bx,0                            ;y1
+        mov     cx,1                            ;x0
+        mov     dx,199                          ;y0
+        mov     bp,4
         call    Line04
 
-        ; vertical
-        mov     ax,79                           ;x0
-        mov     bx,0                            ;y0
-        mov     cx,79                           ;x1
-        mov     dx,199                          ;y1
-        mov     bp,1
+        ; test horizontal 1
+        mov     ax,0                            ;x1
+        mov     bx,0                            ;y1
+        mov     cx,159                          ;x0
+        mov     dx,0                            ;y0
+        mov     bp,5
         call    Line04
 
-        ; horizontal
-        mov     ax,0                            ;x0
-        mov     bx,99                           ;y0
-        mov     cx,159                          ;x1
-        mov     dx,99                           ;y1
-        mov     bp,1
+        ; test horizontal 2
+        mov     ax,0                            ;x1
+        mov     bx,1                            ;y1
+        mov     cx,159                          ;x0
+        mov     dx,1                            ;y0
+        mov     bp,7
         call    Line04
 
         ret

@@ -182,9 +182,9 @@ HorizLine04:
         shl     dh,cl                   ; DH := reverse bit mask for first byte
         not     dh                      ; DH := bit mask for first byte
 
-        mov     cx,[ARGx2]
-        and     cl,1
-        xor     cl,1
+        mov     cx,[ARGx2]              ;cx = x2
+        and     cl,1                    ;cl = x2 & 1
+        xor     cl,1                    ;cl = !cl
         shl     cl,1                    ; CL := number of bits to shift left
         shl     cl,1                    ; CL := number of bits to shift left
         shl     cl,1                    ; CL := number of bits to shift left

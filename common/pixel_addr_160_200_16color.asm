@@ -47,7 +47,7 @@ PixelAddr04:
         add     bx,ax       ; BX := x*2 + 0x8000*(y&1) + 0x140*(y/2)
         shr     bx,1            ; BX = x + 0x4000*(y&1) + 0xa0(y/2)
         shr     bx,1        ; BX := x/2 + 0x2000*(y&1) + 0x50*(y/2)
-        add     bx,OriginOffset ; BX := byte offset in video buffer
+;        add     bx,OriginOffset ; BX := byte offset in video buffer
 
         mov     ax,VideoBufferSeg
         mov     es,ax       ; ES:BX := byte address of pixel
