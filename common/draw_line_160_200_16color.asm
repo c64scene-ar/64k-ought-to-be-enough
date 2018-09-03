@@ -158,7 +158,7 @@ L32:    and     [es:bx],ah              ; zero pixel in buffer
 
         loop    L32
 
-        jmp Lexit
+        jmp     Lexit
 
 
 
@@ -250,58 +250,62 @@ L44:    and     al,dl                   ; AL := masked pixels for last byte
                     ; DI = decision variable
 LoSlopeLine04:
 
-L10:    mov     ah,[es:bx]  ; AH := byte from video buffer
+L10:    mov     ah,[es:bx]              ; AH := byte from video buffer
 
-L11:    and     ah,dh       ; zero pixel value at current bit offset
-        or      ah,dl       ; set pixel value in byte
+L11:    and     ah,dh                   ; zero pixel value at current bit offset
+        or      ah,dl                   ; set pixel value in byte
 
-        ror     dl,1        ; rotate pixel value
+        ror     dl,1                    ; rotate pixel value
         ror     dl,1
-        ror     dh,1        ; rotate bit mask
+        ror     dl,1
+        ror     dl,1
+        ror     dh,1                    ; rotate bit mask
+        ror     dh,1
+        ror     dh,1
         ror     dh,1
         jnc     L14                     ; jump if bit mask rotated to
                                         ;  leftmost pixel position
 
 ; bit mask not shifted out
 
-        or      di,di       ; test sign of d
-        jns     L12     ; jump if d >= 0
+        or      di,di                   ; test sign of d
+        jns     L12                     ; jump if d >= 0
 
-        add     di,[VARincr1] ; d := d + incr1
+        add     di,[VARincr1]           ; d := d + incr1
         loop    L11
 
-        mov     [es:bx],ah  ; store remaining pixels in buffer
-        jmp short Lexit
+        mov     [es:bx],ah              ; store remaining pixels in buffer
+        jmp     Lexit
 
-L12:    add     di,[VARincr2] ; d := d + incr2
-        mov     [es:bx],ah  ; update buffer
+L12:    add     di,[VARincr2]           ; d := d + incr2
+        mov     [es:bx],ah              ; update buffer
 
-        add     bx,si       ; increment y
-        xchg    si,[VARleafincr]  ; exchange interleave increment values
+        add     bx,si                   ; increment y
+        xchg    si,[VARleafincr]        ; exchange interleave increment values
 
         loop    L10
-        jmp short Lexit
+        jmp     Lexit
 
 ; bit mask shifted out
 
-L14:    mov     [es:bx],ah  ; update buffer
-        inc     bx      ; BX := offset of next byte
+L14:    mov     [es:bx],ah              ; update buffer
+        inc     bx                      ; BX := offset of next byte
 
-        or      di,di       ; test sign of d
-        jns     L15     ; jump if non-negative
+        or      di,di                   ; test sign of d
+        jns     L15                     ; jump if non-negative
 
-        add     di,[VARincr1] ; d := d + incr1
+        add     di,[VARincr1]           ; d := d + incr1
         loop    L10
-        jmp short Lexit
+        jmp     Lexit
 
 
-L15:    add     di,[VARincr2] ; d := d + incr2
+L15:    add     di,[VARincr2]           ; d := d + incr2
 
-        add     bx,si       ; increment y
+        add     bx,si                   ; increment y
         xchg    si,[VARleafincr]
 
         loop    L10
-        jmp short Lexit
+        jmp     Lexit
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; routine for dy > dx (slope > 1)   ; ES:BX -> video buffer
@@ -312,31 +316,35 @@ L15:    add     di,[VARincr2] ; d := d + incr2
                     ; DI = decision variable
 HiSlopeLine04:
 
-L21:    and     [es:bx],dh  ; zero pixel value in video buffer
-        or      [es:bx],dl  ; set pixel value in byte
+L21:    and     [es:bx],dh              ; zero pixel value in video buffer
+        or      [es:bx],dl              ; set pixel value in byte
 
-        add     bx,si       ; increment y
-        xchg    si,[VARleafincr]  ; exchange interleave increment values
+        add     bx,si                   ; increment y
+        xchg    si,[VARleafincr]        ; exchange interleave increment values
 
-L22:    or      di,di       ; test sign of d
-        jns     L23     ; jump if d >= 0
+L22:    or      di,di                   ; test sign of d
+        jns     L23                     ; jump if d >= 0
 
-        add     di,[VARincr1] ; d := d + incr1
+        add     di,[VARincr1]           ; d := d + incr1
         loop    L21
 
         jmp short Lexit
 
 
-L23:    add     di,[VARincr2] ; d := d + incr2
+L23:    add     di,[VARincr2]           ; d := d + incr2
 
-        ror     dl,1        ; rotate pixel value
+        ror     dl,1                    ; rotate pixel value
         ror     dl,1
-        ror     dh,1        ; rotate bit mask
+        ror     dl,1
+        ror     dl,1
+        ror     dh,1                    ; rotate bit mask
         ror     dh,1
-        cmc         ; cf set if bit mask not rotated to
-                    ;  leftmost pixel position
+        ror     dh,1
+        ror     dh,1
+        cmc                             ; cf set if bit mask not rotated to
+                                        ;  leftmost pixel position
 
-        adc     bx,0        ; BX := offset of next byte
+        adc     bx,0                    ; BX := offset of next byte
 
         loop    L21
 
@@ -369,11 +377,11 @@ VARincr1:       dw      0
 VARincr2:       dw      0
 VARroutine:     dw      0
 
-ARGx1:          dw      0       ;x1
-ARGx2:          dw      0       ;x2
-ARGy1:          dw      0       ;y1
-ARGy2:          dw      0       ;y2
-ARGn:           db      0       ;color
+ARGx1:          dw      0               ;x1
+ARGx2:          dw      0               ;x2
+ARGy1:          dw      0               ;y1
+ARGy2:          dw      0               ;y2
+ARGn:           db      0               ;color
 
 
 

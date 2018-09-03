@@ -141,6 +141,30 @@ irq_8_handler:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 scroll_anim:
+        ; Triangle
+        ; diagonal 1
+        mov     ax,1                            ;x0
+        mov     bx,0                            ;y0
+        mov     cx,39                           ;x1
+        mov     dx,99                           ;y1
+        mov     bp,1
+        call    Line04
+
+        mov     ax,79                           ;x0
+        mov     bx,0                            ;y0
+        mov     cx,79                           ;x1
+        mov     dx,199                           ;y1
+        mov     bp,2
+        call    Line04
+
+        mov     ax,0                            ;x0
+        mov     bx,99                           ;y0
+        mov     cx,159                          ;x1
+        mov     dx,99                           ;y1
+        mov     bp,1
+        call    Line04
+
+
         ; diagonal 1
         mov     ax,0                            ;x0
         mov     bx,0                            ;y0
