@@ -262,5 +262,5 @@ line_color:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %include 'common/utils.asm'
 %include 'common/music_player.asm'
-%include 'common/draw_line_160_200_16color.asm'
+%include 'common/draw_line_160_100_16color.asm'
 

@@ -36,8 +36,8 @@ Line04:
         mov     dx,bp
         mov     [ARGn],dl               ;tmp for color
 
-        mov     si,0x2000               ; increment for video buffer interleave
-        mov     di,80-0x2000            ; increment from last to first interleave
+        mov     si,0x0000               ; increment for video buffer interleave
+        mov     di,80-0x0000            ; increment from last to first interleave
 
         sub     cx,ax                   ; CX := x2 - x1
         jz      VertLine04              ; jump if vertical line
