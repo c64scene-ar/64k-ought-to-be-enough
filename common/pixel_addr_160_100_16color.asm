@@ -32,7 +32,7 @@
 OriginOffset    equ 0       ; byte offset of (0,0)
 VideoBufferSeg  equ 0xb800
 
-PixelAddr04:
+PixelAddr08:
         mov     cl,bl           ;save for later
 
         xchg    ah,al           ; AX := 256*y

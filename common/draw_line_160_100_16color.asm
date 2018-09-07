@@ -26,7 +26,7 @@
 ByteOffsetShift EQU 1       ; used to convert pixels to byte offset
 BytesPerLine    EQU 80
 
-Line04:
+Line08:
         push    si
         push    di
 
@@ -94,7 +94,7 @@ L04:    shl     bx,1                    ; BX := 2 * dy
         push    cx                      ; preserve this register
         mov     ax,[ARGy1]              ; AX := y
         mov     bx,[ARGx1]              ; BX := x
-        call    PixelAddr04             ; AH := bit mask
+        call    PixelAddr08             ; AH := bit mask
                                         ; ES:BX -> buffer
                                         ; CL := # bits to shift left
 
@@ -131,7 +131,7 @@ VertLine04:
 L31:    inc     cx                      ; CX := # of pixels to draw
         mov     bx,[ARGx1]              ; BX := x
         push    cx                      ; preserve this register
-        call    PixelAddr04             ; AH := bit mask
+        call    PixelAddr08             ; AH := bit mask
                                         ; ES:BX -> video buffer
                                         ; CL := # bits to shift left
         mov     al,[ARGn]               ; AL := pixel value
@@ -158,7 +158,7 @@ L32:    and     [es:bx],ah              ; zero pixel in buffer
 HorizLine04:
         mov     ax,[ARGy1]
         mov     bx,[ARGx1]
-        call    PixelAddr04             ; AH := bit mask
+        call    PixelAddr08             ; AH := bit mask
                                         ; ES:BX -> video buffer
                                         ; CL := # bits to shift left
         mov     di,bx                   ; ES:DI -> buffer
