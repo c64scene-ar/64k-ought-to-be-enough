@@ -141,21 +141,45 @@ irq_8_handler:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 scroll_anim:
+        ; kite top-right diag
+        mov     ax,0                         ;x1
+        mov     bx,99                           ;y1
+        mov     cx,159                          ;x0
+        mov     dx,60                           ;y0
+        mov     bp,5
+        call    Line04
+
 
         ; kite top-left diag
-        mov     ax,39                           ;x0
-        mov     bx,99                           ;y0
-        mov     cx,79                           ;x1
-        mov     dx,79                           ;y1
+        mov     ax,0                           ;x0
+        mov     bx,0                           ;y0
+        mov     cx,159                         ;x1
+        mov     dx,99                         ;y1
         mov     bp,1
         call    Line04
 
         ; kite top-right diag
-        mov     ax,79                           ;x1
-        mov     bx,79                           ;y1
-        mov     cx,119                          ;x0
+        mov     ax,4                          ;x1
+        mov     bx,0                           ;y1
+        mov     cx,159                          ;x0
         mov     dx,99                           ;y0
-        mov     bp,1
+        mov     bp,2
+        call    Line04
+
+        ; kite top-right diag
+        mov     ax,8                          ;x1
+        mov     bx,0                           ;y1
+        mov     cx,159                          ;x0
+        mov     dx,10                           ;y0
+        mov     bp,3
+        call    Line04
+
+        ; kite top-right diag
+        mov     ax,159                         ;x1
+        mov     bx,0                           ;y1
+        mov     cx,0                           ;x0
+        mov     dx,99                           ;y0
+        mov     bp,4
         call    Line04
 
         ; kite bottom-left diag
@@ -194,7 +218,7 @@ scroll_anim:
         mov     ax,0                            ;x1
         mov     bx,0                            ;y1
         mov     cx,0                            ;x0
-        mov     dx,199                          ;y0
+        mov     dx,99                          ;y0
         mov     bp,2
         call    Line04
 
@@ -202,7 +226,23 @@ scroll_anim:
         mov     ax,1                            ;x1
         mov     bx,0                            ;y1
         mov     cx,1                            ;x0
-        mov     dx,199                          ;y0
+        mov     dx,99                           ;y0
+        mov     bp,4
+        call    Line04
+
+        ; test vertical 1
+        mov     ax,159                            ;x1
+        mov     bx,0                            ;y1
+        mov     cx,159                            ;x0
+        mov     dx,99                          ;y0
+        mov     bp,2
+        call    Line04
+
+        ; test vertical 2
+        mov     ax,158                          ;x1
+        mov     bx,0                            ;y1
+        mov     cx,158                         ;x0
+        mov     dx,99                          ;y0
         mov     bp,4
         call    Line04
 
@@ -219,6 +259,22 @@ scroll_anim:
         mov     bx,1                            ;y1
         mov     cx,159                          ;x0
         mov     dx,1                            ;y0
+        mov     bp,7
+        call    Line04
+
+        ; test horizontal 3
+        mov     ax,0                            ;x1
+        mov     bx,99                            ;y1
+        mov     cx,159                          ;x0
+        mov     dx,99                            ;y0
+        mov     bp,5
+        call    Line04
+
+        ; test horizontal 4
+        mov     ax,0                            ;x1
+        mov     bx,98                            ;y1
+        mov     cx,159                          ;x0
+        mov     dx,98                            ;y0
         mov     bp,7
         call    Line04
 
