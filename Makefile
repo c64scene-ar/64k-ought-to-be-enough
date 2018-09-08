@@ -111,8 +111,10 @@ res:
 	@echo "Compressing music..."
 	python3 tools/convert_vgm_to_pvm.py res/cumparchiptune.vgm
 	python3 tools/convert_vgm_to_pvm.py res/libertango.vgm
+	python3 tools/convert_vgm_to_pvm.py res/zamba_de_mi_esperanza.vgm
 	mv res/cumparchiptune.pvm part1/uctumi-cumparsita.pvm
 	mv res/libertango.pvm part2/uctumi-libertango.pvm
+	mv res/zamba_de_mi_esperanza.pvm part3/uctumi-zamba.pvm
 	@echo "Converting graphics..."
 	python3 tools/parse_55_segment_data.py res/55-segment.png -o part1/segment55_data.asm
 	python3 tools/parse_55_segment_font.py -o part1/segment55_table.asm

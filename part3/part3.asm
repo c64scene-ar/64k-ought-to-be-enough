@@ -281,7 +281,7 @@ set_vid_160_100_16:
 ;DATA
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 pvm_song:
-        incbin 'part3/uctumi-song.pvm'
+        incbin 'part3/uctumi-zamba.pvm'
 
 end_condition:
         db      0                               ;if 0, part3 ends
