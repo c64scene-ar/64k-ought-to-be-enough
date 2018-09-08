@@ -21,14 +21,15 @@ class Elipse:
         new_y = x * math.sin(a) + y * math.cos(a)
         return (new_x, new_y)
 
-    def run(self, min_y, max_y):
+    def run(self, min_y, max_y, values_per_octant):
         points = {}
         # calculate for when points are based between min_y and max_y
         for px in range(min_y, max_y):
             tmp_list = []
             # only first octant (90 degrees only)
-            for a in reversed(range(0, 90)):
-                rad = math.radians(a)
+            degree_increment = 90 / values_per_octant
+            for a in reversed(range(0, values_per_octant)):
+                rad = math.radians(a * degree_increment)
                 x, y = self.calc(px, 0, rad)
                 tmp_list.append((int(x), int(y)))
             points[px] = tmp_list
@@ -44,8 +45,8 @@ class Elipse:
             else:
                 self._output_fd.write(', %d' % p[coord_idx])
             count += 1
-            # no more than 30 elements per line
-            if count >= 30:
+            # no more than 16 elements per line
+            if count >= 16:
                 first = True
                 count = 0
                 self._output_fd.write('\n')
@@ -90,6 +91,10 @@ $ %(prog)s -o table.asm
 """)
     parser.add_argument('-o', '--output-file', metavar='<filename>',
             help='output file. Default: stdout', required=True)
+    parser.add_argument('-v', '--values-per-octant', type=int,
+            metavar='<values_per_octant>',
+            help='Total values to generate per octant. Default: 90',
+            default=90)
 
     args = parser.parse_args()
     return args
@@ -98,7 +103,7 @@ $ %(prog)s -o table.asm
 def main():
     args = parse_args()
     with open(args.output_file, 'w+') as fd:
-        Elipse(fd).run(1, 50)
+        Elipse(fd).run(1, 50, args.values_per_octant)
 
 
 if __name__ == "__main__":
