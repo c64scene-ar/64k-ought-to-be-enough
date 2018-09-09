@@ -52,7 +52,7 @@ start:
 
 ;        mov     ax,1
 ;        int     0x16
-        int     0x20
+;        int     0x20
 
 
         ;turning off the drive motor is needed to prevent
@@ -142,6 +142,8 @@ irq_8_handler:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 scroll_anim:
         sub     bx,bx                           ;point 0 - point 1
+        inc     byte [current_rotation]
+        mov     cl,[current_rotation]
         call    get_coords_for_line
         mov     bp,1
         call    Line08
@@ -152,24 +154,56 @@ scroll_anim:
 ; get_coords_for_line
 ; in:
 ;       bx = point idx
-;       bl = angle (from 0 to 255). each quadrant has 64 values
+;       cl = angle (from 0 to 255). each quadrant has 64 values
 ; returns:
-;       ax = x
-;       bx = y
+;       ax = x0
+;       bx = y0
+;       cx = x1
+;       dx = y0
 get_coords_for_line:
         shl     bx,1                            ;point offset, since each one takes 2 bytes
         lea     si,[points+bx]
 
+        ; point 0
         lodsw                                   ;al = orig angle, ah = orig radius
         add     al,cl                           ;al = orig angle + new angle
+
+        mov     bp,si                           ;bp := si (saved for later)
+
         call    get_coords_for_point
+        mov     di,ax                           ;di = x,y. save results for later
+
+        ; point 1
+        mov     si,bp                           ;restore si from bp
 
         lodsw                                   ;al = orig angle, ah = orig scale
         add     al,cl
         call    get_coords_for_point
 
+        ; translate results to center of screen
+        ; translate point 1
+        mov     bp,0x3250                       ; bp := 50 * 256 + 80
+        add     ax,bp                           ;translate x,y to center of screen
+                                                ; y := y + 50 (ah)
+                                                ; x := x + 80 (al)
+        mov     cl,al                           ;cx = x1
+        mov     dl,ah                           ;dx = y1
+
+        ; translate point 0
+        add     di,bp                           ;translate x,y to center of screen
+        xchg    ax,di                           ;ax := x,y
+        mov     bl,ah                           ;bx := y0
+
+        ; clear MSB 8 bits
+        cbw                                     ;ax := x0
+        sub     bh,bh                           ;bx := y0
+        sub     ch,ch                           ;cx := x1
+        sub     dh,dh                           ;dx := y1
+
+        ret
+
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; get_coords_for_line
+; get_coords_for_point
 ; we only stored pre-computed values for quadrant 0.
 ; values for quadrant 1, 2, 3 need to be computed after quadrant 0 by
 ; inverting / negating certain values.
@@ -178,27 +212,65 @@ get_coords_for_line:
 ;       al = angle (from 0 to 255). each quadrant has 64 values
 ;       ah = radius
 ; returns:
-;       ax = x
-;       bx = y
+;       al = x
+;       ah = y
+; destroys:
+;       cx, bx, si
 get_coords_for_point:
+        mov     cx,ax                           ;cx = angle / radius. cx saved for later
         test    al,0b0100_0000                  ;quadran 1 or 3?
-        jz      .quadrant_0_2                   ;no, jump to quadrants 0-2
+        jz      .l0                             ;no, don't inverse angle
 
         ;quadrant 1_3 should inverse the search
         ;if requested angle is 1, then return angle 63 (64-1)
         ;64 values per quadrant
-.quadrant_1_3:
         not     al                              ;invert bits, so angle gets reversed
 
-.quadrant_0_2:
-        and     al,0b0011_1111                  ;filter out quadrant bits
-                                                ;al = angle to fetch
-                                                ;ah = radius
+.l0:
+        sub     bh,bh
+        mov     bl,ah                           ;bx := angle
 
-        shl     ah,1                            ;each elipse radius entry takes 2 bytes
+        shl     bx,1                            ;each elipse radius entry takes 2 bytes
                                                 ;using ah ax index, and can't be bigger than 128.
-        lea     si,[elipse_table_x+bp]
+        lea     si,[elipse_table+bx]            ;si := addres of radius-table to use
 
+        and     ax,0b00000000_00111111          ;ah = 0
+                                                ; al = filter out quadrant bits
+        shl     ax,1                            ;radius_table has x,y coords.
+                                                ; multiplying by 2 to get correct idx
+        add     si,ax                           ;si has correct offset for coords
+        lodsw                                   ;al = x coord
+                                                ; ah = y coord
+
+        ; ax already has the x,y coords for quadrant 0
+        ; adjust values for correct quadrant
+        test    cl,0b1000_0000                  ;quadrants 2 or 3? (128 or higher)
+        jz      .quadrant_0_1                   ; nope, skip to quandrant 0 1
+
+        ; quadrants 2 or 3 here
+        neg     al                              ;x := -x
+
+        test    cl,0b0100_0000                  ;already know that we are in
+                                                ; quadrant 2 or 3. are we in quadrant 2?
+        jz      .exit                           ;exit if in quadrant 3
+        ; quadrant 2
+        neg     ah                              ;y := -y
+        ret
+
+        ; quadrants 0 or 1 here
+.quadrant_0_1:
+        test    cl,0b0100_0000                  ;quadrant 1?
+        jz      .exit                           ; exit if quadrant 0
+
+        ; quadrant 1 here
+        neg     ah                              ;y := -y
+.exit:
+        ret
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+current_rotation:
+        db      0
 
 points:
         ; points are defined in polar coordinates: angle, radius
@@ -206,6 +278,7 @@ points:
         db      32, 40
 
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 scroll_anim_2:
 
         ; kite top-right diag
