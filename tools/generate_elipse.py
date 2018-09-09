@@ -21,14 +21,14 @@ class Elipse:
         new_y = x * math.sin(a) + y * math.cos(a)
         return (new_x, new_y)
 
-    def run(self, min_y, max_y, values_per_octant):
+    def run(self, radius_min, radius_max, values_per_quadrant):
         points = {}
-        # calculate for when points are based between min_y and max_y
-        for px in range(min_y, max_y):
+        # calculate for when points are based between radius_min and radius_max
+        for px in range(radius_min, radius_max):
             tmp_list = []
-            # only first octant (90 degrees only)
-            degree_increment = 90 / values_per_octant
-            for a in reversed(range(0, values_per_octant)):
+            # only first quadrant (90 degrees only)
+            degree_increment = 90 / values_per_quadrant
+            for a in reversed(range(0, values_per_quadrant)):
                 rad = math.radians(a * degree_increment)
                 x, y = self.calc(px, 0, rad)
                 tmp_list.append((int(x), int(y)))
@@ -91,9 +91,9 @@ $ %(prog)s -o table.asm
 """)
     parser.add_argument('-o', '--output-file', metavar='<filename>',
             help='output file. Default: stdout', required=True)
-    parser.add_argument('-v', '--values-per-octant', type=int,
-            metavar='<values_per_octant>',
-            help='Total values to generate per octant. Default: 90',
+    parser.add_argument('-v', '--values-per-quaran', type=int,
+            metavar='<values_per_quadrant>',
+            help='Total values to generate per quadrant. Default: 90',
             default=90)
 
     args = parser.parse_args()
@@ -103,7 +103,8 @@ $ %(prog)s -o table.asm
 def main():
     args = parse_args()
     with open(args.output_file, 'w+') as fd:
-        Elipse(fd).run(1, 50, args.values_per_octant)
+        # radius: between 1 and 50
+        Elipse(fd).run(1, 50, args.values_per_quadrant)
 
 
 if __name__ == "__main__":

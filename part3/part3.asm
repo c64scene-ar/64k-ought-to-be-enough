@@ -48,10 +48,10 @@ start:
 
         call    set_vid_160_100_16
 
-        call    scroll_anim
+;        call    scroll_anim
 
-        mov     ax,1
-        int     0x16
+;        mov     ax,1
+;        int     0x16
         int     0x20
 
 
@@ -141,6 +141,72 @@ irq_8_handler:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 scroll_anim:
+        sub     bx,bx                           ;point 0 - point 1
+        call    get_coords_for_line
+        mov     bp,1
+        call    Line08
+        ret
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; get_coords_for_line
+; in:
+;       bx = point idx
+;       bl = angle (from 0 to 255). each quadrant has 64 values
+; returns:
+;       ax = x
+;       bx = y
+get_coords_for_line:
+        shl     bx,1                            ;point offset, since each one takes 2 bytes
+        lea     si,[points+bx]
+
+        lodsw                                   ;al = orig angle, ah = orig radius
+        add     al,cl                           ;al = orig angle + new angle
+        call    get_coords_for_point
+
+        lodsw                                   ;al = orig angle, ah = orig scale
+        add     al,cl
+        call    get_coords_for_point
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; get_coords_for_line
+; we only stored pre-computed values for quadrant 0.
+; values for quadrant 1, 2, 3 need to be computed after quadrant 0 by
+; inverting / negating certain values.
+;
+; in:
+;       al = angle (from 0 to 255). each quadrant has 64 values
+;       ah = radius
+; returns:
+;       ax = x
+;       bx = y
+get_coords_for_point:
+        test    al,0b0100_0000                  ;quadran 1 or 3?
+        jz      .quadrant_0_2                   ;no, jump to quadrants 0-2
+
+        ;quadrant 1_3 should inverse the search
+        ;if requested angle is 1, then return angle 63 (64-1)
+        ;64 values per quadrant
+.quadrant_1_3:
+        not     al                              ;invert bits, so angle gets reversed
+
+.quadrant_0_2:
+        and     al,0b0011_1111                  ;filter out quadrant bits
+                                                ;al = angle to fetch
+                                                ;ah = radius
+
+        shl     ah,1                            ;each elipse radius entry takes 2 bytes
+                                                ;using ah ax index, and can't be bigger than 128.
+        lea     si,[elipse_table_x+bp]
+
+
+points:
+        ; points are defined in polar coordinates: angle, radius
+        db      224, 40
+        db      32, 40
+
+
+scroll_anim_2:
 
         ; kite top-right diag
         mov     ax,10                          ;x1
