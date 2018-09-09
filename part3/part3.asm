@@ -162,7 +162,7 @@ scroll_anim:
 ;       cx = x1
 ;       dx = y0
 get_coords_for_line:
-        int 3
+        mov     dl,cl                           ;dl := cl (angle). saved for later
         shl     bx,1                            ;point offset, since each one takes 2 bytes
         lea     si,[points+bx]
 
@@ -179,7 +179,8 @@ get_coords_for_line:
         mov     si,bp                           ;restore si from bp
 
         lodsw                                   ;al = orig angle, ah = orig scale
-        add     al,cl
+        add     al,dl                           ;al = orig angle + new angle
+        int 3
         call    get_coords_for_point
 
         ; translate results to center of screen
@@ -278,7 +279,7 @@ current_color:
         db      0                               ;ignore
 
 points:
-        ; points are defined in polar coordinates: angle, radius
+        ; points are defined in polar coordinates: angle (0-255), radius
         db      224, 40
         db      32, 40
 

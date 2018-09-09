@@ -31,6 +31,7 @@ class Elipse:
             for a in reversed(range(0, values_per_quadrant)):
                 rad = math.radians(a * degree_increment)
                 x, y = self.calc(px, 0, rad)
+                y = px - y
                 tmp_list.append((int(x), int(y)))
             points[px] = tmp_list
         self.output(points)
