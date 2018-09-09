@@ -142,11 +142,12 @@ irq_8_handler:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 scroll_anim:
         sub     bx,bx                           ;point 0 - point 1
-        inc     byte [current_rotation]
         mov     cl,[current_rotation]
         call    get_coords_for_line
-        mov     bp,1
+        mov     bp,[current_color]
         call    Line08
+        inc     byte [current_rotation]
+        inc     byte [current_color]
         ret
 
 
@@ -161,6 +162,7 @@ scroll_anim:
 ;       cx = x1
 ;       dx = y0
 get_coords_for_line:
+        int 3
         shl     bx,1                            ;point offset, since each one takes 2 bytes
         lea     si,[points+bx]
 
@@ -232,7 +234,7 @@ get_coords_for_point:
 
         shl     bx,1                            ;each elipse radius entry takes 2 bytes
                                                 ;using ah ax index, and can't be bigger than 128.
-        lea     si,[elipse_table+bx]            ;si := addres of radius-table to use
+        mov     si,[elipse_table+bx]            ;si := addres of radius-table to use
 
         and     ax,0b00000000_00111111          ;ah = 0
                                                 ; al = filter out quadrant bits
@@ -271,6 +273,9 @@ get_coords_for_point:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 current_rotation:
         db      0
+current_color:
+        db      0
+        db      0                               ;ignore
 
 points:
         ; points are defined in polar coordinates: angle, radius
