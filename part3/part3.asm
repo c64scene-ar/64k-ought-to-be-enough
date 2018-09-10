@@ -141,18 +141,11 @@ irq_8_handler:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 scroll_anim:
-;        sub     bx,bx                           ;point 0 - point 1
-;        mov     cl,[current_rotation]
-;        call    get_coords_for_line
-;        mov     bp,[current_color]
-;        call    Line08
-;        inc     byte [current_rotation]
-;        inc     byte [current_color]
-;        ret
         mov     si,points
-        mov     word [poly_offset],0x3250       ;x offset = 80, y offset = 50
+        mov     word [poly_translation],0x3250       ;x offset = 80, y offset = 50
         call    draw_poly
-        ;inc     byte [rotation_and_scale]
+        inc     byte [poly_rotation]
+        inc     byte [poly_color]
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -169,7 +162,7 @@ draw_poly:
         cmp     ah,0xff                         ; end of poly ?
         jz      .exit
 
-        add     ax,[rotation_and_scale]         ;update angle (rotation) and radius (scale)
+        add     ax,[poly_rotation_and_scale]    ;update angle (rotation) and radius (scale)
                                                 ; al := al + cl
                                                 ; ah := ah + ch
 
@@ -187,7 +180,7 @@ draw_poly:
 .draw_it:
         ; draw line... order of points doesn't matter
         ; a line is a line. we are drawing a line from p1 to p0
-        mov     bp,[poly_offset]
+        mov     bp,[poly_translation]
         mov     cx,[poly_prev_point]            ;restore previous point
         add     cx,bp                           ;update offset for point 1
         mov     [poly_prev_point],ax            ;save current point for later
@@ -198,64 +191,11 @@ draw_poly:
         sub     dh,dh
         sub     ch,ch                           ;x1
         ;sub     bh,bh                          ;not needed, bh is already 0
-        mov     bp,1
+        mov     bp,[poly_color]
         call    Line08
         jmp     .loop
 
 .exit:
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; get_coords_for_line
-; in:
-;       bx = point idx
-;       cl = angle (from 0 to 255). each quadrant has 64 values
-; returns:
-;       ax = x0
-;       bx = y0
-;       cx = x1
-;       dx = y0
-get_coords_for_line:
-        mov     dl,cl                           ;dl := cl (angle). saved for later
-        shl     bx,1                            ;point offset, since each one takes 2 bytes
-        lea     si,[points+bx]
-
-        ; point 0
-        lodsw                                   ;al = orig angle, ah = orig radius
-        add     al,cl                           ;al = orig angle + new angle
-
-        mov     bp,si                           ;bp := si (saved for later)
-
-        call    get_coords_for_point
-        mov     di,ax                           ;di = x,y. save results for later
-
-        ; point 1
-        mov     si,bp                           ;restore si from bp
-
-        lodsw                                   ;al = orig angle, ah = orig scale
-        add     al,dl                           ;al = orig angle + new angle
-        call    get_coords_for_point
-
-        ; translate results to center of screen
-        ; translate point 1
-        mov     bp,0x3250                       ; bp := 50 * 256 + 80
-        add     ax,bp                           ;translate x,y to center of screen
-                                                ; y := y + 50 (ah)
-                                                ; x := x + 80 (al)
-        mov     cl,al                           ;cx = x1
-        mov     dl,ah                           ;dx = y1
-
-        ; translate point 0
-        add     di,bp                           ;translate x,y to center of screen
-        xchg    ax,di                           ;ax := x,y
-        mov     bl,ah                           ;bx := y0
-
-        ; clear MSB 8 bits
-        cbw                                     ;ax := x0
-        sub     bh,bh                           ;bx := y0
-        sub     ch,ch                           ;cx := x1
-        sub     dh,dh                           ;dx := y1
-
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -472,25 +412,31 @@ end_condition:
         db      0                               ;if 0, part3 ends
 ; poly and line related
 poly_prev_point:
-        dw      0
+        dw      0                               ;cache of previous point
 is_poly_previous_point:
         db      0                               ;1 if there is a valid point in poly_prev_point
-poly_offset:
-        dw      0
-rotation_and_scale:
-        dw      0
-current_rotation:
-        db      0
-current_color:
-        db      0
+
+; matrix values for current polygon
+;       translation
+;       rotation
+;       scale
+poly_translation:
+        dw      0                               ;x and y
+poly_rotation_and_scale:                        ;can be accessed by a word
+poly_rotation:  db 0                            ;rotation: between 0 and 255
+poly_scale:     db 0                            ;scale: cannot be greater than max radius
+
+poly_color:
+        db      0                               ;color for polygon
         db      0                               ;ignore
+
 points:
         ; points are defined in polar coordinates: angle (0-255), radius
-        db      224, 49
-        db      32, 49
-        db      96, 49
-        db      160, 49
-        db      224, 49
+        db      254, 46
+        db      62, 46
+        db      126, 46
+        db      190, 46
+        db      254, 46
         db      -1, -1
 
 
