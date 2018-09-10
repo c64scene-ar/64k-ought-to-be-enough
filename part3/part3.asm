@@ -182,7 +182,7 @@ scroll_anim:
         mov     si,points
         mov     word [poly_translation],0x3250       ;x offset = 80, y offset = 50
         call    draw_poly
-;        inc     byte [poly_rotation]
+        inc     byte [poly_rotation]
         inc     byte [Line08_color]
         ret
 
