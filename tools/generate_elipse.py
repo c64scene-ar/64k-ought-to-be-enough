@@ -17,7 +17,8 @@ class Elipse:
         self._output_fd = output_fd
 
     def calc(self, x, y, a):
-        new_x = x * math.cos(a) - y * math.sin(a)
+        PIXEL_ASPECT_RATIO = 1.2
+        new_x = x * math.cos(a) * PIXEL_ASPECT_RATIO - y * math.sin(a)
         new_y = x * math.sin(a) + y * math.cos(a)
         return (new_x, new_y)
 

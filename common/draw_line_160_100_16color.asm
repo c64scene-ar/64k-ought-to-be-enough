@@ -1,15 +1,15 @@
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
-; Name:     Line04
+; Name:     Line08
 ;
-; Function: Draw a line in 320x200 16-color mode
+; Function: Draw a line in 120x100 16-color mode
 ;
-; Caller:
-;       ax =    x1
-;       bl =    y1
-;       cx =    x2
-;       dx =    y2
-;       bp =    color
+; Caller must file:
+;       Line08_x1
+;       Line08_y1
+;       Line08_x2
+;       Line08_y2
+;       Line08_color
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
@@ -19,28 +19,22 @@
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
-; Adapted to nasm and, PCjr's 320x200 16-color: riq
+; Adapted to nasm and, PCjr's 160x100 16-color: riq
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 
-ByteOffsetShift EQU 1       ; used to convert pixels to byte offset
+ByteOffsetShift EQU 1                   ; used to convert pixels to byte offset
 BytesPerLine    EQU 80
 
 Line08:
         push    si
         push    di
 
-        mov     [ARGx1],ax              ;tmp for x1
-        mov     [ARGy1],bx              ;tmp for y1
-        mov     [ARGx2],cx              ;tmp for x2
-        mov     [ARGy2],dx              ;tmp for y2
-        mov     dx,bp
-        mov     [ARGn],dl               ;tmp for color
-
 ; check for vertical line
         mov     si,BytesPerLine         ; initial y-increment
 
-        sub     cx,ax                   ; CX := x2 - x1
+        mov     cx,[Line08_x2]
+        sub     cx,[Line08_x1]                  ; CX := x2 - x1
         jz      VertLine04              ; jump if vertical line
 
 ; force x1 < x2
@@ -49,18 +43,18 @@ Line08:
 
         neg     cx                      ; CX := x1 - x2
 
-        mov     bx,[ARGx2]              ; exchange x1 and x2
-        xchg    bx,[ARGx1]
-        mov     [ARGx2],bx
+        mov     bx,[Line08_x2]          ; exchange x1 and x2
+        xchg    bx,[Line08_x1]
+        mov     [Line08_x2],bx
 
-        mov     bx,[ARGy2]               ; exchange y1 and y2
-        xchg    bx,[ARGy1]
-        mov     [ARGy2],bx
+        mov     bx,[Line08_y2]          ; exchange y1 and y2
+        xchg    bx,[Line08_y1]
+        mov     [Line08_y2],bx
 
 ; calculate dy = ABS(y2-y1)
 
-L01:    mov     bx,[ARGy2]
-        sub     bx,[ARGy1]              ;BX := y2 - y1
+L01:    mov     bx,[Line08_y2]
+        sub     bx,[Line08_y1]          ;BX := y2 - y1
         jnz     L02
 
         jmp     HorizLine04             ; jump if horizontal line
@@ -92,13 +86,13 @@ L04:    shl     bx,1                    ; BX := 2 * dy
 ; calculate first pixel address
 
         push    cx                      ; preserve this register
-        mov     ax,[ARGy1]              ; AX := y
-        mov     bx,[ARGx1]              ; BX := x
+        mov     ax,[Line08_y1]          ; AX := y
+        mov     bx,[Line08_x1]          ; BX := x
         call    PixelAddr08             ; AH := bit mask
                                         ; ES:BX -> buffer
                                         ; CL := # bits to shift left
 
-        mov     al,[ARGn]               ; AL := unshifted pixel value
+        mov     al,[Line08_color]               ; AL := unshifted pixel value
         shl     ax,cl                   ; AH := bit mask in proper position
                                         ; AL := pixel value in proper position
 
@@ -119,8 +113,8 @@ L05:    jmp     [VARroutine]            ; jump to appropriate routine for slope
 ; routine for vertical lines
 
 VertLine04:
-        mov     ax,[ARGy1]              ; AX := y1
-        mov     bx,[ARGy2]              ; BX := y2
+        mov     ax,[Line08_y1]          ; AX := y1
+        mov     bx,[Line08_y2]          ; BX := y2
         mov     cx,bx
         sub     cx,ax                   ; CX := dy
         jge     L31                     ; jump if dy >= 0
@@ -129,12 +123,12 @@ VertLine04:
         mov     ax,bx                   ; AX := y2
 
 L31:    inc     cx                      ; CX := # of pixels to draw
-        mov     bx,[ARGx1]              ; BX := x
+        mov     bx,[Line08_x1]          ; BX := x
         push    cx                      ; preserve this register
         call    PixelAddr08             ; AH := bit mask
                                         ; ES:BX -> video buffer
                                         ; CL := # bits to shift left
-        mov     al,[ARGn]               ; AL := pixel value
+        mov     al,[Line08_color]       ; AL := pixel value
         shl     ax,cl                   ; AH := bit mask in proper position
                                         ; AL := pixel value in proper position
         not     ah                      ; AH := inverse bit mask
@@ -156,8 +150,8 @@ L32:    and     [es:bx],ah              ; zero pixel in buffer
 ; routine for horizontal lines (slope = 0)
 
 HorizLine04:
-        mov     ax,[ARGy1]
-        mov     bx,[ARGx1]
+        mov     ax,[Line08_y1]
+        mov     bx,[Line08_x1]
         call    PixelAddr08             ; AH := bit mask
                                         ; ES:BX -> video buffer
                                         ; CL := # bits to shift left
@@ -172,7 +166,7 @@ HorizLine04:
         shl     dh,cl                   ; DH := reverse bit mask for first byte
         not     dh                      ; DH := bit mask for first byte
 
-        mov     cx,[ARGx2]              ;cx = x2
+        mov     cx,[Line08_x2]          ;cx = x2
         and     cl,1                    ;cl = x2 & 1
         xor     cl,1                    ;cl = !cl
         shl     cl,1                    ; CL := number of bits to shift left
@@ -182,8 +176,8 @@ HorizLine04:
 
 ; determine byte offset of first and last pixel in the line
 
-        mov     ax,[ARGx2]              ; AX := x2
-        mov     bx,[ARGx1]              ; BX := x1
+        mov     ax,[Line08_x2]          ; AX := x2
+        mov     bx,[Line08_x1]          ; BX := x1
 
         mov     cl,ByteOffsetShift      ; number of bits to shift to
                                         ;  convert pixels to bytes
@@ -196,7 +190,7 @@ HorizLine04:
 ; propagate pixel value throughout one byte
 
         mov     bx,PropagatedPixel
-        mov     al,[ARGn]               ; AL := pixel value
+        mov     al,[Line08_color]       ; AL := pixel value
         xlatb                           ; AL := propagated pixel value
 
 ; set pixels in leftmost byte of the line
@@ -357,13 +351,12 @@ VARincr1:       dw      0
 VARincr2:       dw      0
 VARroutine:     dw      0
 
-ARGx1:          dw      0               ;x1
-ARGx2:          dw      0               ;x2
-ARGy1:          dw      0               ;y1
-ARGy2:          dw      0               ;y2
-ARGn:           db      0               ;color
-
-
+;public variables
+Line08_x1:      dw      0               ;x1
+Line08_x2:      dw      0               ;x2
+Line08_y1:      dw      0               ;y1
+Line08_y2:      dw      0               ;y2
+Line08_color:   db      0               ;color
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;

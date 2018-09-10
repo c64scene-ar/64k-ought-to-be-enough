@@ -13,8 +13,8 @@ org     0x100
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-%define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 1                              ;1=run on emulator
+%define DEBUG 1                                 ;0=diabled, 1=enabled
+%define EMULATOR 0                              ;1=run on emulator
 
 GFX_SEG         equ     0x0800                  ;graphics segment (32k offset)
 
@@ -45,6 +45,9 @@ start:
 
         push    cs
         pop     ds
+
+        mov     ax,0xb800                       ;video segment
+        mov     es,ax                           ;should be restored if modified
 
         call    set_vid_160_100_16
 
@@ -119,8 +122,16 @@ irq_8_handler:
         push    cs
         pop     ds
 
+%if DEBUG
+        call    inc_d020
+%endif
+
         call    scroll_anim
         call    music_play
+
+%if DEBUG
+        call    dec_d020
+%endif
 
 
         mov     al,0x20                         ;send the EOI signal
@@ -140,12 +151,39 @@ irq_8_handler:
         iret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; Debug functions
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+%if DEBUG
+inc_d020:
+        mov     dx,0x03da                       ;show how many raster barts it consumes
+        mov     al,2                            ;select border color
+        out     dx,al
+
+        mov     dl,0xde                         ;dx=0x03de
+        mov     al,0x0f
+        out     dx,al                           ;change border to white
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+dec_d020:
+        mov     dx,0x03da                       ;show how many raster barts it consumes
+        mov     al,2                            ;select border color
+        out     dx,al
+
+        mov     dl,0xde                         ;dx=0x03de
+        sub     al,al
+        out     dx,al                           ;change border back to black
+
+        ret
+%endif
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 scroll_anim:
         mov     si,points
         mov     word [poly_translation],0x3250       ;x offset = 80, y offset = 50
         call    draw_poly
         inc     byte [poly_rotation]
-        inc     byte [poly_color]
+        inc     byte [Line08_color]
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -191,7 +229,11 @@ draw_poly:
         sub     dh,dh
         sub     ch,ch                           ;x1
         ;sub     bh,bh                          ;not needed, bh is already 0
-        mov     bp,[poly_color]
+
+        mov     [Line08_x1],ax
+        mov     [Line08_y1],bx
+        mov     [Line08_x2],cx
+        mov     [Line08_y2],dx
         call    Line08
         jmp     .loop
 
@@ -263,124 +305,6 @@ get_coords_for_point:
 .exit:
         ret
 
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-scroll_anim_2:
-
-        ; kite top-right diag
-        mov     ax,10                          ;x1
-        mov     bx,49                           ;y1
-        mov     cx,79                          ;x0
-        mov     dx,29                          ;y0
-        mov     bp,2
-        call    Line08
-
-        ; kite top-left diag
-        mov     ax,79                          ;x1
-        mov     bx,29                           ;y1
-        mov     cx,150                          ;x0
-        mov     dx,49                          ;y0
-        mov     bp,3
-        call    Line08
-
-        ; kite bottom-left diag
-        mov     ax,10                           ;x0
-        mov     bx,49                           ;y0
-        mov     cx,79                           ;x1
-        mov     dx,99                          ;y1
-        mov     bp,1
-        call    Line08
-
-        ; kite bottom-right diag
-        mov     ax,150                           ;x1
-        mov     bx,49                          ;y1
-        mov     cx,79                          ;x0
-        mov     dx,99                           ;y0
-        mov     bp,1
-        call    Line08
-
-        ; kite horiz
-        mov     ax,10                           ;x1
-        mov     bx,49                           ;y1
-        mov     cx,150                          ;x0
-        mov     dx,49                           ;y0
-        mov     bp,4
-        call    Line08
-
-        ; kite vertical
-        mov     ax,79                           ;x1
-        mov     bx,29                           ;y1
-        mov     cx,79                           ;x0
-        mov     dx,99                          ;y0
-        mov     bp,3
-        call    Line08
-
-        ; test vertical 1
-        mov     ax,0                            ;x1
-        mov     bx,0                            ;y1
-        mov     cx,0                            ;x0
-        mov     dx,99                          ;y0
-        mov     bp,2
-        call    Line08
-
-        ; test vertical 2
-        mov     ax,1                            ;x1
-        mov     bx,0                            ;y1
-        mov     cx,1                            ;x0
-        mov     dx,99                           ;y0
-        mov     bp,4
-        call    Line08
-
-        ; test vertical 1
-        mov     ax,159                            ;x1
-        mov     bx,0                            ;y1
-        mov     cx,159                            ;x0
-        mov     dx,99                          ;y0
-        mov     bp,2
-        call    Line08
-
-        ; test vertical 2
-        mov     ax,158                          ;x1
-        mov     bx,0                            ;y1
-        mov     cx,158                         ;x0
-        mov     dx,99                          ;y0
-        mov     bp,4
-        call    Line08
-
-        ; test horizontal 1
-        mov     ax,0                            ;x1
-        mov     bx,0                            ;y1
-        mov     cx,159                          ;x0
-        mov     dx,0                            ;y0
-        mov     bp,5
-        call    Line08
-
-        ; test horizontal 2
-        mov     ax,0                            ;x1
-        mov     bx,1                            ;y1
-        mov     cx,159                          ;x0
-        mov     dx,1                            ;y0
-        mov     bp,7
-        call    Line08
-
-        ; test horizontal 3
-        mov     ax,0                            ;x1
-        mov     bx,99                            ;y1
-        mov     cx,159                          ;x0
-        mov     dx,99                            ;y0
-        mov     bp,5
-        call    Line08
-
-        ; test horizontal 4
-        mov     ax,0                            ;x1
-        mov     bx,98                            ;y1
-        mov     cx,159                          ;x0
-        mov     dx,98                            ;y0
-        mov     bp,7
-        call    Line08
-
-        ret
-
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; set_vid_160_100_16
 ; Trixter's 160x100 @ 16 color video mode
@@ -426,17 +350,14 @@ poly_rotation_and_scale:                        ;can be accessed by a word
 poly_rotation:  db 0                            ;rotation: between 0 and 255
 poly_scale:     db 0                            ;scale: cannot be greater than max radius
 
-poly_color:
-        db      0                               ;color for polygon
-        db      0                               ;ignore
-
 points:
         ; points are defined in polar coordinates: angle (0-255), radius
-        db      254, 46
-        db      62, 46
-        db      126, 46
-        db      190, 46
-        db      254, 46
+        db      254, 35
+        db      62, 35
+        db      126, 35
+        db      -1, -1
+        db      190, 40
+        db      254, 40
         db      -1, -1
 
 

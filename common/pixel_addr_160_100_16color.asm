@@ -4,13 +4,12 @@
 ;
 ; Function: Determine buffer address of pixel in 160x200 16-color mode
 ;
-; Caller:       AX = y-coordinate (0-199)
+; Caller:       AX = y-coordinate (0-99)
 ;               BX = x-coordinate (0-159)
 ;
 ; Returns:      AH = bit mask
 ;               BX = byte offset in buffer
 ;               CL = number of bits to shift left
-;               ES = video buffer segment
 ;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;
@@ -29,9 +28,6 @@
 ; offset = y * 80 + x / 2
 ; cl = (x & 1) ? 0 : 1
 
-OriginOffset    equ 0       ; byte offset of (0,0)
-VideoBufferSeg  equ 0xb800
-
 PixelAddr08:
         mov     cl,bl           ;save for later
 
@@ -42,9 +38,6 @@ PixelAddr08:
         shr     ax,1            ; AX := 32*Y
         add     bx,ax           ; BX := 128*Y + 32*Y + X == 160*Y + X
         shr     bx,1            ; BX : = 80*y + x /2
-
-        mov     ax,VideoBufferSeg
-        mov     es,ax       ; ES:BX := byte address of pixel
 
         mov     ah,0b0000_1111  ;mask
         and     cl,1            ;x & 1
