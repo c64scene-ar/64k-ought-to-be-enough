@@ -160,8 +160,7 @@ scroll_anim:
 ; IN:
 ;       si := poly offset
 draw_poly:
-        int 3
-        mov     byte [poly_prev_point],0
+        mov     byte [is_poly_previous_point],0
 
 .loop:
         lodsw                                   ;load point
@@ -178,8 +177,8 @@ draw_poly:
         call    get_coords_for_point            ;al := x, ah := y
         mov     si,bp                           ;restore si
 
-        cmp     byte [is_poly_previous_point],1 ;is there already another point in the stack?
-        je      .draw_it
+        cmp     byte [is_poly_previous_point],0 ;is there already another point in the stack?
+        jne     .draw_it
 
         mov     [poly_prev_point],ax            ;save current point for later
         inc     byte [is_poly_previous_point]   ;flag that a point is already saved
@@ -198,7 +197,7 @@ draw_poly:
         mov     dl,ch                           ;y1
         sub     dh,dh
         sub     ch,ch                           ;x1
-        sub     bh,bh
+        ;sub     bh,bh                          ;not needed, bh is already 0
         mov     bp,1
         call    Line08
         jmp     .loop
@@ -489,6 +488,9 @@ points:
         ; points are defined in polar coordinates: angle (0-255), radius
         db      224, 40
         db      32, 40
+        db      96, 40
+        db      160, 40
+        db      224, 40
         db      -1, -1
 
 
