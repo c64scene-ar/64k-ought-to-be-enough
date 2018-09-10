@@ -180,7 +180,6 @@ get_coords_for_line:
 
         lodsw                                   ;al = orig angle, ah = orig scale
         add     al,dl                           ;al = orig angle + new angle
-        int 3
         call    get_coords_for_point
 
         ; translate results to center of screen
@@ -220,6 +219,7 @@ get_coords_for_line:
 ; destroys:
 ;       cx, bx, si
 get_coords_for_point:
+        int 3
         mov     cx,ax                           ;cx = angle / radius. cx saved for later
         test    al,0b0100_0000                  ;quadran 1 or 3?
         jz      .l0                             ;no, don't inverse angle
@@ -255,7 +255,7 @@ get_coords_for_point:
 
         test    cl,0b0100_0000                  ;already know that we are in
                                                 ; quadrant 2 or 3. are we in quadrant 2?
-        jz      .exit                           ;exit if in quadrant 3
+        jnz     .exit                           ;exit if in quadrant 3
         ; quadrant 2
         neg     ah                              ;y := -y
         ret
