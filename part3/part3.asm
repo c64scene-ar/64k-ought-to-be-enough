@@ -141,15 +141,70 @@ irq_8_handler:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 scroll_anim:
-        sub     bx,bx                           ;point 0 - point 1
-        mov     cl,[current_rotation]
-        call    get_coords_for_line
-        mov     bp,[current_color]
-        call    Line08
-        inc     byte [current_rotation]
-        inc     byte [current_color]
+;        sub     bx,bx                           ;point 0 - point 1
+;        mov     cl,[current_rotation]
+;        call    get_coords_for_line
+;        mov     bp,[current_color]
+;        call    Line08
+;        inc     byte [current_rotation]
+;        inc     byte [current_color]
+;        ret
+        mov     si,points
+        mov     word [poly_offset],0x3250       ;x offset = 80, y offset = 50
+        call    draw_poly
+        ;inc     byte [rotation_and_scale]
         ret
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; draw polygon
+; IN:
+;       si := poly offset
+draw_poly:
+        int 3
+        mov     byte [poly_prev_point],0
+
+.loop:
+        lodsw                                   ;load point
+                                                ; al = angle
+                                                ; ah = radius
+        cmp     ah,0xff                         ; end of poly ?
+        jz      .exit
+
+        add     ax,[rotation_and_scale]         ;update angle (rotation) and radius (scale)
+                                                ; al := al + cl
+                                                ; ah := ah + ch
+
+        mov     bp,si                           ;save si... gets destroyed in get_coords_for_point
+        call    get_coords_for_point            ;al := x, ah := y
+        mov     si,bp                           ;restore si
+
+        cmp     byte [is_poly_previous_point],1 ;is there already another point in the stack?
+        je      .draw_it
+
+        mov     [poly_prev_point],ax            ;save current point for later
+        inc     byte [is_poly_previous_point]   ;flag that a point is already saved
+        jmp     .loop                           ;read next point... start again
+
+.draw_it:
+        ; draw line... order of points doesn't matter
+        ; a line is a line. we are drawing a line from p1 to p0
+        mov     bp,[poly_offset]
+        mov     cx,[poly_prev_point]            ;restore previous point
+        add     cx,bp                           ;update offset for point 1
+        mov     [poly_prev_point],ax            ;save current point for later
+        add     ax,bp                           ;update offset for point 0
+        mov     bl,ah                           ;y0
+        cbw                                     ;x0 (ah := 0)
+        mov     dl,ch                           ;y1
+        sub     dh,dh
+        sub     ch,ch                           ;x1
+        sub     bh,bh
+        mov     bp,1
+        call    Line08
+        jmp     .loop
+
+.exit:
+        ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; get_coords_for_line
@@ -219,7 +274,6 @@ get_coords_for_line:
 ; destroys:
 ;       cx, bx, si
 get_coords_for_point:
-        int 3
         mov     cx,ax                           ;cx = angle / radius. cx saved for later
         test    al,0b0100_0000                  ;quadran 1 or 3?
         jz      .l0                             ;no, don't inverse angle
@@ -269,19 +323,6 @@ get_coords_for_point:
         neg     ah                              ;y := -y
 .exit:
         ret
-
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-current_rotation:
-        db      0
-current_color:
-        db      0
-        db      0                               ;ignore
-
-points:
-        ; points are defined in polar coordinates: angle (0-255), radius
-        db      224, 40
-        db      32, 40
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -430,9 +471,26 @@ pvm_song:
 
 end_condition:
         db      0                               ;if 0, part3 ends
-
-line_color:
+; poly and line related
+poly_prev_point:
         dw      0
+is_poly_previous_point:
+        db      0                               ;1 if there is a valid point in poly_prev_point
+poly_offset:
+        dw      0
+rotation_and_scale:
+        dw      0
+current_rotation:
+        db      0
+current_color:
+        db      0
+        db      0                               ;ignore
+points:
+        ; points are defined in polar coordinates: angle (0-255), radius
+        db      224, 40
+        db      32, 40
+        db      -1, -1
+
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; includes
