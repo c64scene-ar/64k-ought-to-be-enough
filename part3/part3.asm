@@ -352,11 +352,11 @@ poly_scale:     db 0                            ;scale: cannot be greater than m
 
 points:
         ; points are defined in polar coordinates: angle (0-255), radius
-        db      32, 45
-        db      96, 45
-        db      160, 45
-        db      224, 45
-        db      32, 45
+        db      254, 42
+        db      62, 42
+        db      126, 42
+        db      190, 42
+        db      254, 42
         db      -1, -1
 
 
