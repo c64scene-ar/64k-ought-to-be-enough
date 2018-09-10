@@ -13,8 +13,8 @@ org     0x100
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-%define DEBUG 1                                 ;0=diabled, 1=enabled
-%define EMULATOR 0                              ;1=run on emulator
+%define DEBUG 0                                 ;0=diabled, 1=enabled
+%define EMULATOR 1                              ;1=run on emulator
 
 GFX_SEG         equ     0x0800                  ;graphics segment (32k offset)
 
@@ -182,7 +182,7 @@ scroll_anim:
         mov     si,points
         mov     word [poly_translation],0x3250       ;x offset = 80, y offset = 50
         call    draw_poly
-        inc     byte [poly_rotation]
+;        inc     byte [poly_rotation]
         inc     byte [Line08_color]
         ret
 
@@ -224,7 +224,7 @@ draw_poly:
         mov     [poly_prev_point],ax            ;save current point for later
         add     ax,bp                           ;update offset for point 0
         mov     bl,ah                           ;y0
-        cbw                                     ;x0 (ah := 0)
+        sub     ah,ah
         mov     dl,ch                           ;y1
         sub     dh,dh
         sub     ch,ch                           ;x1
@@ -234,7 +234,7 @@ draw_poly:
         mov     [Line08_y1],bx
         mov     [Line08_x2],cx
         mov     [Line08_y2],dx
-        call    Line08
+        call    Line08_draw
         jmp     .loop
 
 .exit:
@@ -352,12 +352,11 @@ poly_scale:     db 0                            ;scale: cannot be greater than m
 
 points:
         ; points are defined in polar coordinates: angle (0-255), radius
-        db      254, 35
-        db      62, 35
-        db      126, 35
-        db      -1, -1
-        db      190, 40
-        db      254, 40
+        db      32, 45
+        db      96, 45
+        db      160, 45
+        db      224, 45
+        db      32, 45
         db      -1, -1
 
 

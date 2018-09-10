@@ -104,8 +104,8 @@ $ %(prog)s -o table.asm
 def main():
     args = parse_args()
     with open(args.output_file, 'w+') as fd:
-        # radius: between 1 and 48 (48 not included)
-        Elipse(fd).run(0, 48, args.values_per_quadrant)
+        # radius: between 1 and 50 (50 not included)
+        Elipse(fd).run(0, 50, args.values_per_quadrant)
 
 
 if __name__ == "__main__":

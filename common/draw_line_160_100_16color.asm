@@ -26,7 +26,7 @@
 ByteOffsetShift EQU 1                   ; used to convert pixels to byte offset
 BytesPerLine    EQU 80
 
-Line08:
+Line08_draw:
         push    si
         push    di
 
