@@ -42,14 +42,20 @@ class Elipse:
         first = True
         count = 0
         for x, y in points:
+            if x < 0:
+                x = (x+256) % 256
+            if y < 0:
+                y = (y+256) % 256
+
             if first:
-                self._output_fd.write('        db %d, %d' % (x, y))
+                self._output_fd.write('        dw 0x%04x' % (y * 256 + x))
                 first = False
             else:
-                self._output_fd.write(', %d, %d' % (x, y))
+                self._output_fd.write(', 0x%04x' % (y * 256 + x))
+
             count += 1
             # no more than 16 elements per line
-            if count >= 16:
+            if count >= 8:
                 first = True
                 count = 0
                 self._output_fd.write('\n')
@@ -97,8 +103,8 @@ $ %(prog)s -o table.asm
 def main():
     args = parse_args()
     with open(args.output_file, 'w+') as fd:
-        # radius: between 1 and 50
-        Elipse(fd).run(1, 50, args.values_per_quadrant)
+        # radius: between 1 and 50 (50 not included)
+        Elipse(fd).run(0, 50, args.values_per_quadrant)
 
 
 if __name__ == "__main__":

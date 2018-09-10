@@ -486,11 +486,11 @@ current_color:
         db      0                               ;ignore
 points:
         ; points are defined in polar coordinates: angle (0-255), radius
-        db      224, 40
-        db      32, 40
-        db      96, 40
-        db      160, 40
-        db      224, 40
+        db      224, 49
+        db      32, 49
+        db      96, 49
+        db      160, 49
+        db      224, 49
         db      -1, -1
 
 
