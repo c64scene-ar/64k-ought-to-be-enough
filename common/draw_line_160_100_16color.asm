@@ -31,14 +31,10 @@ Line08_draw:
         push    di
         push    ds
 
-        mov     ax,0xb800
-        mov     ds,ax                   ;DS: vdieo buffer
-
 ; check for vertical line
         mov     si,BytesPerLine         ; initial y-increment
 
-        mov     cx,[cs:Line08_x2]
-        sub     cx,[cs:Line08_x1]                  ; CX := x2 - x1
+        sub     cx,ax                   ; CX := x2 - x1
         jz      VertLine04              ; jump if vertical line
 
 ; force x1 < x2
@@ -47,18 +43,18 @@ Line08_draw:
 
         neg     cx                      ; CX := x1 - x2
 
-        mov     bx,[cs:Line08_x2]       ; exchange x1 and x2
-        xchg    bx,[cs:Line08_x1]
-        mov     [cs:Line08_x2],bx
+        mov     bl,[Line08_x2]          ; exchange x1 and x2
+        xchg    bl,[Line08_x1]
+        mov     [Line08_x2],bl
 
-        mov     bx,[cs:Line08_y2]       ; exchange y1 and y2
-        xchg    bx,[cs:Line08_y1]
-        mov     [cs:Line08_y2],bx
+        mov     bl,[Line08_y2]          ; exchange y1 and y2
+        xchg    bl,[Line08_y1]
+        mov     [Line08_y2],bl
 
 ; calculate dy = ABS(y2-y1)
 
-L01:    mov     bx,[cs:Line08_y2]
-        sub     bx,[cs:Line08_y1]       ;BX := y2 - y1
+L01:    mov     bx,[Line08_y2]
+        sub     bx,[Line08_y1]          ;BX := y2 - y1
         jnz     L02
 
         jmp     HorizLine04             ; jump if horizontal line
@@ -72,31 +68,31 @@ L02:    jns     L03
 
 L03:    push    si                      ; preserve y-increment
 
-        mov     word [cs:VARroutine],LoSlopeLine04
+        mov     word [VARroutine],LoSlopeLine04
         cmp     bx,cx
         jle     L04                     ; jump if dy <= dx (slope <= 1)
-        mov     word [cs:VARroutine],HiSlopeLine04
+        mov     word [VARroutine],HiSlopeLine04
         xchg    bx,cx                   ; exchange dy and dx
 
 ; calculate initial decision variable and increments
 
 L04:    shl     bx,1                    ; BX := 2 * dy
-        mov     [cs:VARincr1],bx        ; incr1 := 2 * dy
+        mov     [VARincr1],bx           ; incr1 := 2 * dy
         sub     bx,cx
         mov     si,bx                   ; SI := d = 2 * dy - dx
         sub     bx,cx
-        mov     [cs:VARincr2],bx        ; incr2 := 2 * (dy - dx)
+        mov     [VARincr2],bx           ; incr2 := 2 * (dy - dx)
 
 ; calculate first pixel address
 
         push    cx                      ; preserve this register
-        mov     ax,[cs:Line08_y1]       ; AX := y
-        mov     bx,[cs:Line08_x1]       ; BX := x
+        mov     al,[Line08_y1]          ; AX := y
+        mov     bl,[Line08_x1]          ; BX := x
         call    PixelAddr08             ; AH := bit mask
                                         ; ES:BX -> buffer
                                         ; CL := # bits to shift left
 
-        mov     al,[cs:Line08_color]    ; AL := unshifted pixel value
+        mov     al,[Line08_color]       ; AL := unshifted pixel value
         shl     ax,cl                   ; AH := bit mask in proper position
                                         ; AL := pixel value in proper position
 
@@ -110,34 +106,36 @@ L04:    shl     bx,1                    ; BX := 2 * dy
 
         pop     bx                      ; BX := y-increment
 
-L05:    jmp     [cs:VARroutine]         ; jump to appropriate routine for slope
+L05:    jmp     [VARroutine]            ; jump to appropriate routine for slope
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; routine for vertical lines
 
 VertLine04:
-        mov     ax,[cs:Line08_y1]       ; AX := y1
-        mov     bx,[cs:Line08_y2]       ; BX := y2
-        mov     cx,bx
-        sub     cx,ax                   ; CX := dy
+        mov     al,[Line08_y1]          ; AX := y1
+        mov     bl,[Line08_y2]          ; BX := y2
+        mov     cl,bl
+        sub     cl,al                   ; CX := dy
         jge     L31                     ; jump if dy >= 0
 
-        neg     cx                      ; force dy >= 0
-        mov     ax,bx                   ; AX := y2
+        neg     cl                      ; force dy >= 0
+        mov     al,bl                   ; AX := y2
 
-L31:    inc     cx                      ; CX := # of pixels to draw
-        mov     bx,[cs:Line08_x1]       ; BX := x
+L31:    inc     cl                      ; CX := # of pixels to draw
+        mov     bl,[Line08_x1]          ; BX := x
         push    cx                      ; preserve this register
         call    PixelAddr08             ; AH := bit mask
                                         ; ES:BX -> video buffer
                                         ; CL := # bits to shift left
-        mov     al,[cs:Line08_color]    ; AL := pixel value
+        mov     al,[Line08_color]       ; AL := pixel value
         shl     ax,cl                   ; AH := bit mask in proper position
                                         ; AL := pixel value in proper position
         not     ah                      ; AH := inverse bit mask
         pop     cx                      ; restore this register
 
+        mov     di,0xb800
+        mov     ds,di                   ;DS: vdieo buffer
 
 L32:    and     [bx],ah                 ; zero pixel in buffer
         or      [bx],al                 ; set pixel value in buffer
@@ -154,8 +152,8 @@ L32:    and     [bx],ah                 ; zero pixel in buffer
 ; routine for horizontal lines (slope = 0)
 
 HorizLine04:
-        mov     ax,[cs:Line08_y1]
-        mov     bx,[cs:Line08_x1]
+        mov     al,[Line08_y1]
+        mov     bl,[Line08_x1]
         call    PixelAddr08             ; AH := bit mask
                                         ; ES:BX -> video buffer
                                         ; CL := # bits to shift left
@@ -170,7 +168,7 @@ HorizLine04:
         shl     dh,cl                   ; DH := reverse bit mask for first byte
         not     dh                      ; DH := bit mask for first byte
 
-        mov     cx,[cs:Line08_x2]       ;cx = x2
+        mov     cl,[Line08_x2]          ;cx = x2
         and     cl,1                    ;cl = x2 & 1
         xor     cl,1                    ;cl = !cl
         shl     cl,1                    ; CL := number of bits to shift left
@@ -180,22 +178,22 @@ HorizLine04:
 
 ; determine byte offset of first and last pixel in the line
 
-        mov     ax,[cs:Line08_x2]       ; AX := x2
-        mov     bx,[cs:Line08_x1]       ; BX := x1
+        mov     al,[Line08_x2]          ; AX := x2
+        mov     ah,[Line08_x1]          ; BX := x1
 
         mov     cl,ByteOffsetShift      ; number of bits to shift to
                                         ;  convert pixels to bytes
 
-        shr     ax,cl                   ; AX := byte offset of x2
-        shr     bx,cl                   ; BX := byte offset of x1
-        mov     cx,ax
-        sub     cx,bx                   ; CX := (# bytes in line) - 1
+        shr     al,cl                   ; AX := byte offset of x2
+        shr     ah,cl                   ; BX := byte offset of x1
+        mov     cl,al
+        sub     cl,ah                   ; CX := (# bytes in line) - 1
 
 ; propagate pixel value throughout one byte
 
         mov     bx,PropagatedPixel
-        mov     al,[cs:Line08_color]    ; AL := pixel value
-        cs xlatb                        ; AL := propagated pixel value
+        mov     al,[Line08_color]       ; AL := pixel value
+        xlatb                           ; AL := propagated pixel value
 
 ; set pixels in leftmost byte of the line
 
@@ -207,6 +205,9 @@ HorizLine04:
 
         and     dl,dh                   ; bit mask for the line
         jmp     short L44
+
+        mov     bx,0xb800
+        mov     ds,bx
 
 L42:    mov     ah,al
         and     ah,dh                   ; AH := masked pixel bits
@@ -230,25 +231,31 @@ L44:    and     al,dl                   ; AL := masked pixels for last byte
         jmp     Lexit
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; routine for dy <= dx (slope <= 1)	; ES:DI -> video buffer
+; routine for dy <= dx (slope <= 1)
+                    ; ES:DI -> video buffer
 					; BX = y-increment
 					; CX = # pixels to draw
 					; SI = decision variable
                     ; DH = inverse bit mask
                     ; DL = pixel value in proper position
+                    ; CH = pixel value in both MSB and LSB
 
 LoSlopeLine04:
-        mov     bp,[cs:VARincr1]
+        mov     bp,[VARincr1]
+
+        mov     ax,0xb800
+        mov     ds,ax
 
 L10:    mov     ah,[di]                 ; AH := byte from video buffer
 
 L11:    and     ah,dh                   ; zero pixel value at current bit offset
         or      ah,dl                   ; set pixel value in byte
 
-        ror     dl,1                    ; rotate pixel value
-        ror     dl,1                    ; rotate pixel value
-        ror     dl,1                    ; rotate pixel value
-        ror     dl,1                    ; rotate pixel value
+        ror     dl,1
+        ror     dl,1
+        ror     dl,1
+        ror     dl,1
+
         xor     dh,255                  ;swap mask. using 'xor' instead of 'not' since testing for sign bit
         jns     L14                     ; jump if bit mask rotated to
                                         ;  leftmost pixel position
@@ -274,7 +281,7 @@ L12:    add     si,[cs:VARincr2]        ; d := d + incr2
 
 ; bit mask shifted out
 
-L14:    mov     [es:di],ah              ; update buffer
+L14:    mov     [di],ah                 ; update buffer
         inc     di                      ; di := offset of next byte
 
         or      si,si                   ; test sign of d
@@ -301,8 +308,11 @@ L15:    add     si,[cs:VARincr2]        ; d := d + incr2
 ;       DH = inverse bit mask
 ;       DL = pixel value in proper position
 HiSlopeLine04:
-        mov     bp,[cs:VARincr1]           ;bp := VARincr1
-        mov     ax,[cs:VARincr2]           ;ax := VARincr2
+        mov     bp,[VARincr1]           ;bp := VARincr1
+        mov     ax,0xb800
+        mov     ds,ax                   ;ds points to video seg
+        mov     ax,[cs:VARincr2]        ;ax := VARincr2
+
 
 L21:    and     [di],dh                 ; zero pixel value in video buffer
         or      [di],dl                 ; set pixel value in byte

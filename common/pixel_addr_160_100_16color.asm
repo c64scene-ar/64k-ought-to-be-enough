@@ -4,8 +4,8 @@
 ;
 ; Function: Determine buffer address of pixel in 160x200 16-color mode
 ;
-; Caller:       AX = y-coordinate (0-99)
-;               BX = x-coordinate (0-159)
+; Caller:       al = y-coordinate (0-99)
+;               bl = x-coordinate (0-159)
 ;
 ; Returns:      AH = bit mask
 ;               BX = byte offset in buffer
@@ -30,6 +30,9 @@
 
 PixelAddr08:
         mov     cl,bl           ;save for later
+
+        sub     ah,ah
+        sub     bh,bh
 
         xchg    ah,al           ; AX := 256*y
         shr     ax,1            ; AX := 128*Y

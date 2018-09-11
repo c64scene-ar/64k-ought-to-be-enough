@@ -13,8 +13,8 @@ org     0x100
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-%define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 1                              ;1=run on emulator
+%define DEBUG 1                                 ;0=diabled, 1=enabled
+%define EMULATOR 0                              ;1=run on emulator
 
 GFX_SEG         equ     0x0800                  ;graphics segment (32k offset)
 
@@ -352,11 +352,11 @@ poly_scale:     db 0                            ;scale: cannot be greater than m
 
 points:
         ; points are defined in polar coordinates: angle (0-255), radius
-        db      254, 42
-        db      62, 42
-        db      126, 42
-        db      190, 42
-        db      254, 42
+        db      254, 21
+        db      62, 21
+        db      126, 21
+        db      190, 21
+;        db      254, 42
         db      -1, -1
 
 
