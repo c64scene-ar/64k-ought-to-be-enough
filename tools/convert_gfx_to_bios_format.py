@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # ----------------------------------------------------------------------------
-# converts raw data to PCjr / Tandy 1000 graphic modes - riq
+# converts PNG images to PCjr / Tandy 1000 graphic modes - riq
 # ----------------------------------------------------------------------------
 """
-Tool to convert raw to 320x200x16 for Tandy 1000
+Tool to convert PNG images to CGA / PCJr / Tandy 1000 video modes
 """
 import argparse
 import math
@@ -22,6 +22,7 @@ formats[0] = BIOSFormat(-1, -1, -1, -1)        # Used for debug
 formats[4] = BIOSFormat(320, 200, 4, 2)        # 320 x 200 4 colors
 formats[6] = BIOSFormat(640, 200, 2, 2)        # 640 x 200 2 colors
 formats[8] = BIOSFormat(160, 200, 16, 2)       # 160 x 200 16 colors
+formats[88] = BIOSFormat(160, 100, 16, 1)       # 160 x 100 16 colors
 formats[9] = BIOSFormat(320, 200, 16, 4)       # 320 x 200 16 colors
 formats[10] = BIOSFormat(640, 200, 4, 4)       # 640 x 200 4 colors
 
@@ -127,15 +128,15 @@ def run(image_file, gfx_format, output_fd):
 def parse_args():
     """parse the arguments"""
     parser = argparse.ArgumentParser(
-        description='Converts .raw images to different formats supported by '
+        description='Converts .png images to different formats supported by '
         'BIOS', epilog="""Example:
 
-$ %(prog)s -g 9 -o image.tandy image.raw
+$ %(prog)s -g 9 -o image.tandy image.png
 """)
     parser.add_argument('filename', metavar='<filename>',
             help='file to convert')
     parser.add_argument('-g', '--bios_gfx_mode', type=int, metavar='BIOS_graphics_mode',
-            dest='format', help='output file. Default: 4. Valid options: 0, 4, 6, 8, 9, 10',
+            dest='format', help='output file. Default: 4. Valid options: 0, 4, 6, 8, 88, 9, 10',
             default=4, required=True)
     parser.add_argument('-o', '--output-file', metavar='<filename>',
             help='output file. Default: stdout', required=True)

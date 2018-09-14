@@ -51,6 +51,24 @@ start:
 
         call    set_vid_160_100_16
 
+%if EMULATOR
+        jmp     l0
+gfx_pampa:
+        incbin 'part3/image_pampa.raw.lz4'
+%include 'common/lz4_8088.asm'
+
+l0:
+        push    cs
+        pop     ds
+        mov     si,gfx_pampa
+        mov     ax,0xb800
+        mov     es,ax
+        sub     di,di
+        mov     cx,8192
+        call    lz4_decompress
+%endif
+
+
 ;        call    scroll_anim
 
 ;        mov     ax,1

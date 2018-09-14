@@ -16,8 +16,8 @@ __docformat__ = 'restructuredtext'
 class Vector:
     SIZE_X = 100
     SIZE_Y = 100
-    SCALE_TO_X = 30
-    SCALE_TO_Y = 30
+    SCALE_TO_X = 32
+    SCALE_TO_Y = 32
     def __init__(self, fd):
         self._fd = fd
         self._image = Image.new("RGB", (self.SIZE_X, self.SIZE_Y))

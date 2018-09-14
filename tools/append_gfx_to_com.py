@@ -64,7 +64,7 @@ $ %(prog)s charset.bin -o new_charset.bin
     parser.add_argument('-o', '--output-file', metavar='<filename>',
             help='output file. Default: stdout')
     parser.add_argument('-s', '--max-size', metavar='N', type=int,
-            help='max size for .com. Possible values: 32, 48, etc.')
+            help='max size for .com. Possible values: 32, 48, 56, etc.')
 
     args = parser.parse_args()
     return args
