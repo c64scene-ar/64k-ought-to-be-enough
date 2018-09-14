@@ -16,8 +16,8 @@ __docformat__ = 'restructuredtext'
 class Vector:
     SIZE_X = 100
     SIZE_Y = 100
-    SCALE_TO_X = 40
-    SCALE_TO_Y = 40
+    SCALE_TO_X = 30
+    SCALE_TO_Y = 30
     def __init__(self, fd):
         self._fd = fd
         self._image = Image.new("RGB", (self.SIZE_X, self.SIZE_Y))
@@ -93,8 +93,9 @@ class Vector:
                 ((54,72), (57,77), (67,84))
                 ]
         self._chars['R'] = [
-                ((25,80), (34,6), (69,8), (76,21), (72,38), (59,41), (32,40)),
-                ((54,42), (60,77))
+                ((33,80), (32,20), (50,20), (61,23), (66,27), (68,36), (65,48),
+                    (57,51), (33,52)),
+                ((52,51), (63,79))
                 ]
         self._chars['S'] = [
                 ((75,25), (72,21), (52,17), (36,20), (32,25), (30,34), (36,43),
@@ -239,7 +240,7 @@ class Vector:
                     self._fd.write(', 0xff, 0xff\t\t\t; end svg letter\n')
         self._fd.write('\n\n')
         self._fd.write(';=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;\n')
-        self._fd.write('svg_letter_tabel:\n')
+        self._fd.write('svg_letter_table:\n')
 
         # sort entries by label name
         sorted_entries = sorted(entries, key=lambda x:x[1])
