@@ -49,4 +49,7 @@ PixelAddr08:
         shl     cl,1            ;cl = (x&1) * 4
 ;        shl     ah,cl           ;mask = 0xf0 if x&1, else 0x0f
 
+
+        add     bx,[cs:video_addr_offset]
+
         ret

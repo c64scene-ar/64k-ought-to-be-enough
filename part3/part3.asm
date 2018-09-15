@@ -69,13 +69,6 @@ l0:
 %endif
 
 
-;        call    scroll_anim
-
-;        mov     ax,1
-;        int     0x16
-;        int     0x20
-
-
         ;turning off the drive motor is needed to prevent
         ;it from being on the whole time.
         mov     bp,ds                           ;save ds
@@ -93,12 +86,16 @@ l0:
         mov     ax,pvm_song                     ;start music offset
         call    music_init
 
+        call    cmd_init                        ;initialize commands
+
         ; should be the last one to get initialized
         mov     ax,irq_8_handler                ;irq 8 callback
         mov     cx,199                          ;horizontal raster line
         call    irq_8_init
 
-.main_loop:
+        ;fall through
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+main_loop:
 
 %if EMULATOR
         push    ds
@@ -113,8 +110,11 @@ l0:
 %endif
         jnz     .exit
 
+        cmp     byte [trigger_pre_render],0     ;should we pre-render text?
+        jnz     .pre_render_text
+
         cmp     byte [end_condition],0          ;animation finished?
-        jz      .main_loop                      ;no, so keep looping
+        jz      main_loop                      ;no, so keep looping
 
 .exit:
         call    music_cleanup
@@ -122,6 +122,66 @@ l0:
 
         mov     ax,0x4c00                       ;ricarDOS: load next file
         int     0x21                            ;DOS: exit to DOS
+
+.pre_render_text:
+        call    pre_render_text
+        jmp     main_loop
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; pre_render_text
+pre_render_text:
+
+;        mov     si,points
+;        mov     word [poly_translation],0x3250       ;x offset = 80, y offset = 50
+;        call    draw_poly
+;        inc     byte [poly_rotation]
+;        inc     byte [Line08_color]
+
+        mov     ax,ds
+        mov     es,ax                                   ;es=ds=cs
+
+        mov     ax,pre_render_buffer
+        mov     [video_addr_offset],ax                  ;correct offset for video
+
+        mov     si,svg_letter_data_C
+        mov     ax,0xffff
+        call    draw_svg_letter_with_shadow
+
+        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
+        mov     si,svg_letter_data_R
+        mov     ax,0xffff                               ;shadow direction
+        call    draw_svg_letter_with_shadow
+
+        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
+        mov     si,svg_letter_data_E
+        mov     ax,0xff00                               ;shadow direction
+        call    draw_svg_letter_with_shadow
+
+        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
+        mov     si,svg_letter_data_D
+        mov     ax,0x00ff                               ;shadow direction
+        call    draw_svg_letter_with_shadow
+
+        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
+        mov     si,svg_letter_data_I
+        mov     ax,0x0001                               ;shadow direction
+        call    draw_svg_letter_with_shadow
+
+        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
+        mov     si,svg_letter_data_T
+        mov     ax,0x0101                               ;shadow direction
+        call    draw_svg_letter_with_shadow
+
+        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
+        mov     si,svg_letter_data_S
+        mov     ax,0x0001                               ;shadow direction
+        call    draw_svg_letter_with_shadow
+
+        mov     ax,0xb800
+        mov     es,ax                                   ;restore es
+
+        mov     byte [trigger_pre_render],0             ;say pre-render finished
+        ret
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -144,8 +204,8 @@ irq_8_handler:
         call    inc_d020
 %endif
 
-        call    scroll_anim
-        call    music_play
+        call    music_play                      ;play music
+        call    [commands_current_anim]         ;play current anim
 
 %if DEBUG
         call    dec_d020
@@ -196,53 +256,161 @@ dec_d020:
 %endif
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-scroll_anim:
-;        mov     si,points
-;        mov     word [poly_translation],0x3250       ;x offset = 80, y offset = 50
-;        call    draw_poly
-;        inc     byte [poly_rotation]
-;        inc     byte [Line08_color]
+; Command routines
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; init
+cmd_init:
+        mov     ax,commands_data
+        mov     [commands_data_idx],ax
 
-        mov     byte [poly_scale],3
-        mov     word [poly_translation],0x5010          ;x offset = 80, y offset = 50
+        jmp     cmd_process_next
 
-        mov     si,svg_letter_data_C
-        mov     ax,0xffff
-        call    draw_svg_letter_with_shadow
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_process_next
+cmd_process_next:
+        mov     si,[commands_data_idx]                  ;si = command pointer
+        lodsb                                           ;load next command in al
+        mov     [commands_data_idx],si                  ;update index
 
-        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
-        mov     si,svg_letter_data_R
-        mov     ax,0xffff                               ;shadow direction
-        call    draw_svg_letter_with_shadow
+        xchg    ax,bx                                   ;bx contains ax
+        shl     bl,1
+        shl     bl,1                                    ;al *= 4 (init, anim)
 
-        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
-        mov     si,svg_letter_data_E
-        mov     ax,0xff00                               ;shadow direction
-        call    draw_svg_letter_with_shadow
+        sub     bh,bh                                   ;bx = pointer
+        lea     si,[commands_entry_tbl + bx]
 
-        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
-        mov     si,svg_letter_data_D
-        mov     ax,0x00ff                               ;shadow direction
-        call    draw_svg_letter_with_shadow
+        lodsw                                           ;ax = address to init
+        xchg    ax,bx                                   ;bx = ax
+        lodsw                                           ;ax = address to anim
+        mov     [commands_current_anim],ax              ;save anim address
+        jmp     [bx]                                    ;call init
 
-        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
-        mov     si,svg_letter_data_I
-        mov     ax,0x0001                               ;shadow direction
-        call    draw_svg_letter_with_shadow
-
-        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
-        mov     si,svg_letter_data_T
-        mov     ax,0x0101                               ;shadow direction
-        call    draw_svg_letter_with_shadow
-
-        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
-        mov     si,svg_letter_data_S
-        mov     ax,0x0001                               ;shadow direction
-        call    draw_svg_letter_with_shadow
-
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+cmd_no_anim:
+        ret
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_end
+cmd_end_init:
+        mov     byte [end_condition],1                  ;end of part III
         ret
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_in_scroll_up
+cmd_in_scroll_up_init:
+        ret
+
+cmd_in_scroll_up_anim:
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_out_scroll_up
+cmd_out_scroll_up_init:
+        mov     byte [command_out_cnt],40          ;bytes to scroll
+        ret
+
+cmd_out_scroll_up_anim:
+        ; scroll up one row
+        dec     byte [command_out_cnt]
+        jnz     .l0
+        jmp     cmd_process_next
+
+.l0:
+        mov     bp,ds                           ;save ds for later
+        mov     ax,0xb800
+        mov     ds,ax                           ;ds = 0xb800 (video segment)
+
+        cld
+        mov     di,80*60                        ;80 bytes per row. dst = row 60
+        mov     si,80*61                        ;80 bytes per row. src = row 61
+        mov     cx,80*39/2                      ;copy 39 rows (in words)
+        rep movsw
+
+        ; set row 99 as black
+        mov     cx,80/2                         ;40 words == 80 bytes
+        mov     di,80*99                        ;80 bytes per row. dst = row 99
+        sub     ax,ax                           ;color black
+        rep stosw
+
+        mov     ds,bp                           ;restore ds
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_pre_render
+cmd_pre_render_init:
+        mov     bp,es                           ;save es for later
+        mov     ax,ds
+        mov     es,ax                           ;es=ds=cs
+
+        mov     si,[commands_data_idx]
+        mov     di,text_to_pre_render
+
+.l0:    movsb                                   ;copy text to render
+        jnz     .l0                             ;copy until al=0
+
+        mov     es,bp                           ;restore es
+
+        mov     byte [trigger_pre_render],1     ;tell "main thread" to pre-render text
+        ret
+
+
+cmd_pre_render_anim:
+        cmp     byte [trigger_pre_render],0     ;pre-render finished?
+        jz      .next_command                   ;yes, call next command
+        ret
+.next_command:
+        jmp     cmd_process_next
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_rotation
+cmd_rotation_init:
+        mov     si,[commands_data_idx]
+        lodsb                                   ;al = new scale
+        mov     [poly_rotation],al              ;set new rotation angle
+        mov     [commands_data_idx],si          ;update index
+        jmp     cmd_process_next                ;no animation... process next command
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_scale
+cmd_scale_init:
+        mov     si,[commands_data_idx]
+        lodsb                                   ;al = new scale
+        mov     [poly_scale],al                 ;set new scale factor
+        mov     [commands_data_idx],si          ;update index
+        jmp     cmd_process_next                ;no animation... process next command
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_translate
+cmd_translate_init:
+        mov     si,[commands_data_idx]
+        lodsw                                   ;ax = new x,y
+        mov     [poly_translation],ax           ;set new translation offset
+        mov     [commands_data_idx],si          ;update index
+        jmp     cmd_process_next                ;no animation... process next command
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_wait:
+cmd_wait_init:
+        mov     si,[commands_data_idx]
+        lodsb                                   ;al=cycles to wait
+        mov     [commands_data_idx],si          ;update index
+        mov     [command_wait_delay],al
+        ret
+
+
+cmd_wait_anim:
+        dec     byte [command_wait_delay]
+        jz      .next_command
+        ret
+.next_command:
+        jmp     cmd_process_next
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; SVG drawing routines
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+;
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; draw_svg_letter
 ; IN:
@@ -478,6 +646,9 @@ pvm_song:
 
 end_condition:
         db      0                               ;if 0, part3 ends
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; SVG drawing related
 ; poly and line related
 poly_prev_point:
         dw      0                               ;cache of previous point
@@ -507,6 +678,75 @@ points:
 tmp_poly_offset:        dw      0               ;tmp var to store poly offset
 tmp_poly_shadow_dir:    dw      0               ;tmp var to store shadow direction
 
+video_addr_offset:      dw      0               ;should be 0 when rendering to video
+                                                ; directly, but when using the pre-render
+                                                ; buffer, it should contain the address
+                                                ; of the pre-render buffer
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; command related stuff
+CMD_END                 equ     0
+CMD_IN_SCROLL_UP        equ     1
+CMD_OUT_SCROLL_UP       equ     2
+CMD_PRE_RENDER          equ     3
+CMD_ROTATION            equ     4
+CMD_SCALE               equ     5
+CMD_TRANSLATE           equ     6
+CMD_WAIT                equ     7
+
+commands_current_anim:  dw      0               ;address of current anim
+
+commands_data_idx:      dw      0               ;index in commands_data
+commands_data:
+        ; credits
+        db      CMD_TRANSLATE,0,0               ;set new x,y
+        db      CMD_PRE_RENDER, 'CREDITS',0     ;string in buffer
+        db      CMD_IN_SCROLL_UP,
+        db      CMD_WAIT,2
+        db      CMD_OUT_SCROLL_UP,
+
+        ; part i
+        db      CMD_TRANSLATE,0,0               ;set new x,y
+        db      CMD_SCALE,0                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_PRE_RENDER, 'PART I',0
+        db      CMD_IN_SCROLL_UP,
+        db      CMD_WAIT,2
+        db      CMD_OUT_SCROLL_UP,
+
+        ; end
+        db      CMD_END
+
+commands_entry_tbl:
+        dw      cmd_end_init,                   cmd_no_anim,            ; 0
+        dw      cmd_in_scroll_up_init,          cmd_in_scroll_up_anim,  ; 1
+        dw      cmd_out_scroll_up_init,         cmd_out_scroll_up_anim, ; 2
+        dw      cmd_pre_render_init,            cmd_pre_render_anim,    ; 3
+        dw      cmd_rotation_init,              cmd_no_anim,            ; 4
+        dw      cmd_scale_init,                 cmd_no_anim,            ; 5
+        dw      cmd_translate_init,             cmd_no_anim,            ; 6
+        dw      cmd_wait_init,                  cmd_wait_anim,          ; 7
+
+
+; since only one command can be run at the same time, this variable is shared
+; accross all commands... with different names.
+command_out_cnt:
+command_wait_delay:
+        dw      0
+
+; space used to pre-render the letters, and then with a "in" effect is placed
+; in the video memory
+pre_render_buffer:
+        times   80*40   db      0
+
+; text that should be renderer. ends with 0
+text_to_pre_render:
+        times   16      db      0
+
+trigger_pre_render:
+        db      0                               ;boolean. if 1, tells main thread
+                                                ; to pre-render text.
+                                                ; 0, whne pre-render finished
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; includes
