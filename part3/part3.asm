@@ -13,8 +13,8 @@ org     0x100
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-%define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 1                              ;1=run on emulator
+%define DEBUG 1                                 ;0=diabled, 1=enabled
+%define EMULATOR 0                              ;1=run on emulator
 
 VIDEO_SEG               equ     0xb800          ;graphics segment (32k offset)
 PRE_RENDER_BUFFER_SIZE  equ     80*40           ;40 rows for buffer
@@ -381,12 +381,75 @@ helper_video_scroll_up_1_row:
         mov     ax,VIDEO_SEG
         mov     ds,ax                           ;ds = 0xb800 (video segment)
 
-        cld
         mov     di,80*60                        ;80 bytes per row. dst = row 60
         mov     si,80*61                        ;80 bytes per row. src = row 61
         mov     cx,80*39/2                      ;copy 39 rows (in words)
         rep movsw
 
+        mov     ds,bp
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_in_scroll_down
+cmd_in_scroll_down_init:
+        mov     byte [var_command_in_cnt],40    ;rows to scroll
+        mov     ax,pre_render_buffer + 40*80 - 2
+        mov     word [var_command_si_offset],ax ;from which row should get the data
+        ret
+
+cmd_in_scroll_down_anim:
+        dec     byte [var_command_in_cnt]
+        jnz     .l0
+        jmp     cmd_process_next
+
+.l0:
+        std
+        mov     cx,80/2                         ;40 words == 80 bytes
+        mov     si,[var_command_si_offset]
+        mov     di,80*61                        ;80 bytes per row. dst = row 60
+        sub     ax,ax                           ;color black
+        rep movsw
+        mov     [var_command_si_offset],si      ;update si
+
+        jmp     helper_video_scroll_down_1_row
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_out_scroll_down
+cmd_out_scroll_down_init:
+        mov     byte [var_command_out_cnt],40   ;bytes to scroll
+        ret
+
+cmd_out_scroll_down_anim:
+        ; scroll up one row
+        dec     byte [var_command_out_cnt]
+        jnz     .l0
+        jmp     cmd_process_next
+
+.l0:
+        call    helper_video_scroll_down_1_row
+
+        ; set row 99 as black
+        mov     cx,80/2                         ;40 words == 80 bytes
+        mov     di,80*60                        ;80 bytes per row. dst = row 60
+        sub     ax,ax                           ;color black
+        rep stosw
+
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+helper_video_scroll_down_1_row:
+        mov     bp,ds                           ;save ds for later
+        mov     ax,VIDEO_SEG
+        mov     ds,ax                           ;ds = 0xb800 (video segment)
+
+        std                                     ;reverse si/di
+
+        mov     di,80*99                        ;80 bytes per row. dst = row 99
+        mov     si,80*98                        ;80 bytes per row. src = row 98
+        mov     cx,80*39/2                      ;copy 39 rows (in words)
+        rep movsw                               ;copy them
+
+        cld                                     ;restore cld
         mov     ds,bp
         ret
 
@@ -756,6 +819,16 @@ CMD_ROTATION            equ     4
 CMD_SCALE               equ     5
 CMD_TRANSLATE           equ     6
 CMD_WAIT                equ     7
+CMD_IN_SCROLL_DOWN      equ     8
+CMD_OUT_SCROLL_DOWN     equ     9
+
+CMD_OUT_SCROLL_LEFT     equ     9
+CMD_OUT_SCROLL_RIGHT    equ     10
+CMD_OUT_SWEEP_DOWN      equ     11
+CMD_OUT_SWEEP_UP        equ     12
+CMD_OUT_SWEEP_LEFT      equ     13
+CMD_OUT_SWEEP_RIGHT     equ     14
+CMD_OUT_SWEEP_PIXEL     equ     15
 
 commands_current_anim:  dw      0               ;address of current anim
 
@@ -765,10 +838,12 @@ commands_data:
         db      CMD_WAIT,60
         db      CMD_TRANSLATE,0,0               ;set new x,y
         db      CMD_PRE_RENDER, 'CREDITS',0     ;string in buffer
+        db      CMD_IN_SCROLL_DOWN,
+        db      CMD_OUT_SCROLL_DOWN,
+
         db      CMD_IN_SCROLL_UP,
-        db      CMD_WAIT,255
-        db      CMD_WAIT,255
         db      CMD_OUT_SCROLL_UP,
+        db      CMD_WAIT,60
 
         ; part i
         db      CMD_TRANSLATE,0,0               ;set new x,y
@@ -776,9 +851,25 @@ commands_data:
         db      CMD_ROTATION,0                  ;set new rotation
         db      CMD_PRE_RENDER, 'PART I',0
         db      CMD_IN_SCROLL_UP,
-        db      CMD_WAIT,2
+        db      CMD_WAIT,30
         db      CMD_OUT_SCROLL_UP,
 
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
         ; end
         db      CMD_END
 
@@ -791,6 +882,8 @@ commands_entry_tbl:
         dw      cmd_scale_init,                 cmd_no_anim,            ; 5
         dw      cmd_translate_init,             cmd_no_anim,            ; 6
         dw      cmd_wait_init,                  cmd_wait_anim,          ; 7
+        dw      cmd_in_scroll_down_init,        cmd_in_scroll_down_anim,        ; 8
+        dw      cmd_out_scroll_down_init,       cmd_out_scroll_down_anim,       ; 9
 
 
 ; since only one command can be run at the same time, this variable is shared
