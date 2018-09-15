@@ -206,32 +206,38 @@ scroll_anim:
 
         mov     byte [poly_scale],3
 
-        mov     word [poly_translation],0x500c       ;x offset = 80, y offset = 50
+        mov     word [poly_translation],0x500c          ;x offset = 80, y offset = 50
         mov     si,svg_letter_data_C
-        call    draw_svg_letter_with_shadow
+        call    draw_svg_letter_zoomed
 
-        add     word [poly_translation],0x0014       ;x offset = 80, y offset = 50
+        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
         mov     si,svg_letter_data_R
+        mov     ax,0xffff                               ;shadow direction
         call    draw_svg_letter_with_shadow
 
-        add     word [poly_translation],0x0014       ;x offset = 80, y offset = 50
+        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
         mov     si,svg_letter_data_E
+        mov     ax,0xff00                               ;shadow direction
         call    draw_svg_letter_with_shadow
 
-        add     word [poly_translation],0x0014       ;x offset = 80, y offset = 50
+        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
         mov     si,svg_letter_data_D
+        mov     ax,0x00ff                               ;shadow direction
         call    draw_svg_letter_with_shadow
 
-        add     word [poly_translation],0x0014       ;x offset = 80, y offset = 50
+        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
         mov     si,svg_letter_data_I
+        mov     ax,0x0100                               ;shadow direction
         call    draw_svg_letter_with_shadow
 
-        add     word [poly_translation],0x0014       ;x offset = 80, y offset = 50
+        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
         mov     si,svg_letter_data_T
+        mov     ax,0x0101                               ;shadow direction
         call    draw_svg_letter_with_shadow
 
-        add     word [poly_translation],0x0014       ;x offset = 80, y offset = 50
+        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
         mov     si,svg_letter_data_S
+        mov     ax,0x0001                               ;shadow direction
         call    draw_svg_letter_with_shadow
 
         ret
@@ -244,28 +250,60 @@ draw_svg_letter:
 .next_poly:
         call    draw_poly                       ;draw first poly
         cmp     ah,0xff                         ;0xff == end of letter
-        jnz     .next_poly                      ; no? draw next poly
+        jnz     .next_poly                      ; no? draw next poly.
+                                                ; yes? SI already points to the correct poly
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; draw_svg_letter_with_shadow
 ; IN:
 ;       si := vector points
+;       ax := shadow direction. ah=y, al=x
 draw_svg_letter_with_shadow:
+        push    word [poly_translation]                 ;save original translation
+
         push    si
-        mov     byte [Line08_color],8
+        push    ax                                      ;save shadow direction
+        mov     byte [Line08_color],4
         call    draw_svg_letter
 
+        pop     ax
         pop     si
-        push    si
-        add     word [poly_translation],0x0001          ; x offset += 1
-        mov     byte [Line08_color],7
+        push    si                                      ;save char offset
+        push    ax
+        add     byte [poly_translation_x],al
+        add     byte [poly_translation_y],ah
+        mov     byte [Line08_color],12
         call    draw_svg_letter
 
+        pop     ax
         pop     si
-        add     word [poly_translation],0x0001          ; x offset += 1
+        add     byte [poly_translation_x],al
+        add     byte [poly_translation_y],ah
         mov     byte [Line08_color],15
-        jmp     draw_svg_letter
+        call    draw_svg_letter
+
+        pop     word [poly_translation]                 ;restore original translation
+        ret
+
+draw_svg_letter_zoomed:
+        push    si
+        mov     byte [Line08_color],1
+        call    draw_svg_letter
+
+        pop     si
+        push    si
+        dec     byte [poly_scale]                       ;scale -= 1
+        mov     byte [Line08_color],9
+        call    draw_svg_letter
+
+        pop     si
+        dec     byte [poly_scale]                       ;scale -= 1
+        mov     byte [Line08_color],15
+        call    draw_svg_letter
+
+        add     byte [poly_scale],2                     ;restore scale
+        ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; draw polygon
@@ -425,8 +463,9 @@ is_poly_previous_point:
 ;       translation
 ;       rotation
 ;       scale
-poly_translation:
-        dw      0                               ;x and y
+poly_translation:                               ;must be together
+poly_translation_x:     db      0               ;x
+poly_translation_y:     db      0               ;y
 poly_rotation_and_scale:                        ;can be accessed by a word
 poly_rotation:  db 0                            ;rotation: between 0 and 255
 poly_scale:     db 0                            ;scale: cannot be greater than max radius
