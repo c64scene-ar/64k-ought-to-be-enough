@@ -205,10 +205,11 @@ scroll_anim:
 
 
         mov     byte [poly_scale],3
+        mov     word [poly_translation],0x5010          ;x offset = 80, y offset = 50
 
-        mov     word [poly_translation],0x500c          ;x offset = 80, y offset = 50
         mov     si,svg_letter_data_C
-        call    draw_svg_letter_zoomed
+        mov     ax,0xffff
+        call    draw_svg_letter_with_shadow
 
         add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
         mov     si,svg_letter_data_R
@@ -227,7 +228,7 @@ scroll_anim:
 
         add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
         mov     si,svg_letter_data_I
-        mov     ax,0x0100                               ;shadow direction
+        mov     ax,0x0001                               ;shadow direction
         call    draw_svg_letter_with_shadow
 
         add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
@@ -262,22 +263,22 @@ draw_svg_letter:
 draw_svg_letter_with_shadow:
         push    word [poly_translation]                 ;save original translation
 
-        push    si
-        push    ax                                      ;save shadow direction
+        mov     [tmp_poly_offset],si
+        mov     [tmp_poly_shadow_dir],ax
+
         mov     byte [Line08_color],4
         call    draw_svg_letter
 
-        pop     ax
-        pop     si
-        push    si                                      ;save char offset
-        push    ax
+        mov     ax,[tmp_poly_shadow_dir]
+        mov     si,[tmp_poly_offset]
         add     byte [poly_translation_x],al
         add     byte [poly_translation_y],ah
         mov     byte [Line08_color],12
         call    draw_svg_letter
 
-        pop     ax
-        pop     si
+        mov     ax,[tmp_poly_shadow_dir]
+        mov     si,[tmp_poly_offset]
+
         add     byte [poly_translation_x],al
         add     byte [poly_translation_y],ah
         mov     byte [Line08_color],15
@@ -286,23 +287,47 @@ draw_svg_letter_with_shadow:
         pop     word [poly_translation]                 ;restore original translation
         ret
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; draw_svg_letter_zoomed
+; IN:
+;       si := poly offset
 draw_svg_letter_zoomed:
-        push    si
+        mov     [tmp_poly_offset],si
+
         mov     byte [Line08_color],1
         call    draw_svg_letter
 
-        pop     si
-        push    si
+        mov     si,[tmp_poly_offset]
         dec     byte [poly_scale]                       ;scale -= 1
         mov     byte [Line08_color],9
         call    draw_svg_letter
 
-        pop     si
+        mov     si,[tmp_poly_offset]
         dec     byte [poly_scale]                       ;scale -= 1
         mov     byte [Line08_color],15
         call    draw_svg_letter
 
-        add     byte [poly_scale],2                     ;restore scale
+        mov     si,[tmp_poly_offset]
+        dec     byte [poly_scale]                       ;scale -= 1
+        mov     byte [Line08_color],1
+        call    draw_svg_letter
+
+        mov     si,[tmp_poly_offset]
+        dec     byte [poly_scale]                       ;scale -= 1
+        mov     byte [Line08_color],9
+        call    draw_svg_letter
+
+        mov     si,[tmp_poly_offset]
+        dec     byte [poly_scale]                       ;scale -= 1
+        mov     byte [Line08_color],15
+        call    draw_svg_letter
+
+        mov     si,[tmp_poly_offset]
+        dec     byte [poly_scale]                       ;scale -= 1
+        mov     byte [Line08_color],1
+        call    draw_svg_letter
+
+        add     byte [poly_scale],6                     ;restore scale
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -478,6 +503,9 @@ points:
         db      190, 21
 ;        db      254, 42
         db      -1, -1
+
+tmp_poly_offset:        dw      0               ;tmp var to store poly offset
+tmp_poly_shadow_dir:    dw      0               ;tmp var to store shadow direction
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
