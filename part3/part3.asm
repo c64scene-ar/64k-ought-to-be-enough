@@ -262,6 +262,7 @@ dec_d020:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; init
 cmd_init:
+        int 3
         mov     ax,commands_data
         mov     [commands_data_idx],ax
 
@@ -275,17 +276,17 @@ cmd_process_next:
         mov     [commands_data_idx],si                  ;update index
 
         xchg    ax,bx                                   ;bx contains ax
+        sub     bh,bh                                   ;bx = pointer
         shl     bl,1
         shl     bl,1                                    ;al *= 4 (init, anim)
 
-        sub     bh,bh                                   ;bx = pointer
         lea     si,[commands_entry_tbl + bx]
 
         lodsw                                           ;ax = address to init
         xchg    ax,bx                                   ;bx = ax
         lodsw                                           ;ax = address to anim
         mov     [commands_current_anim],ax              ;save anim address
-        jmp     [bx]                                    ;call init
+        jmp     bx                                      ;call init
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 cmd_no_anim:
@@ -346,7 +347,9 @@ cmd_pre_render_init:
         mov     si,[commands_data_idx]
         mov     di,text_to_pre_render
 
-.l0:    movsb                                   ;copy text to render
+.l0:    lodsb
+        stosb                                   ;copy text to render
+        or      al,al
         jnz     .l0                             ;copy until al=0
 
         mov     es,bp                           ;restore es
