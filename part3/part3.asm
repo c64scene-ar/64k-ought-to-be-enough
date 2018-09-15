@@ -16,7 +16,8 @@ org     0x100
 %define DEBUG 0                                 ;0=diabled, 1=enabled
 %define EMULATOR 1                              ;1=run on emulator
 
-GFX_SEG         equ     0x0800                  ;graphics segment (32k offset)
+VIDEO_SEG               equ     0xb800          ;graphics segment (32k offset)
+PRE_RENDER_BUFFER_SIZE  equ     80*40           ;40 rows for buffer
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -46,7 +47,7 @@ start:
         push    cs
         pop     ds
 
-        mov     ax,0xb800                       ;video segment
+        mov     ax,VIDEO_SEG                    ;video segment
         mov     es,ax                           ;should be restored if modified
 
         call    set_vid_160_100_16
@@ -61,7 +62,7 @@ l0:
         push    cs
         pop     ds
         mov     si,gfx_pampa
-        mov     ax,0xb800
+        mov     ax,VIDEO_SEG
         mov     es,ax
         sub     di,di
         mov     cx,8192
@@ -83,15 +84,7 @@ l0:
         push    cs
         pop     ds
 
-        mov     ax,pvm_song                     ;start music offset
-        call    music_init
-
-        call    cmd_init                        ;initialize commands
-
-        ; should be the last one to get initialized
-        mov     ax,irq_8_handler                ;irq 8 callback
-        mov     cx,199                          ;horizontal raster line
-        call    irq_8_init
+        call    main_init
 
         ;fall through
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -128,6 +121,32 @@ main_loop:
         jmp     main_loop
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; main_init
+; add here initialization
+main_init:
+        ; init vars
+        ;convert cs:pre_render_buffer into a segment
+        mov     ax,cs                                   ;new seg = cs + (offset >> 4)
+        mov     bx,pre_render_buffer                    ;offset, which is already 16-byte aligned
+        mov     cl,4
+        shr     bx,cl                                   ;divided 16
+        add     ax,bx                                   ;converted to segment
+        mov     [pre_render_buffer_seg],ax              ;store segment for pre_render_buffer
+
+        ; init music
+        mov     ax,pvm_song                             ;start music offset
+        call    music_init
+
+        ; init "command" related stuff
+        call    cmd_init                                ;initialize commands
+
+        ; init timer handler
+        ; should be the last one to get initialized
+        mov     ax,irq_8_handler                        ;irq 8 callback
+        mov     cx,199                                  ;horizontal raster line
+        jmp     irq_8_init
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; pre_render_text
 pre_render_text:
 
@@ -137,12 +156,20 @@ pre_render_text:
 ;        inc     byte [poly_rotation]
 ;        inc     byte [Line08_color]
 
-        mov     ax,ds
-        mov     es,ax                                   ;es=ds=cs
+        les     di,[pre_render_buffer_seg_off]          ;es:di: dst buffer
 
-        mov     ax,pre_render_buffer
-        mov     [video_addr_offset],ax                  ;correct offset for video
+        ; clean existing buffer first
+        mov     cx,PRE_RENDER_BUFFER_SIZE/2             ;buffer size / 2 since we do it in word
+        sub     ax,ax                                   ;color black
+        rep stosw                                       ;clean buffer
 
+        mov     word [poly_translation],0x1420          ;x offset = 80, y offset = 50
+        mov     byte [poly_scale],0
+        mov     byte [poly_rotation],0
+        mov     byte [Line08_color],1
+
+
+        ; print credits
         mov     si,svg_letter_data_C
         mov     ax,0xffff
         call    draw_svg_letter_with_shadow
@@ -177,7 +204,7 @@ pre_render_text:
         mov     ax,0x0001                               ;shadow direction
         call    draw_svg_letter_with_shadow
 
-        mov     ax,0xb800
+        mov     ax,VIDEO_SEG
         mov     es,ax                                   ;restore es
 
         mov     byte [trigger_pre_render],0             ;say pre-render finished
@@ -262,7 +289,6 @@ dec_d020:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; init
 cmd_init:
-        int 3
         mov     ax,commands_data
         mov     [commands_data_idx],ax
 
@@ -300,26 +326,53 @@ cmd_end_init:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; cmd_in_scroll_up
 cmd_in_scroll_up_init:
+        mov     byte [var_command_in_cnt],40            ;bytes to scroll
+        mov     ax,pre_render_buffer
+        mov     word [var_command_si_offset],ax         ;from which row should get the data
         ret
 
 cmd_in_scroll_up_anim:
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; cmd_out_scroll_up
-cmd_out_scroll_up_init:
-        mov     byte [command_out_cnt],40          ;bytes to scroll
-        ret
-
-cmd_out_scroll_up_anim:
-        ; scroll up one row
-        dec     byte [command_out_cnt]
+        dec     byte [var_command_in_cnt]
         jnz     .l0
         jmp     cmd_process_next
 
 .l0:
+        mov     cx,80/2                         ;40 words == 80 bytes
+        mov     si,[var_command_si_offset]
+        mov     di,80*99                        ;80 bytes per row. dst = row 99
+        sub     ax,ax                           ;color black
+        rep movsw
+        mov     [var_command_si_offset],si      ;update si
+
+        jmp     helper_video_scroll_up_1_row
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_out_scroll_up
+cmd_out_scroll_up_init:
+        mov     byte [var_command_out_cnt],40   ;bytes to scroll
+        ret
+
+cmd_out_scroll_up_anim:
+        ; scroll up one row
+        dec     byte [var_command_out_cnt]
+        jnz     .l0
+        jmp     cmd_process_next
+
+.l0:
+        call    helper_video_scroll_up_1_row
+
+        ; set row 99 as black
+        mov     cx,80/2                         ;40 words == 80 bytes
+        mov     di,80*99                        ;80 bytes per row. dst = row 99
+        sub     ax,ax                           ;color black
+        rep stosw
+
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+helper_video_scroll_up_1_row:
         mov     bp,ds                           ;save ds for later
-        mov     ax,0xb800
+        mov     ax,VIDEO_SEG
         mov     ds,ax                           ;ds = 0xb800 (video segment)
 
         cld
@@ -328,13 +381,7 @@ cmd_out_scroll_up_anim:
         mov     cx,80*39/2                      ;copy 39 rows (in words)
         rep movsw
 
-        ; set row 99 as black
-        mov     cx,80/2                         ;40 words == 80 bytes
-        mov     di,80*99                        ;80 bytes per row. dst = row 99
-        sub     ax,ax                           ;color black
-        rep stosw
-
-        mov     ds,bp                           ;restore ds
+        mov     ds,bp
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -353,6 +400,7 @@ cmd_pre_render_init:
         jnz     .l0                             ;copy until al=0
 
         mov     es,bp                           ;restore es
+        mov     [commands_data_idx],si          ;update index
 
         mov     byte [trigger_pre_render],1     ;tell "main thread" to pre-render text
         ret
@@ -399,12 +447,12 @@ cmd_wait_init:
         mov     si,[commands_data_idx]
         lodsb                                   ;al=cycles to wait
         mov     [commands_data_idx],si          ;update index
-        mov     [command_wait_delay],al
+        mov     [var_command_wait_delay],al
         ret
 
 
 cmd_wait_anim:
-        dec     byte [command_wait_delay]
+        dec     byte [var_command_wait_delay]
         jz      .next_command
         ret
 .next_command:
@@ -702,10 +750,12 @@ commands_current_anim:  dw      0               ;address of current anim
 commands_data_idx:      dw      0               ;index in commands_data
 commands_data:
         ; credits
+        db      CMD_WAIT,60
         db      CMD_TRANSLATE,0,0               ;set new x,y
         db      CMD_PRE_RENDER, 'CREDITS',0     ;string in buffer
         db      CMD_IN_SCROLL_UP,
-        db      CMD_WAIT,2
+        db      CMD_WAIT,255
+        db      CMD_WAIT,255
         db      CMD_OUT_SCROLL_UP,
 
         ; part i
@@ -733,14 +783,19 @@ commands_entry_tbl:
 
 ; since only one command can be run at the same time, this variable is shared
 ; accross all commands... with different names.
-command_out_cnt:
-command_wait_delay:
-        dw      0
+; 1st word for tmp vars
+var_command_in_cnt:
+var_command_out_cnt:
+var_command_wait_delay:
+var_tmp_dw_0:
+var_tmp_db_0: db        0
+var_tmp_db_1: db        0
 
-; space used to pre-render the letters, and then with a "in" effect is placed
-; in the video memory
-pre_render_buffer:
-        times   80*40   db      0
+;2nd word for tmp vars
+var_command_si_offset:
+var_tmp_dw_1:
+var_tmp_db_2: db        0
+var_tmp_db_3: db        0
 
 ; text that should be renderer. ends with 0
 text_to_pre_render:
@@ -752,6 +807,19 @@ trigger_pre_render:
                                                 ; 0, whne pre-render finished
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; fake segment...
+; space used to pre-render the letters, and then with a "in" effect is placed
+; in the video memory
+align 16
+pre_render_buffer:
+        times 4096      db      0xa5
+pre_render_buffer_seg_off:                      ;pre calculated seg/offsset address
+pre_render_buffer_off:                          ;pre calculated offset
+        dw              0                       ;offset
+pre_render_buffer_seg:                          ;pre calculated seg
+        dw              0                       ;segment
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; includes
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %include 'part3/elipse_table.asm'
@@ -759,4 +827,6 @@ trigger_pre_render:
 %include 'common/utils.asm'
 %include 'common/music_player.asm'
 %include 'common/draw_line_160_100_16color.asm'
+
+
 

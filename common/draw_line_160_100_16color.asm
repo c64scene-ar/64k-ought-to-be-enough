@@ -134,7 +134,7 @@ L31:    inc     cl                      ; CX := # of pixels to draw
         not     ah                      ; AH := inverse bit mask
         pop     cx                      ; restore this register
 
-        mov     di,0xb800
+        mov     di,es
         mov     ds,di                   ;DS: vdieo buffer
 
 L32:    and     [bx],ah                 ; zero pixel in buffer
@@ -206,8 +206,8 @@ HorizLine04:
         and     dl,dh                   ; bit mask for the line
         jmp     short L44
 
-        mov     bx,0xb800
-        mov     ds,bx
+        mov     bx,es
+        mov     ds,bx                   ;ds = video segment
 
 L42:    mov     ah,al
         and     ah,dh                   ; AH := masked pixel bits
@@ -243,8 +243,8 @@ L44:    and     al,dl                   ; AL := masked pixels for last byte
 LoSlopeLine04:
         mov     bp,[VARincr1]
 
-        mov     ax,0xb800
-        mov     ds,ax
+        mov     ax,es
+        mov     ds,ax                   ;ds = video segment
 
 L10:    mov     ah,[di]                 ; AH := byte from video buffer
 
@@ -309,7 +309,7 @@ L15:    add     si,[cs:VARincr2]        ; d := d + incr2
 ;       DL = pixel value in proper position
 HiSlopeLine04:
         mov     bp,[VARincr1]           ;bp := VARincr1
-        mov     ax,0xb800
+        mov     ax,es
         mov     ds,ax                   ;ds points to video seg
         mov     ax,[cs:VARincr2]        ;ax := VARincr2
 
