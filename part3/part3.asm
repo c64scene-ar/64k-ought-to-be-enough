@@ -61,10 +61,8 @@ gfx_pampa:
 l0:
         push    cs
         pop     ds
-        mov     si,gfx_pampa
-        mov     ax,VIDEO_SEG
-        mov     es,ax
-        sub     di,di
+        mov     si,gfx_pampa                    ;ds:si src
+        sub     di,di                           ;es:di dst
         mov     cx,8192
         call    lz4_decompress
 %endif
@@ -163,10 +161,10 @@ pre_render_text:
         sub     ax,ax                                   ;color black
         rep stosw                                       ;clean buffer
 
-        mov     word [poly_translation],0x1420          ;x offset = 80, y offset = 50
+        mov     word [poly_translation],0x1410          ;x offset = 80, y offset = 50
         mov     byte [poly_scale],0
         mov     byte [poly_rotation],0
-        mov     byte [Line08_color],1
+        mov     byte [Line08_color],2
 
 
         ; print credits
@@ -174,32 +172,40 @@ pre_render_text:
         mov     ax,0xffff
         call    draw_svg_letter_with_shadow
 
-        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
+        add     byte [poly_translation_x],0x14          ;x offset += 20
+        add     byte [poly_translation_y],0x00          ;y offset += 0
         mov     si,svg_letter_data_R
         mov     ax,0xffff                               ;shadow direction
         call    draw_svg_letter_with_shadow
 
-        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
+
+        add     byte [poly_translation_x],0x14          ;x offset += 20
+        add     byte [poly_translation_y],0x00          ;y offset += 0
         mov     si,svg_letter_data_E
         mov     ax,0xff00                               ;shadow direction
         call    draw_svg_letter_with_shadow
 
-        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
+
+        add     byte [poly_translation_x],0x14          ;x offset += 20
+        add     byte [poly_translation_y],0x00          ;y offset += 0
         mov     si,svg_letter_data_D
         mov     ax,0x00ff                               ;shadow direction
         call    draw_svg_letter_with_shadow
 
-        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
+        add     byte [poly_translation_x],0x14          ;x offset += 20
+        add     byte [poly_translation_y],0x00          ;y offset += 0
         mov     si,svg_letter_data_I
         mov     ax,0x0001                               ;shadow direction
         call    draw_svg_letter_with_shadow
 
-        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
+        add     byte [poly_translation_x],0x14          ;x offset += 20
+        add     byte [poly_translation_y],0x00          ;y offset += 0
         mov     si,svg_letter_data_T
         mov     ax,0x0101                               ;shadow direction
         call    draw_svg_letter_with_shadow
 
-        add     word [poly_translation],0x0014          ;x offset = 80, y offset = 50
+        add     byte [poly_translation_x],0x14          ;x offset += 20
+        add     byte [poly_translation_y],0x00          ;y offset += 0
         mov     si,svg_letter_data_S
         mov     ax,0x0001                               ;shadow direction
         call    draw_svg_letter_with_shadow
@@ -563,9 +569,8 @@ draw_poly:
         cmp     ah,0xf0                         ; end of poly ?
         ja      .exit
 
-        add     ax,[poly_rotation_and_scale]    ;update angle (rotation) and radius (scale)
-                                                ; al := al + cl
-                                                ; ah := ah + ch
+        add     al,[poly_rotation]              ; al := al + rotation
+        add     ah,[poly_scale]                 ; ah := ah + scale
 
         mov     bp,si                           ;save si... gets destroyed in get_coords_for_point
         call    get_coords_for_point            ;al := x, ah := y
@@ -581,17 +586,24 @@ draw_poly:
 .draw_it:
         ; draw line... order of points doesn't matter
         ; a line is a line. we are drawing a line from p1 to p0
-        mov     bp,[poly_translation]
         mov     cx,[poly_prev_point]            ;restore previous point
-        add     cx,bp                           ;update offset for point 1
         mov     [poly_prev_point],ax            ;save current point for later
-        add     ax,bp                           ;update offset for point 0
-        mov     bl,ah                           ;y0
-        sub     ah,ah
-        mov     dl,ch                           ;y1
-        sub     dh,dh
-        sub     ch,ch                           ;x1
-        ;sub     bh,bh                          ;not needed, bh is already 0
+
+        mov     dx,[poly_translation]           ;dx = translation
+        ; coordinates should be added separately, otherwise
+        ; borrow/carry could affect Y
+        add     al,dl                           ;x1 += x translation
+        add     ah,dh                           ;y1 += y translation
+
+        mov     bl,ah                           ;bx = y1 (LSB), bh (MSB) already 0
+        sub     ah,ah                           ;ax = x1 (MSB)
+
+        add     cl,dl                           ;x2 += x translation
+        add     ch,dh                           ;y2 += y translation
+
+        mov     dl,ch                           ;dx = y2 (LSB)
+        sub     dh,dh                           ;dx = y2 (MSB)
+        sub     ch,ch                           ;cx = x1 (MSB)
 
         mov     [Line08_x1],ax
         mov     [Line08_y1],bx
@@ -713,7 +725,7 @@ is_poly_previous_point:
 poly_translation:                               ;must be together
 poly_translation_x:     db      0               ;x
 poly_translation_y:     db      0               ;y
-poly_rotation_and_scale:                        ;can be accessed by a word
+
 poly_rotation:  db 0                            ;rotation: between 0 and 255
 poly_scale:     db 0                            ;scale: cannot be greater than max radius
 
@@ -810,6 +822,9 @@ trigger_pre_render:
 ; fake segment...
 ; space used to pre-render the letters, and then with a "in" effect is placed
 ; in the video memory
+pre_render_buffer_tmp:
+        times 1024      db      0               ;just some space in case we draw stuff
+                                                ; above the buffer
 align 16
 pre_render_buffer:
         times 4096      db      0xa5

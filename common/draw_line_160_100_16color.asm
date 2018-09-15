@@ -31,6 +31,20 @@ Line08_draw:
         push    di
         push    ds
 
+        cmp     ax,159
+        ja      .error
+        cmp     bx,99
+        ja      .error
+        cmp     cx,159
+        ja      .error
+        cmp     dx,99
+        ja      .error
+        jmp     .skip
+.error:
+        int 3
+        jmp     .error
+
+.skip:
 ; check for vertical line
         mov     si,BytesPerLine         ; initial y-increment
 
@@ -39,7 +53,7 @@ Line08_draw:
 
 ; force x1 < x2
 
-        jns     L01                     ; jump if x2 > x1
+        jns     .l01                    ; jump if x2 > x1
 
         neg     cx                      ; CX := x1 - x2
 
@@ -53,30 +67,30 @@ Line08_draw:
 
 ; calculate dy = ABS(y2-y1)
 
-L01:    mov     bx,[Line08_y2]
+.l01:   mov     bx,[Line08_y2]
         sub     bx,[Line08_y1]          ;BX := y2 - y1
-        jnz     L02
+        jnz     .l02
 
         jmp     HorizLine04             ; jump if horizontal line
 
-L02:    jns     L03
+.l02:   jns     .l03
 
         neg     bx                      ; BX := y1 - y2
         neg     si                      ; negate y-increment
 
 ; select appropriate routine for slope of line
 
-L03:    push    si                      ; preserve y-increment
+.l03:   push    si                      ; preserve y-increment
 
         mov     word [VARroutine],LoSlopeLine04
         cmp     bx,cx
-        jle     L04                     ; jump if dy <= dx (slope <= 1)
+        jle     .l04                    ; jump if dy <= dx (slope <= 1)
         mov     word [VARroutine],HiSlopeLine04
         xchg    bx,cx                   ; exchange dy and dx
 
 ; calculate initial decision variable and increments
 
-L04:    shl     bx,1                    ; BX := 2 * dy
+.l04:   shl     bx,1                    ; BX := 2 * dy
         mov     [VARincr1],bx           ; incr1 := 2 * dy
         sub     bx,cx
         mov     si,bx                   ; SI := d = 2 * dy - dx
@@ -91,7 +105,6 @@ L04:    shl     bx,1                    ; BX := 2 * dy
         call    PixelAddr08             ; AH := bit mask
                                         ; ES:BX -> buffer
                                         ; CL := # bits to shift left
-
         mov     al,[Line08_color]       ; AL := unshifted pixel value
         shl     ax,cl                   ; AH := bit mask in proper position
                                         ; AL := pixel value in proper position
@@ -106,7 +119,7 @@ L04:    shl     bx,1                    ; BX := 2 * dy
 
         pop     bx                      ; BX := y-increment
 
-L05:    jmp     [VARroutine]            ; jump to appropriate routine for slope
+.l05:    jmp     [VARroutine]            ; jump to appropriate routine for slope
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -117,12 +130,12 @@ VertLine04:
         mov     bl,[Line08_y2]          ; BX := y2
         mov     cl,bl
         sub     cl,al                   ; CX := dy
-        jge     L31                     ; jump if dy >= 0
+        jge     .l31                    ; jump if dy >= 0
 
         neg     cl                      ; force dy >= 0
         mov     al,bl                   ; AX := y2
 
-L31:    inc     cl                      ; CX := # of pixels to draw
+.l31:   inc     cl                      ; CX := # of pixels to draw
         mov     bl,[Line08_x1]          ; BX := x
         push    cx                      ; preserve this register
         call    PixelAddr08             ; AH := bit mask
@@ -137,15 +150,14 @@ L31:    inc     cl                      ; CX := # of pixels to draw
         mov     di,es
         mov     ds,di                   ;DS: vdieo buffer
 
-L32:    and     [bx],ah                 ; zero pixel in buffer
+.l32:   and     [bx],ah                 ; zero pixel in buffer
         or      [bx],al                 ; set pixel value in buffer
 
         add     bx,si                   ; increment to next portion of interleave
 
-        loop    L32
+        loop    .l32
 
         jmp     Lexit
-
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -195,21 +207,21 @@ HorizLine04:
         mov     al,[Line08_color]       ; AL := pixel value
         xlatb                           ; AL := propagated pixel value
 
+        mov     bp,es
+        mov     ds,bp                   ;ds = video segment
+
 ; set pixels in leftmost byte of the line
 
         or      dh,dh
-        js      L43                     ; jump if byte-aligned (x1 is leftmost
+        js      .l43                    ; jump if byte-aligned (x1 is leftmost
                                         ;  pixel in byte)
         or      cx,cx
-        jnz     L42                     ; jump if more than one byte in the line
+        jnz     .l42                     ; jump if more than one byte in the line
 
         and     dl,dh                   ; bit mask for the line
-        jmp     short L44
+        jmp     .l44
 
-        mov     bx,es
-        mov     ds,bx                   ;ds = video segment
-
-L42:    mov     ah,al
+.l42:   mov     ah,al
         and     ah,dh                   ; AH := masked pixel bits
         not     dh                      ; DH := reverse bit mask for 1st byte
         and     [di],dh                 ; zero masked pixels in buffer
@@ -219,11 +231,11 @@ L42:    mov     ah,al
 
 ; use a fast 8086 machine instruction to draw the remainder of the line
 
-L43:    rep stosb                       ; update all pixels in the line
+.l43:   rep stosb                       ; update all pixels in the line
 
 ; set pixels in the rightmost byte of the line
 
-L44:    and     al,dl                   ; AL := masked pixels for last byte
+.l44:   and     al,dl                   ; AL := masked pixels for last byte
         not     dl
         and     [di],dl                 ; zero masked pixels in buffer
         or      [di],al                 ; update masked pixels in buffer
@@ -246,9 +258,9 @@ LoSlopeLine04:
         mov     ax,es
         mov     ds,ax                   ;ds = video segment
 
-L10:    mov     ah,[di]                 ; AH := byte from video buffer
+.l10:   mov     ah,[di]                 ; AH := byte from video buffer
 
-L11:    and     ah,dh                   ; zero pixel value at current bit offset
+.l11:   and     ah,dh                   ; zero pixel value at current bit offset
         or      ah,dl                   ; set pixel value in byte
 
         ror     dl,1
@@ -257,46 +269,46 @@ L11:    and     ah,dh                   ; zero pixel value at current bit offset
         ror     dl,1
 
         xor     dh,255                  ;swap mask. using 'xor' instead of 'not' since testing for sign bit
-        jns     L14                     ; jump if bit mask rotated to
+        jns     .l14                    ; jump if bit mask rotated to
                                         ;  leftmost pixel position
 
 ; bit mask not shifted out
 
         or      si,si                   ; test sign of d
-        jns     L12                     ; jump if d >= 0
+        jns     .l12                    ; jump if d >= 0
 
         add     si,bp                   ; d := d + incr1
-        loop    L11
+        loop    .l11
 
         mov     [di],ah                 ; store remaining pixels in buffer
         jmp     Lexit
 
-L12:    add     si,[cs:VARincr2]        ; d := d + incr2
+.l12:   add     si,[cs:VARincr2]        ; d := d + incr2
         mov     [di],ah                 ; update buffer
 
         add     di,bx                   ; increment y
 
-        loop    L10
+        loop    .l10
         jmp     Lexit
 
 ; bit mask shifted out
 
-L14:    mov     [di],ah                 ; update buffer
+.l14:   mov     [di],ah                 ; update buffer
         inc     di                      ; di := offset of next byte
 
         or      si,si                   ; test sign of d
-        jns     L15                     ; jump if non-negative
+        jns     .l15                    ; jump if non-negative
 
         add     si,bp                   ; d := d + incr1
-        loop    L10
+        loop    .l10
         jmp     Lexit
 
 
-L15:    add     si,[cs:VARincr2]        ; d := d + incr2
+.l15:   add     si,[cs:VARincr2]        ; d := d + incr2
 
         add     di,bx                   ; increment y
 
-        loop    L10
+        loop    .l10
         jmp     Lexit
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -314,21 +326,21 @@ HiSlopeLine04:
         mov     ax,[cs:VARincr2]        ;ax := VARincr2
 
 
-L21:    and     [di],dh                 ; zero pixel value in video buffer
+.l21:   and     [di],dh                 ; zero pixel value in video buffer
         or      [di],dl                 ; set pixel value in byte
 
         add     di,bx                   ; increment y
 
-L22:    or      si,si                   ; test sign of d
-        jns     L23                     ; jump if d >= 0
+.l22:   or      si,si                   ; test sign of d
+        jns     .l23                     ; jump if d >= 0
 
         add     si,bp                   ; d := d + incr1
-        loop    L21
+        loop    .l21
 
         jmp     Lexit
 
 
-L23:    add     si,ax                   ; d := d + incr2
+.l23:   add     si,ax                   ; d := d + incr2
 
         ror     dl,1                    ; rotate pixel value
         ror     dl,1                    ; rotate pixel value
@@ -339,8 +351,9 @@ L23:    add     si,ax                   ; d := d + incr2
         inc     di                      ; BX := offset of next byte
 .l24:
 
-        loop    L21
+        loop    .l21
 
+        ; fall through
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 Lexit:
