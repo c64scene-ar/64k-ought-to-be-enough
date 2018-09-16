@@ -148,12 +148,6 @@ main_init:
 ; pre_render_text
 pre_render_text:
 
-;        mov     si,points
-;        mov     word [poly_translation],0x3250       ;x offset = 80, y offset = 50
-;        call    draw_poly
-;        inc     byte [poly_rotation]
-;        inc     byte [Line08_color]
-
         les     di,[pre_render_buffer_seg_off]          ;es:di: dst buffer
 
         ; clean existing buffer first
@@ -161,55 +155,32 @@ pre_render_text:
         sub     ax,ax                                   ;color black
         rep stosw                                       ;clean buffer
 
-        mov     word [poly_translation],0x1410          ;x offset = 80, y offset = 50
-        mov     byte [poly_scale],0
-        mov     byte [poly_rotation],0
-        mov     byte [Line08_color],2
+        int 3
+        mov     si,text_to_pre_render                   ;si: pointer to letters to render
 
+.l0:
+        lodsb                                           ;al = letter to render
+        or      al,al                                   ;al = 0 ? end rendering
+        jz      .exit                                   ; if, so exit
 
-        ; print credits
-        mov     si,svg_letter_data_C
-        mov     ax,0xffff
-        call    draw_svg_letter_with_shadow
+        sub     al,0x20                                 ;table starts at 'space' (0x20)
+                                                        ; make it zero index
+        sub     bh,bh
+        mov     bl,al                                   ;bx = index to table
+        shl     bx,1                                    ;multiply by 2. each entry takes 2 bytes
 
-        add     byte [poly_translation_x],0x14          ;x offset += 20
-        add     byte [poly_translation_y],0x00          ;y offset += 0
-        mov     si,svg_letter_data_R
-        mov     ax,0xffff                               ;shadow direction
-        call    draw_svg_letter_with_shadow
+        push    si                                      ;save si
+        mov     si,[svg_letter_table+bx]                ;pointer to letter
+        call    draw_svg_letter_with_shadow             ;draw letter
 
+        mov     ax, [svg_letter_spacing]
+        add     byte [poly_translation_x],al            ;x offset
+        add     byte [poly_translation_y],ah            ;y offset
 
-        add     byte [poly_translation_x],0x14          ;x offset += 20
-        add     byte [poly_translation_y],0x00          ;y offset += 0
-        mov     si,svg_letter_data_E
-        mov     ax,0xff00                               ;shadow direction
-        call    draw_svg_letter_with_shadow
+        pop     si                                      ;restore si
+        jmp     .l0                                     ;and start with next letter
 
-
-        add     byte [poly_translation_x],0x14          ;x offset += 20
-        add     byte [poly_translation_y],0x00          ;y offset += 0
-        mov     si,svg_letter_data_D
-        mov     ax,0x00ff                               ;shadow direction
-        call    draw_svg_letter_with_shadow
-
-        add     byte [poly_translation_x],0x14          ;x offset += 20
-        add     byte [poly_translation_y],0x00          ;y offset += 0
-        mov     si,svg_letter_data_I
-        mov     ax,0x0001                               ;shadow direction
-        call    draw_svg_letter_with_shadow
-
-        add     byte [poly_translation_x],0x14          ;x offset += 20
-        add     byte [poly_translation_y],0x00          ;y offset += 0
-        mov     si,svg_letter_data_T
-        mov     ax,0x0101                               ;shadow direction
-        call    draw_svg_letter_with_shadow
-
-        add     byte [poly_translation_x],0x14          ;x offset += 20
-        add     byte [poly_translation_y],0x00          ;y offset += 0
-        mov     si,svg_letter_data_S
-        mov     ax,0x0001                               ;shadow direction
-        call    draw_svg_letter_with_shadow
-
+.exit:
         mov     ax,VIDEO_SEG
         mov     es,ax                                   ;restore es
 
@@ -414,6 +385,29 @@ cmd_in_scroll_down_anim:
         jmp     helper_video_scroll_down_1_row
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_in_scroll_down_r
+cmd_in_scroll_down_r_init:
+        mov     byte [var_command_in_cnt],40            ;rows to scroll
+        mov     ax,pre_render_buffer                    ;in reverse mode, we start from top
+        mov     word [var_command_si_offset],ax         ;from which row should get the data
+        ret
+
+cmd_in_scroll_down_r_anim:
+        dec     byte [var_command_in_cnt]
+        jnz     .l0
+        jmp     cmd_process_next
+
+.l0:
+        mov     cx,80/2                         ;40 words == 80 bytes
+        mov     si,[var_command_si_offset]      ;ds:si = src
+        mov     di,80*60                        ;es:di = dst (video) dst = row 60
+        sub     ax,ax                           ;color black
+        rep movsw
+        mov     [var_command_si_offset],si      ;update si
+
+        jmp     helper_video_scroll_down_1_row
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; cmd_out_scroll_down
 cmd_out_scroll_down_init:
         mov     byte [var_command_out_cnt],40   ;bytes to scroll
@@ -511,6 +505,35 @@ cmd_translate_init:
         jmp     cmd_process_next                ;no animation... process next command
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_char_spacing
+cmd_char_spacing_init:
+        mov     si,[commands_data_idx]
+        lodsw                                   ;ax = new x,y spacing
+        mov     [svg_letter_spacing],ax         ;set new spacing between chars
+        mov     [commands_data_idx],si          ;update index
+        jmp     cmd_process_next                ;no animation... process next command
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_shadow_palette
+cmd_shadow_palette_init:
+        mov     si,[commands_data_idx]
+        lodsw                                   ;ax = color shadow #1 and #0
+        mov     [svg_letter_shadow_colors],ax   ;shadow colors
+        lodsb                                   ;al = foregrond color
+        mov     [svg_letter_shadow_colors+2],al
+        mov     [commands_data_idx],si          ;update index
+        jmp     cmd_process_next                ;no animation... process next command
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_shadow_dir
+cmd_shadow_dir_init:
+        mov     si,[commands_data_idx]
+        lodsw                                   ;ax = shadow direction
+        mov     [svg_letter_shadow_dir],ax      ;shadow dir
+        mov     [commands_data_idx],si          ;update index
+        jmp     cmd_process_next                ;no animation... process next command
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; cmd_wait:
 cmd_wait_init:
         mov     si,[commands_data_idx]
@@ -547,29 +570,32 @@ draw_svg_letter:
 ; draw_svg_letter_with_shadow
 ; IN:
 ;       si := vector points
-;       ax := shadow direction. ah=y, al=x
 draw_svg_letter_with_shadow:
         push    word [poly_translation]                 ;save original translation
 
         mov     [tmp_poly_offset],si
-        mov     [tmp_poly_shadow_dir],ax
 
-        mov     byte [Line08_color],4
+        ; outer shadow
+        mov     al,[svg_letter_shadow_colors]           ;color for letter (shadow #1)
+        mov     byte [Line08_color],al
         call    draw_svg_letter
 
-        mov     ax,[tmp_poly_shadow_dir]
+        ; middle shadow
         mov     si,[tmp_poly_offset]
+        mov     ax,[svg_letter_shadow_dir]              ;ax = offset for shadow
         add     byte [poly_translation_x],al
         add     byte [poly_translation_y],ah
-        mov     byte [Line08_color],12
+        mov     al,[svg_letter_shadow_colors+1]         ;color for letter (shadow #0)
+        mov     byte [Line08_color],al
         call    draw_svg_letter
 
-        mov     ax,[tmp_poly_shadow_dir]
+        ; foreground
         mov     si,[tmp_poly_offset]
-
+        mov     ax,[svg_letter_shadow_dir]              ;ax = offset for shadow
         add     byte [poly_translation_x],al
         add     byte [poly_translation_y],ah
-        mov     byte [Line08_color],15
+        mov     al,[svg_letter_shadow_colors+2]         ;color for letter (foreground)
+        mov     byte [Line08_color],al
         call    draw_svg_letter
 
         pop     word [poly_translation]                 ;restore original translation
@@ -615,7 +641,7 @@ draw_svg_letter_zoomed:
         mov     byte [Line08_color],1
         call    draw_svg_letter
 
-        add     byte [poly_scale],6                     ;restore scale
+        mov     byte [poly_scale],0                     ;restore scale
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -632,8 +658,11 @@ draw_poly:
         cmp     ah,0xf0                         ; end of poly ?
         ja      .exit
 
-        add     al,[poly_rotation]              ; al := al + rotation
-        add     ah,[poly_scale]                 ; ah := ah + scale
+        add     al,[poly_rotation]              ;al := al + rotation
+        mov     cl,[poly_scale]                 ;scale := scale >> scale_factor
+        shr     ah,cl                           ;scale: divide by 2 or 4
+                                                ; if [poly_scale] is bigger than 2, they are going
+                                                ; to bee too small
 
         mov     bp,si                           ;save si... gets destroyed in get_coords_for_point
         call    get_coords_for_point            ;al := x, ah := y
@@ -788,22 +817,17 @@ is_poly_previous_point:
 poly_translation:                               ;must be together
 poly_translation_x:     db      0               ;x
 poly_translation_y:     db      0               ;y
-
-poly_rotation:  db 0                            ;rotation: between 0 and 255
-poly_scale:     db 0                            ;scale: cannot be greater than max radius
-
-points:
-        ; points are defined in polar coordinates: angle (0-255), radius
-        db      254, 21
-        db      62, 21
-        db      126, 21
-        db      190, 21
-;        db      254, 42
-        db      -1, -1
+poly_rotation:          db      0               ;rotation: between 0 and 255
+poly_scale:             db      0               ;scale: cannot be greater than max radius
 
 tmp_poly_offset:        dw      0               ;tmp var to store poly offset
-tmp_poly_shadow_dir:    dw      0               ;tmp var to store shadow direction
 
+svg_letter_spacing:     dw      0               ;x,y: spacing in pixels between letters
+svg_letter_shadow_dir:  dw      0               ;x,y: shadow direction
+svg_letter_shadow_colors:                       ;colors used for letters with shadows
+        db              8                       ;outer color
+        db              7                       ;inner color
+        db              15                      ;foreground color
 video_addr_offset:      dw      0               ;should be 0 when rendering to video
                                                 ; directly, but when using the pre-render
                                                 ; buffer, it should contain the address
@@ -820,7 +844,11 @@ CMD_SCALE               equ     5
 CMD_TRANSLATE           equ     6
 CMD_WAIT                equ     7
 CMD_IN_SCROLL_DOWN      equ     8
-CMD_OUT_SCROLL_DOWN     equ     9
+CMD_IN_SCROLL_DOWN_R    equ     9               ;reversed scroll down
+CMD_OUT_SCROLL_DOWN     equ     10
+CMD_CHAR_SPACING        equ     11
+CMD_SHADOW_PALETTE      equ     12
+CMD_SHADOW_DIR          equ     13
 
 CMD_OUT_SCROLL_LEFT     equ     9
 CMD_OUT_SCROLL_RIGHT    equ     10
@@ -836,20 +864,26 @@ commands_data_idx:      dw      0               ;index in commands_data
 commands_data:
         ; credits
         db      CMD_WAIT,60
-        db      CMD_TRANSLATE,0,0               ;set new x,y
+        db      CMD_TRANSLATE,20,20             ;set new x,y
+        db      CMD_SCALE,1                     ;scalea for fonts, the bigger, the samller
+        db      CMD_ROTATION,0
+        db      CMD_CHAR_SPACING,20,0           ;spacing between chars
+        db      CMD_SHADOW_PALETTE,8,7,15       ;colos for shadow+foreground
+        db      CMD_SHADOW_DIR,0xff,0xff        ;shadow direction
         db      CMD_PRE_RENDER, 'CREDITS',0     ;string in buffer
-        db      CMD_IN_SCROLL_DOWN,
+        db      CMD_IN_SCROLL_DOWN_R,
         db      CMD_OUT_SCROLL_DOWN,
-
-        db      CMD_IN_SCROLL_UP,
-        db      CMD_OUT_SCROLL_UP,
         db      CMD_WAIT,60
+        db      CMD_IN_SCROLL_UP,
+        db      CMD_WAIT,60
+        db      CMD_OUT_SCROLL_UP,
 
         ; part i
-        db      CMD_TRANSLATE,0,0               ;set new x,y
+        db      CMD_WAIT,60
+        db      CMD_TRANSLATE,20,20             ;set new x,y
         db      CMD_SCALE,0                     ;set new scale
         db      CMD_ROTATION,0                  ;set new rotation
-        db      CMD_PRE_RENDER, 'PART I',0
+        db      CMD_PRE_RENDER, 'PART I:',0
         db      CMD_IN_SCROLL_UP,
         db      CMD_WAIT,30
         db      CMD_OUT_SCROLL_UP,
@@ -883,7 +917,11 @@ commands_entry_tbl:
         dw      cmd_translate_init,             cmd_no_anim,            ; 6
         dw      cmd_wait_init,                  cmd_wait_anim,          ; 7
         dw      cmd_in_scroll_down_init,        cmd_in_scroll_down_anim,        ; 8
-        dw      cmd_out_scroll_down_init,       cmd_out_scroll_down_anim,       ; 9
+        dw      cmd_in_scroll_down_r_init,      cmd_in_scroll_down_r_anim,      ; 9
+        dw      cmd_out_scroll_down_init,       cmd_out_scroll_down_anim,       ; 10
+        dw      cmd_char_spacing_init,          cmd_no_anim,                    ; 11
+        dw      cmd_shadow_palette_init,        cmd_no_anim,                    ; 12
+        dw      cmd_shadow_dir_init,            cmd_no_anim,                    ; 13
 
 
 ; since only one command can be run at the same time, this variable is shared
@@ -904,7 +942,7 @@ var_tmp_db_3: db        0
 
 ; text that should be renderer. ends with 0
 text_to_pre_render:
-        times   16      db      0
+        times   32      db      0
 
 trigger_pre_render:
         db      0                               ;boolean. if 1, tells main thread
@@ -933,6 +971,4 @@ pre_render_buffer_seg:                          ;pre calculated seg
 %include 'common/utils.asm'
 %include 'common/music_player.asm'
 %include 'common/draw_line_160_100_16color.asm'
-
-
 

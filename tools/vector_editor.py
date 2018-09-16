@@ -16,8 +16,8 @@ __docformat__ = 'restructuredtext'
 class Vector:
     SIZE_X = 100
     SIZE_Y = 100
-    SCALE_TO_X = 32
-    SCALE_TO_Y = 32
+    SCALE_TO_X = 40
+    SCALE_TO_Y = 40
     def __init__(self, fd):
         self._fd = fd
         self._image = Image.new("RGB", (self.SIZE_X, self.SIZE_Y))
@@ -26,8 +26,8 @@ class Vector:
         self._chars = {}
 
         self._chars['A'] = [
-                ((12,80), (49,2), (83,76)),
-                ((25,46), (77,54)),
+                ((25,80), (50,20), (80,80)),
+                ((33,53), (68,49))
                 ]
         self._chars['B'] = [
                 ((56,41), (65,48), (67,63), (65,77), (58,82),
@@ -127,7 +127,45 @@ class Vector:
         self._chars['Z'] = [
                 ((27,20), (73,20), (27,80), (71,80))
                 ]
-        self._chars['0'] = [
+
+        # prefix them so that they are in the correct order when sorted
+        # should conform to ASCII order
+        # ASCII from 0x20 to 0x2f
+        self._chars['00space'] = [
+                ]
+        self._chars['01exclamation'] = [
+                ]
+        self._chars['02quote'] = [
+                ]
+        self._chars['03hash'] = [
+                ]
+        self._chars['04dollar'] = [
+                ]
+        self._chars['05percent'] = [
+                ]
+        self._chars['06amp'] = [
+                ]
+        self._chars['07singlequote'] = [
+                ]
+        self._chars['08braketopen'] = [
+                ]
+        self._chars['09braketclosed'] = [
+                ]
+        self._chars['0Astar'] = [
+                ]
+        self._chars['0Bplus'] = [
+                ]
+        self._chars['0Ccomma'] = [
+                ]
+        self._chars['0Dminus'] = [
+                ]
+        self._chars['0Edot'] = [
+                ]
+        self._chars['0Fslash'] = [
+                ]
+        # ASCII from 0x30 to 0x39
+        # this is the real zero
+        self._chars['0Z'] = [
                 ]
         self._chars['1'] = [
                 ]
@@ -146,6 +184,26 @@ class Vector:
         self._chars['8'] = [
                 ]
         self._chars['9'] = [
+                ]
+
+        # ASCII from 0x3a to 0x40
+        # prefix them so that they are in the correct order when sorted
+        # should conform to ASCII order
+        self._chars['9Acolon'] = [
+                ((49,38), (52,38), (52,41), (49,41), (49,38)),
+                ((48,58), (52,58), (52,61), (49,61), (48,58)),
+                ]
+        self._chars['9Bsemicolon'] = [
+                ]
+        self._chars['9Cgreater'] = [
+                ]
+        self._chars['9Dequal'] = [
+                ]
+        self._chars['9Elesser'] = [
+                ]
+        self._chars['9Fquestion'] = [
+                ]
+        self._chars['9Gat'] = [
                 ]
 
     def draw_base(self):
@@ -230,7 +288,7 @@ class Vector:
                 first = True
                 for x, y in segment:
                     if first:
-                        self._fd.write('        db 0x%02x, 0x%02x' % (x, y))
+                        self._fd.write('\tdb 0x%02x, 0x%02x' % (x, y))
                         first = False
                     else:
                         self._fd.write(', 0x%02x, 0x%02x' % (x, y))
@@ -239,7 +297,8 @@ class Vector:
                     # don't print "end of segment" if this is the last segment
                     self._fd.write(', 0xff, 0xfe\t\t\t; end segment\n')
                 else:
-                    self._fd.write(', 0xff, 0xff\t\t\t; end svg letter\n')
+                    self._fd.write('\n')
+            self._fd.write('\tdb 0xff, 0xff\t\t\t; end svg letter\n')
         self._fd.write('\n\n')
         self._fd.write(';=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;\n')
         self._fd.write('svg_letter_table:\n')
