@@ -13,8 +13,8 @@ org     0x100
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-%define DEBUG 1                                 ;0=diabled, 1=enabled
-%define EMULATOR 0                              ;1=run on emulator
+%define DEBUG 0                                 ;0=diabled, 1=enabled
+%define EMULATOR 1                              ;1=run on emulator
 
 VIDEO_SEG               equ     0xb800          ;graphics segment (32k offset)
 PRE_RENDER_BUFFER_SIZE  equ     80*40           ;40 rows for buffer
@@ -344,8 +344,8 @@ cmd_in_scroll_up_anim:
 
 .l0:
         mov     cx,80/2                         ;40 words == 80 bytes
-        mov     si,[var_command_si_offset]
-        mov     di,80*99                        ;80 bytes per row. dst = row 99
+        mov     si,[var_command_si_offset]      ;ds:si = src (local buffer)
+        mov     di,80*99                        ;es:di = dst (video) dst = row 99
         sub     ax,ax                           ;color black
         rep movsw
         mov     [var_command_si_offset],si      ;update si
@@ -392,9 +392,9 @@ helper_video_scroll_up_1_row:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; cmd_in_scroll_down
 cmd_in_scroll_down_init:
-        mov     byte [var_command_in_cnt],40    ;rows to scroll
-        mov     ax,pre_render_buffer + 40*80 - 2
-        mov     word [var_command_si_offset],ax ;from which row should get the data
+        mov     byte [var_command_in_cnt],40            ;rows to scroll
+        mov     ax,pre_render_buffer + 40*80 - 2        ;data starts from bottom (first row, bottom one)
+        mov     word [var_command_si_offset],ax         ;from which row should get the data
         ret
 
 cmd_in_scroll_down_anim:
@@ -405,8 +405,8 @@ cmd_in_scroll_down_anim:
 .l0:
         std
         mov     cx,80/2                         ;40 words == 80 bytes
-        mov     si,[var_command_si_offset]
-        mov     di,80*61                        ;80 bytes per row. dst = row 60
+        mov     si,[var_command_si_offset]      ;ds:si = src
+        mov     di,80*61-2                      ;es:di = dst (video) dst = row 60
         sub     ax,ax                           ;color black
         rep movsw
         mov     [var_command_si_offset],si      ;update si
@@ -440,16 +440,16 @@ cmd_out_scroll_down_anim:
 helper_video_scroll_down_1_row:
         mov     bp,ds                           ;save ds for later
         mov     ax,VIDEO_SEG
-        mov     ds,ax                           ;ds = 0xb800 (video segment)
+        mov     ds,ax                           ;es = ds = 0xb800 (video segment)
 
         std                                     ;reverse si/di
 
-        mov     di,80*99                        ;80 bytes per row. dst = row 99
-        mov     si,80*98                        ;80 bytes per row. src = row 98
-        mov     cx,80*39/2                      ;copy 39 rows (in words)
+        mov     di,80*100-2                     ;80 bytes per row. dst = row 99
+        mov     si,80*99-2                      ;80 bytes per row. src = row 98
+        mov     cx,(80/2)*39                    ;copy 39 rows (in words)
         rep movsw                               ;copy them
 
-        cld                                     ;restore cld
+        cld                                     ;restore direction flag to forward
         mov     ds,bp
         ret
 
@@ -915,12 +915,10 @@ trigger_pre_render:
 ; fake segment...
 ; space used to pre-render the letters, and then with a "in" effect is placed
 ; in the video memory
-pre_render_buffer_tmp:
-        times 1024      db      0               ;just some space in case we draw stuff
-                                                ; above the buffer
 align 16
 pre_render_buffer:
-        times 4096      db      0xa5
+        times PRE_RENDER_BUFFER_SIZE db      0x00
+
 pre_render_buffer_seg_off:                      ;pre calculated seg/offsset address
 pre_render_buffer_off:                          ;pre calculated offset
         dw              0                       ;offset
