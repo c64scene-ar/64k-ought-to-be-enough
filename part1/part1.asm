@@ -871,12 +871,6 @@ TEXT_CMD_DELAY equ 6
         db TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
         db TEXT_CMD_CHANGE_PALETTE,0
 
-        db TEXT_CMD_START_POS,4                         ;set start pos
-           ;0123456789012345678901234567890123456789',
-        db     "I BET YOU DIDN'T KNOW ABOUT THAT "
-        db TEXT_CMD_DELAY
-        db TEXT_CMD_CLEAR_LINE
-
         db TEXT_CMD_START_POS,2                         ;set start pos
            ;0123456789012345678901234567890123456789',
         db   'ON THE POSITIVE SIDE THE PCJR HAS%& '
@@ -897,54 +891,59 @@ TEXT_CMD_DELAY equ 6
 
         db 1                                    ;clean line
 
-        db TEXT_CMD_START_POS,18                        ;set start pos
+        db TEXT_CMD_START_POS,8                         ;set start pos
         dw 0x0104                                       ;change palette
         db 'P'
         dw 0x0304                                       ;change palette
-        db 'V'
+        db 'U'
         dw 0x0504                                       ;change palette
-        db 'M'
+        db 'N'
         dw 0x0c04
-        db '  '
-        db TEXT_CMD_DELAY
-
-        db TEXT_CMD_START_POS,18                        ;set start pos
+        db 'G'
         dw 0x0204
-        db 'P'
+        db 'A'
         dw 0x0404
-        db 'V'
-        dw 0x0604
-        db 'M'
-        dw 0x0004                               ;default color
-        db '    '                               ;wait
-        db TEXT_CMD_DELAY
-
-        db TEXT_CMD_START_POS,18                        ;set start pos
+        db 'S'
+        dw 0x0004
+        db ' '
         dw 0x0104                                       ;change palette
-        db 'P'
+        db 'D'
         dw 0x0304                                       ;change palette
-        db 'V'
+        db 'E'
         dw 0x0504                                       ;change palette
-        db 'M'
+        db ' '
         dw 0x0c04
-        db '  '
-        db TEXT_CMD_DELAY
-
-        db TEXT_CMD_START_POS,18                        ;set start pos
-        dw 0x0204
-        db 'P'
-        dw 0x0404
         db 'V'
+        dw 0x0204
+        db 'I'
+        dw 0x0404
+        db 'L'
         dw 0x0604
+        db 'L'
+        dw 0x0004
+        db 'A'  
+        dw 0x0504                                       ;change palette
+        db ' '
+        dw 0x0104                                       ;change palette
         db 'M'
-        dw 0x0004                               ;default color
-        db '    '                               ;wait
+        dw 0x0304                                       ;change palette
+        db 'A'
+        dw 0x0504                                       ;change palette
+        db 'R'
+        dw 0x0c04
+        db 'T'
+        dw 0x0204
+        db 'E'
+        dw 0x0404
+        db 'L'
+        dw 0x0404
+        db 'L'
+        dw 0x0604
+        db 'I'
+        dw 0x0004
+        db ' '
+
         db TEXT_CMD_DELAY
-
-
-        db 1                                    ;clean line
-
-
+        db TEXT_CMD_DELAY
+        db TEXT_CMD_DELAY
         db 0
-
-
