@@ -1088,7 +1088,7 @@ commands_data:
         db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
         db      CMD_CHAR_SPACING,18,0           ;spacing between chars
         db      CMD_PRE_RENDER, 'ALAKRAN',0
-        db      CMD_IN_SCROLL_UP,
+        db      CMD_IN_SCROLL_DOWN,
         db      CMD_WAIT,120
 
         ; part ii: music:
@@ -1106,7 +1106,7 @@ commands_data:
         db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
         db      CMD_CHAR_SPACING,18,0           ;spacing between chars
         db      CMD_PRE_RENDER, 'UCTUMI',0
-        db      CMD_IN_SCROLL_UP,
+        db      CMD_IN_SCROLL_DOWN,
         db      CMD_WAIT,120
 
 
@@ -1126,7 +1126,7 @@ commands_data:
         db      CMD_TRANSLATE,20,28             ;set new x,y
         db      CMD_ROTATION,0                  ;set new rotation
         db      CMD_PRE_RENDER, 'ARLEQUIN',0
-        db      CMD_IN_SCROLL_UP,
+        db      CMD_IN_SCROLL_DOWN,
         db      CMD_WAIT,120
 
         ; part ii: code
@@ -1144,7 +1144,7 @@ commands_data:
         db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
         db      CMD_CHAR_SPACING,16,0           ;spacing between chars
         db      CMD_PRE_RENDER, 'RIQ',0
-        db      CMD_IN_SCROLL_UP,
+        db      CMD_IN_SCROLL_DOWN,
         db      CMD_WAIT,120
 
         ; part iii =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -1239,8 +1239,6 @@ commands_data:
         db      CMD_OUT_SCROLL_UP,
         db      CMD_WAIT,60
 
-
-%endif
         ; hokuto force, LFT
         ; trixter, brutman,
         ;
@@ -1302,6 +1300,104 @@ commands_data:
         db      CMD_IN_SCROLL_UP,
         db      CMD_WAIT,240
         db      CMD_OUT_SCROLL_UP,
+
+        ; greetins: people #3
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_SCALE,2                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,8,0            ;spacing between chars
+
+        db      CMD_TRANSLATE,14,12              ;set new x,y
+        db      CMD_SHADOW_PALETTE,0,12,15      ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'TRIAD;',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean render buffer
+
+        db      CMD_TRANSLATE,70,12             ;set new x,y
+        db      CMD_SHADOW_PALETTE,0,9,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'AND THE REST',0
+        db      CMD_TRANSLATE,20,29             ;set new x,y
+        db      CMD_PRE_RENDER, 'C64 AND PCJR SCENE',0
+
+        db      CMD_IN_SCROLL_UP,
+        db      CMD_WAIT,240
+        db      CMD_OUT_SCROLL_UP,
+        db      CMD_WAIT,240
+%endif
+
+        ; bye bye =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=;
+        ; down: pungas de
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_SCALE,1                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,16,0           ;spacing between chars
+
+        db      CMD_TRANSLATE,40,9              ;set new x,y
+        db      CMD_SHADOW_PALETTE,8,7,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'PUNGAS',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean render buffer
+
+        db      CMD_TRANSLATE,72,29             ;set new x,y
+        db      CMD_PRE_RENDER, 'DE',0
+
+        db      CMD_IN_SCROLL_DOWN_R
+
+        ; down: villa martelli
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_SCALE,1                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,16,0            ;spacing between chars
+
+        db      CMD_TRANSLATE,50,9              ;set new x,y
+        db      CMD_PRE_RENDER, 'VILLA',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean render buffer
+
+        db      CMD_TRANSLATE,30,29             ;set new x,y
+        db      CMD_PRE_RENDER, 'MARTELLI',0
+
+        db      CMD_IN_SCROLL_DOWN_R
+        db      CMD_OUT_SCROLL_DOWN
+
+        ; up: pungas de
+        db      CMD_WAIT,60
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_SCALE,1                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,16,0           ;spacing between chars
+
+        db      CMD_TRANSLATE,40,9              ;set new x,y
+        db      CMD_SHADOW_PALETTE,1,9,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'PUNGAS',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean render buffer
+
+        db      CMD_SHADOW_PALETTE,2,10,15      ;colors for shadow+foreground
+        db      CMD_TRANSLATE,72,29             ;set new x,y
+        db      CMD_PRE_RENDER, 'DE',0
+
+        db      CMD_IN_SCROLL_UP
+
+        ; down: villa martelli
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_SCALE,1                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,16,0            ;spacing between chars
+
+        db      CMD_SHADOW_PALETTE,4,12,15      ;colors for shadow+foreground
+        db      CMD_TRANSLATE,50,9              ;set new x,y
+        db      CMD_PRE_RENDER, 'VILLA',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean render buffer
+
+        db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
+        db      CMD_TRANSLATE,30,29             ;set new x,y
+        db      CMD_PRE_RENDER, 'MARTELLI',0
+
+        db      CMD_IN_SCROLL_UP
+
+        db      CMD_OUT_SCROLL_UP
 
 
         db      CMD_WAIT,255
