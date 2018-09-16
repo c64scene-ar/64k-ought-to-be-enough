@@ -150,34 +150,51 @@ pre_render_text:
 
         les     di,[pre_render_buffer_seg_off]          ;es:di: dst buffer
 
+        cmp     byte [should_clean_pre_render_buffer],0 ;should clean render buffer?
+        jz      .l0                                     ; no? skip cleaning buffer
+
         ; clean existing buffer first
         mov     cx,PRE_RENDER_BUFFER_SIZE/2             ;buffer size / 2 since we do it in word
         sub     ax,ax                                   ;color black
         rep stosw                                       ;clean buffer
 
-        mov     si,text_to_pre_render                   ;si: pointer to letters to render
-
 .l0:
+
+        mov     si,text_to_pre_render                   ;si: pointer to letters to render
+.loop:
         lodsb                                           ;al = letter to render
         or      al,al                                   ;al = 0 ? end rendering
         jz      .exit                                   ; if, so exit
 
+        push    si                                      ;save si (current position of text index)
+
+        ; special treatment for "space"... it only advances half the space
+        ; and no rendering is required
+        cmp     al,0x20                                 ;is space ?
+        jnz     .l1                                     ; nope, skip special treatment
+
+        mov     ax,[svg_letter_spacing]                 ;get spacing, divide it by 2
+        shr     al,1                                    ;x += spacing x / 2
+        shr     ah,1                                    ;y += spacing y / 2
+        jmp     .l2
+
+.l1:
         sub     al,0x20                                 ;table starts at 'space' (0x20)
                                                         ; make it zero index
         sub     bh,bh
         mov     bl,al                                   ;bx = index to table
         shl     bx,1                                    ;multiply by 2. each entry takes 2 bytes
 
-        push    si                                      ;save si
         mov     si,[svg_letter_table+bx]                ;pointer to letter
         call    draw_svg_letter_with_shadow             ;draw letter
 
-        mov     ax, [svg_letter_spacing]
+        mov     ax,[svg_letter_spacing]
+.l2:
         add     byte [poly_translation_x],al            ;x offset
         add     byte [poly_translation_y],ah            ;y offset
 
         pop     si                                      ;restore si
-        jmp     .l0                                     ;and start with next letter
+        jmp     .loop                                   ;and start with next letter
 
 .exit:
         mov     ax,VIDEO_SEG
@@ -447,9 +464,8 @@ helper_video_scroll_down_1_row:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; cmd_sweep_up
-cmd_sweep_up_init:
-        int 3
+; cmd_in_sweep_up
+cmd_in_sweep_up_init:
         mov     byte [var_command_out_cnt],40   ;bytes to scroll
         mov     ax,pre_render_buffer+40*80-2    ;data starts from bottom (first row, bottom one)
         mov     [var_command_si_offset],ax      ;from which row should get the data
@@ -457,8 +473,7 @@ cmd_sweep_up_init:
         mov     [var_command_di_offset],ax      ;destination offset
         ret
 
-cmd_sweep_up_anim:
-        int 3
+cmd_in_sweep_up_anim:
         ; scroll up one row
         dec     byte [var_command_out_cnt]
         jnz     .l0
@@ -474,6 +489,31 @@ cmd_sweep_up_anim:
 
         mov     [var_command_si_offset],si      ;update source offset
         mov     [var_command_di_offset],di      ;update dst offset
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_out_sweep_up
+cmd_out_sweep_up_init:
+        mov     byte [var_command_out_cnt],40   ;bytes to scroll
+        mov     ax,80*100-2                     ;last row of video segment
+        mov     [var_command_di_offset],ax      ;destination offset
+        ret
+
+cmd_out_sweep_up_anim:
+        ; scroll up one row
+        dec     byte [var_command_out_cnt]
+        jnz     .l0
+        jmp     cmd_process_next
+
+.l0:
+        std                                     ;copy backwards
+        sub     ax,ax                           ;color black
+        mov     di,[var_command_di_offset]      ;es:di = dst
+        mov     cx,80/2                         ;copy 40 words
+        rep stosw                               ;do the store
+        cld                                     ;restore forward direction
+
+        mov     [var_command_di_offset],di      ;update source offset
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -561,6 +601,15 @@ cmd_shadow_dir_init:
         mov     [svg_letter_shadow_dir],ax      ;shadow dir
         mov     [commands_data_idx],si          ;update index
         jmp     cmd_process_next                ;no animation... process next command
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_clean_render_buffer
+cmd_clean_render_buffer_init:
+        mov     si,[commands_data_idx]
+        lodsb                                           ;al = whether or not the render
+        mov     [should_clean_pre_render_buffer],al     ; buffer should be cleaned
+        mov     [commands_data_idx],si                  ;update index
+        jmp     cmd_process_next                        ;no animation... process next command
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; cmd_wait:
@@ -826,18 +875,18 @@ set_vid_160_100_16:
 ;DATA
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 pvm_song:
-        incbin 'part3/uctumi-zamba.pvm'
+        incbin          'part3/uctumi-zamba.pvm'
 
 end_condition:
-        db      0                               ;if 0, part3 ends
+        db              0                       ;if 0, part3 ends
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; SVG drawing related
 ; poly and line related
 poly_prev_point:
-        dw      0                               ;cache of previous point
+        dw              0                       ;cache of previous point
 is_poly_previous_point:
-        db      0                               ;1 if there is a valid point in poly_prev_point
+        db              0                       ;1 if there is a valid point in poly_prev_point
 
 ; matrix values for current polygon
 ;       translation
@@ -861,6 +910,9 @@ video_addr_offset:      dw      0               ;should be 0 when rendering to v
                                                 ; directly, but when using the pre-render
                                                 ; buffer, it should contain the address
                                                 ; of the pre-render buffer
+should_clean_pre_render_buffer:
+        db              1                       ;boolean. when 1, render buffer will
+                                                ; will be cleaned before next render
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; command related stuff
@@ -879,22 +931,24 @@ CMD_CHAR_SPACING        equ     11
 CMD_SHADOW_PALETTE      equ     12
 CMD_SHADOW_DIR          equ     13
 CMD_IN_SWEEP_UP         equ     14
+CMD_CLEAN_RENDER_BUFFER equ     15
+CMD_OUT_SWEEP_UP        equ     16
 
-CMD_OUT_SCROLL_LEFT     equ     9
-CMD_OUT_SCROLL_RIGHT    equ     10
-CMD_OUT_SWEEP_DOWN      equ     11
-CMD_OUT_SWEEP_UP        equ     12
-CMD_OUT_SWEEP_LEFT      equ     13
-CMD_OUT_SWEEP_RIGHT     equ     14
-CMD_OUT_SWEEP_PIXEL     equ     15
+;CMD_OUT_SCROLL_LEFT     equ     9
+;CMD_OUT_SCROLL_RIGHT    equ     10
+;CMD_OUT_SWEEP_LEFT      equ     13
+;CMD_OUT_SWEEP_RIGHT     equ     14
+;CMD_OUT_SWEEP_PIXEL     equ     15
 
 commands_current_anim:  dw      0               ;address of current anim
 
 commands_data_idx:      dw      0               ;index in commands_data
 commands_data:
         db      CMD_SHADOW_DIR,0xff,0xff        ;shadow direction
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
 
-        ; credits
+%if 0
+        ; credits =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=;
         db      CMD_WAIT,60
         db      CMD_TRANSLATE,20,20             ;set new x,y
         db      CMD_SCALE,1                     ;scalea for fonts, the bigger, the samller
@@ -908,10 +962,10 @@ commands_data:
         db      CMD_IN_SCROLL_UP,
         db      CMD_WAIT,60
         db      CMD_OUT_SCROLL_UP,
-
-        ; part i
         db      CMD_WAIT,60
-        db      CMD_TRANSLATE,20,20             ;set new x,y
+
+        ; part i =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+        db      CMD_TRANSLATE,30,20             ;set new x,y
         db      CMD_SCALE,0                     ;set new scale
         db      CMD_ROTATION,10                 ;set new rotation
         db      CMD_CHAR_SPACING,23,0           ;spacing between chars
@@ -920,171 +974,333 @@ commands_data:
         db      CMD_IN_SCROLL_UP,
         db      CMD_WAIT,60
         db      CMD_OUT_SCROLL_UP,
-
-        ; part i: code:
         db      CMD_WAIT,60
-        db      CMD_TRANSLATE,20,20             ;set new x,y
-        db      CMD_SCALE,1                     ;set new scale
-        db      CMD_ROTATION,5                  ;set new rotation
-        db      CMD_CHAR_SPACING,14,0           ;spacing between chars
-        db      CMD_SHADOW_PALETTE,1,9,15       ;colors for shadow+foreground
-        db      CMD_PRE_RENDER, 'CODE: RIQ',0
-        db      CMD_IN_SCROLL_UP,
-        db      CMD_WAIT,60
-        db      CMD_OUT_SCROLL_UP,
 
-        ; part i: music:
-        db      CMD_WAIT,60
-        db      CMD_TRANSLATE,35,20             ;set new x,y
-        db      CMD_SCALE,1                     ;set new scale
-        db      CMD_ROTATION,2                  ;set new rotation
-        db      CMD_CHAR_SPACING,18,0           ;spacing between chars
-        db      CMD_SHADOW_PALETTE,1,9,15       ;colors for shadow+foreground
-        db      CMD_PRE_RENDER, 'MUSIC:',0
-        db      CMD_IN_SCROLL_UP
-        db      CMD_WAIT,120
-
-        db      CMD_TRANSLATE,35,20             ;set new x,y
-        db      CMD_ROTATION,-2                 ;set new rotation
-        db      CMD_PRE_RENDER, 'UCTUMI',0
-        db      CMD_IN_SWEEP_UP
-        db      CMD_WAIT,120
-
-        ; part i: gfx:
-        db      CMD_WAIT,60
-        db      CMD_TRANSLATE,20,20             ;set new x,y
-        db      CMD_SCALE,1                     ;set new scale
-        db      CMD_ROTATION,10                  ;set new rotation
-        db      CMD_CHAR_SPACING,16,0           ;spacing between chars
-        db      CMD_SHADOW_PALETTE,1,9,15       ;colors for shadow+foreground
-        db      CMD_PRE_RENDER, 'GFX: RIQ',0
-        db      CMD_IN_SCROLL_UP
-        db      CMD_WAIT,120
-        db      CMD_OUT_SCROLL_UP
-
-        ; part i: font:
-        db      CMD_WAIT,60
-        db      CMD_TRANSLATE,30,20             ;set new x,y
+        ; part i: code & graphics
+        db      CMD_TRANSLATE,13,10             ;set new x,y
         db      CMD_SCALE,2                     ;set new scale
         db      CMD_ROTATION,0                  ;set new rotation
         db      CMD_CHAR_SPACING,10,0           ;spacing between chars
-        db      CMD_SHADOW_PALETTE,1,9,15       ;colors for shadow+foreground
-        db      CMD_PRE_RENDER, 'SMALL FONT:',0
-        db      CMD_IN_SCROLL_UP
+        db      CMD_SHADOW_PALETTE,0,9,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'CODE & GRAPHICS:',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean buffer
+        db      CMD_SCALE,1                     ;set new scale
+        db      CMD_TRANSLATE,66,28             ;set new x,y
+        db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
+        db      CMD_CHAR_SPACING,16,0           ;spacing between chars
+        db      CMD_PRE_RENDER, 'RIQ',0
+        db      CMD_IN_SCROLL_UP,
         db      CMD_WAIT,120
 
+
+        ; part i: music:
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_TRANSLATE,60,10             ;set new x,y
+        db      CMD_SCALE,2                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,10,0           ;spacing between chars
+        db      CMD_SHADOW_PALETTE,0,9,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'MUSIC:',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean buffer
         db      CMD_SCALE,1                     ;set new scale
+        db      CMD_TRANSLATE,42,28             ;set new x,y
+        db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
+        db      CMD_CHAR_SPACING,18,0           ;spacing between chars
+        db      CMD_PRE_RENDER, 'UCTUMI',0
+        db      CMD_IN_SCROLL_UP,
+        db      CMD_WAIT,120
+
+
+        ; part i: small font:
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_TRANSLATE,30,10             ;set new x,y
+        db      CMD_SCALE,2                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,10,0           ;spacing between chars
+        db      CMD_SHADOW_PALETTE,0,9,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'SMALL FONTS:',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean buffer
+        db      CMD_SCALE,1                     ;set new scale
+        db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
         db      CMD_CHAR_SPACING,14,0           ;spacing between chars
-        db      CMD_TRANSLATE,34,20             ;set new x,y
+        db      CMD_TRANSLATE,34,28             ;set new x,y
         db      CMD_ROTATION,5                  ;set new rotation
         db      CMD_PRE_RENDER, 'ARLEQUIN',0
-        db      CMD_IN_SWEEP_UP
+        db      CMD_IN_SCROLL_UP,
         db      CMD_WAIT,120
 
-        ; part i: font:
-        db      CMD_WAIT,60
-        db      CMD_TRANSLATE,14,20             ;set new x,y
-        db      CMD_SCALE,0                     ;set new scale
-        db      CMD_ROTATION,-2                 ;set new rotation
-        db      CMD_CHAR_SPACING,19,0           ;spacing between chars
+        ; part i: big font:
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_TRANSLATE,44,12             ;set new x,y
+        db      CMD_SCALE,2                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,10,0           ;spacing between chars
         db      CMD_SHADOW_PALETTE,0,9,15       ;colors for shadow+foreground
-        db      CMD_PRE_RENDER, 'BIG FONT',0
-        db      CMD_IN_SWEEP_UP
-        db      CMD_WAIT,120
+        db      CMD_PRE_RENDER, 'BIG FONTS',0
 
-        db      CMD_SCALE,1
-        db      CMD_CHAR_SPACING,14,0           ;spacing between chars
-        db      CMD_TRANSLATE,34,30             ;set new x,y
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean render buffer
+        db      CMD_TRANSLATE,46,26             ;set new x,y
         db      CMD_PRE_RENDER, 'BASED ON:',0
-        db      CMD_IN_SCROLL_UP
-        db      CMD_OUT_SCROLL_UP
+        db      CMD_IN_SCROLL_UP,
+        db      CMD_WAIT,120
 
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_SHADOW_PALETTE,0,13,15      ;colors for shadow+foreground
         db      CMD_SCALE,2
-        db      CMD_CHAR_SPACING,9,0           ;spacing between chars
-        db      CMD_TRANSLATE,12,20             ;set new x,y
+        db      CMD_CHAR_SPACING,9,0            ;spacing between chars
+        db      CMD_TRANSLATE,14,12             ;set new x,y
         db      CMD_PRE_RENDER, "ANDREW GLASSNER'S",0
-        db      CMD_IN_SWEEP_UP
-        db      CMD_WAIT,120
 
-        db      CMD_CHAR_SPACING,12,0           ;spacing between chars
-        db      CMD_TRANSLATE,35,20            ;set new x,y
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;dont clean render buffer
+        db      CMD_TRANSLATE,50,26             ;set new x,y
         db      CMD_PRE_RENDER, 'NOTEBOOK',0
-        db      CMD_IN_SWEEP_UP
+        db      CMD_IN_SCROLL_UP,
         db      CMD_WAIT,120
 
-        ; part ii
-        db      CMD_WAIT,60
+        ; part ii =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=;
+        db      CMD_OUT_SCROLL_UP,
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_TRANSLATE,18,20             ;set new x,y
+        db      CMD_SCALE,0                     ;set new scale
+        db      CMD_ROTATION,-5                 ;set new rotation
+        db      CMD_CHAR_SPACING,25,0           ;spacing between chars
+        db      CMD_SHADOW_PALETTE,2,10,15      ;colos for shadow+foreground
+        db      CMD_PRE_RENDER, 'PART II',0
+        db      CMD_IN_SWEEP_UP
+        db      CMD_WAIT,120
+        db      CMD_OUT_SWEEP_UP
+
+        ; part ii: graphics
+        db      CMD_TRANSLATE,44,10             ;set new x,y
+        db      CMD_SCALE,2                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,10,0           ;spacing between chars
+        db      CMD_SHADOW_PALETTE,0,9,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'GRAPHICS:',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean buffer
+        db      CMD_SCALE,1                     ;set new scale
+        db      CMD_ROTATION,2                  ;set new rotation
+        db      CMD_TRANSLATE,30,28             ;set new x,y
+        db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
+        db      CMD_CHAR_SPACING,18,0           ;spacing between chars
+        db      CMD_PRE_RENDER, 'ALAKRAN',0
+        db      CMD_IN_SCROLL_UP,
+        db      CMD_WAIT,120
+
+        ; part ii: music:
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_TRANSLATE,58,10             ;set new x,y
+        db      CMD_SCALE,2                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,10,0           ;spacing between chars
+        db      CMD_SHADOW_PALETTE,0,9,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'MUSIC:',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean buffer
+        db      CMD_SCALE,1                     ;set new scale
+        db      CMD_TRANSLATE,42,28             ;set new x,y
+        db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
+        db      CMD_CHAR_SPACING,18,0           ;spacing between chars
+        db      CMD_PRE_RENDER, 'UCTUMI',0
+        db      CMD_IN_SCROLL_UP,
+        db      CMD_WAIT,120
+
+
+        ; part ii: fonts:
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_TRANSLATE,60,10             ;set new x,y
+        db      CMD_SCALE,2                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,10,0           ;spacing between chars
+        db      CMD_SHADOW_PALETTE,0,9,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'FONTS:',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean buffer
+        db      CMD_SCALE,1                     ;set new scale
+        db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
+        db      CMD_CHAR_SPACING,18,0           ;spacing between chars
+        db      CMD_TRANSLATE,20,28             ;set new x,y
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_PRE_RENDER, 'ARLEQUIN',0
+        db      CMD_IN_SCROLL_UP,
+        db      CMD_WAIT,120
+
+        ; part ii: code
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_TRANSLATE,62,10             ;set new x,y
+        db      CMD_SCALE,2                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,10,0           ;spacing between chars
+        db      CMD_SHADOW_PALETTE,0,9,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'CODE:',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean buffer
+        db      CMD_SCALE,1                     ;set new scale
+        db      CMD_TRANSLATE,66,28             ;set new x,y
+        db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
+        db      CMD_CHAR_SPACING,16,0           ;spacing between chars
+        db      CMD_PRE_RENDER, 'RIQ',0
+        db      CMD_IN_SCROLL_UP,
+        db      CMD_WAIT,120
+
+        ; part iii =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+        db      CMD_OUT_SCROLL_UP,
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
         db      CMD_TRANSLATE,18,20             ;set new x,y
         db      CMD_SCALE,0                     ;set new scale
         db      CMD_ROTATION,0                  ;set new rotation
-        db      CMD_CHAR_SPACING,21,0           ;spacing between chars
-        db      CMD_SHADOW_PALETTE,2,10,15      ;colos for shadow+foreground
-        db      CMD_PRE_RENDER, 'PART II',0
+        db      CMD_CHAR_SPACING,25,0           ;spacing between chars
+        db      CMD_SHADOW_PALETTE,3,11,15      ;colos for shadow+foreground
+        db      CMD_PRE_RENDER, 'PART',0
+
+        db      CMD_TRANSLATE,124,20            ;set new x,y
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean buffer
+        db      CMD_CHAR_SPACING,8,0            ;spacing between chars
+        db      CMD_PRE_RENDER, 'III',0
+
+        db      CMD_IN_SWEEP_UP
+        db      CMD_WAIT,120
+        db      CMD_OUT_SWEEP_UP
+
+        ; part iii: music:
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_TRANSLATE,60,10             ;set new x,y
+        db      CMD_SCALE,2                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,10,0           ;spacing between chars
+        db      CMD_SHADOW_PALETTE,0,9,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'MUSIC:',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean buffer
+        db      CMD_SCALE,1                     ;set new scale
+        db      CMD_TRANSLATE,42,28             ;set new x,y
+        db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
+        db      CMD_CHAR_SPACING,18,0           ;spacing between chars
+        db      CMD_PRE_RENDER, 'UCTUMI',0
+        db      CMD_IN_SCROLL_UP,
+        db      CMD_WAIT,120
+
+        ; part iii: graphics
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_TRANSLATE,44,10             ;set new x,y
+        db      CMD_SCALE,2                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,10,0           ;spacing between chars
+        db      CMD_SHADOW_PALETTE,0,9,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'GRAPHICS:',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean buffer
+        db      CMD_SCALE,1                     ;set new scale
+        db      CMD_ROTATION,2                  ;set new rotation
+        db      CMD_TRANSLATE,30,28             ;set new x,y
+        db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
+        db      CMD_CHAR_SPACING,18,0           ;spacing between chars
+        db      CMD_PRE_RENDER, 'ALAKRAN',0
+        db      CMD_IN_SCROLL_UP,
+        db      CMD_WAIT,120
+
+        ; part iii: code & fonts
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_TRANSLATE,30,10             ;set new x,y
+        db      CMD_SCALE,2                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,10,0           ;spacing between chars
+        db      CMD_SHADOW_PALETTE,0,9,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'CODE & FONTS:',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean buffer
+        db      CMD_SCALE,1                     ;set new scale
+        db      CMD_TRANSLATE,66,28             ;set new x,y
+        db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
+        db      CMD_CHAR_SPACING,16,0           ;spacing between chars
+        db      CMD_PRE_RENDER, 'RIQ',0
         db      CMD_IN_SCROLL_UP,
         db      CMD_WAIT,120
         db      CMD_OUT_SCROLL_UP,
 
-        ; part ii: gfx:
+        ; greetings =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=;
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
         db      CMD_WAIT,60
-        db      CMD_TRANSLATE,20,20             ;set new x,y
-        db      CMD_SCALE,1                     ;set new scale
-        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_TRANSLATE,18,20             ;set new x,y
+        db      CMD_SCALE,1                     ;scalea for fonts, the bigger, the samller
+        db      CMD_ROTATION,0
         db      CMD_CHAR_SPACING,16,0           ;spacing between chars
-        db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
-        db      CMD_PRE_RENDER, 'GFX:',0
-        db      CMD_IN_SCROLL_UP
-        db      CMD_WAIT,120
-
-        db      CMD_CHAR_SPACING,14,0           ;spacing between chars
-        db      CMD_TRANSLATE,34,20             ;set new x,y
-        db      CMD_ROTATION,5                  ;set new rotation
-        db      CMD_PRE_RENDER, 'ALAKRAN',0
-        db      CMD_IN_SWEEP_UP
-        db      CMD_WAIT,120
-
-        ; part ii: music:
+        db      CMD_SHADOW_PALETTE,8,7,15       ;colos for shadow+foreground
+        db      CMD_PRE_RENDER, 'GREETINGS',0   ;string in buffer
+        db      CMD_IN_SCROLL_DOWN_R,
+        db      CMD_OUT_SCROLL_DOWN,
         db      CMD_WAIT,60
-        db      CMD_TRANSLATE,35,20             ;set new x,y
-        db      CMD_SCALE,1                     ;set new scale
-        db      CMD_ROTATION,-2                 ;set new rotation
-        db      CMD_CHAR_SPACING,18,0           ;spacing between chars
-        db      CMD_PRE_RENDER, 'MUSIC:',0
-        db      CMD_IN_SCROLL_UP
-        db      CMD_WAIT,120
-
-        db      CMD_TRANSLATE,35,20             ;set new x,y
-        db      CMD_ROTATION,2                 ;set new rotation
-        db      CMD_PRE_RENDER, 'UCTUMI',0
-        db      CMD_IN_SWEEP_UP
-        db      CMD_WAIT,120
-
-        ; part ii: font:
-        db      CMD_WAIT,60
-        db      CMD_TRANSLATE,14,20             ;set new x,y
-        db      CMD_SCALE,1                     ;set new scale
-        db      CMD_ROTATION,0                  ;set new rotation
-        db      CMD_CHAR_SPACING,14,0           ;spacing between chars
-        db      CMD_SHADOW_PALETTE,1,9,15       ;colors for shadow+foreground
-        db      CMD_PRE_RENDER, 'FONT:',0
-        db      CMD_IN_SCROLL_UP
-        db      CMD_WAIT,120
-
-        db      CMD_CHAR_SPACING,14,0           ;spacing between chars
-        db      CMD_TRANSLATE,34,20             ;set new x,y
-        db      CMD_ROTATION,5                  ;set new rotation
-        db      CMD_PRE_RENDER, 'ARLEQUIN',0
-        db      CMD_IN_SWEEP_UP
-        db      CMD_WAIT,120
-
-        ; part ii: code:
-        db      CMD_WAIT,60
-        db      CMD_TRANSLATE,20,20             ;set new x,y
-        db      CMD_SCALE,1                     ;set new scale
-        db      CMD_ROTATION,128                ;set new rotation
-        db      CMD_CHAR_SPACING,14,0           ;spacing between chars
-        db      CMD_PRE_RENDER, 'CODE: RIQ',0
         db      CMD_IN_SCROLL_UP,
         db      CMD_WAIT,60
+        db      CMD_OUT_SCROLL_UP,
+        db      CMD_WAIT,60
+
+
+%endif
+        ; hokuto force, LFT
+        ; trixter, brutman,
+        ;
+        ; k2, genesis project
+        ; atlantis, impure
+        ;
+        ; triad
+        ;
+        ; greetins: people #1
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_SCALE,2                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CHAR_SPACING,8,0            ;spacing between chars
+
+        db      CMD_TRANSLATE,20,12             ;set new x,y
+        db      CMD_SHADOW_PALETTE,0,12,15      ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'HOKUTO FORCE,',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean render buffer
+
+        db      CMD_TRANSLATE,124,12             ;set new x,y
+        db      CMD_SHADOW_PALETTE,0,9,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'LFT',0
+
+        db      CMD_TRANSLATE,20,29             ;set new x,y
+        db      CMD_SHADOW_PALETTE,0,7,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'TRIXTER,',0
+
+        db      CMD_TRANSLATE,94,29             ;set new x,y
+        db      CMD_SHADOW_PALETTE,0,13,15      ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'BRUTMAN',0
+
+        db      CMD_IN_SCROLL_UP,
+        db      CMD_WAIT,240
+
+        ; greetins: people #2
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_SCALE,2                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+
+        db      CMD_TRANSLATE,15,12             ;set new x,y
+        db      CMD_SHADOW_PALETTE,0,12,15      ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'K2,',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean render buffer
+
+        db      CMD_TRANSLATE,40,12             ;set new x,y
+        db      CMD_SHADOW_PALETTE,0,9,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'GENESIS PROJECT',0
+
+        db      CMD_TRANSLATE,24,29             ;set new x,y
+        db      CMD_SHADOW_PALETTE,0,7,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'ATLANTIS,',0
+
+        db      CMD_TRANSLATE,98,29             ;set new x,y
+        db      CMD_SHADOW_PALETTE,0,13,15      ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'IMPURE',0
+
+        db      CMD_IN_SCROLL_UP,
+        db      CMD_WAIT,240
         db      CMD_OUT_SCROLL_UP,
 
 
@@ -1116,13 +1332,15 @@ commands_entry_tbl:
         dw      cmd_scale_init,                 cmd_no_anim,            ; 5
         dw      cmd_translate_init,             cmd_no_anim,            ; 6
         dw      cmd_wait_init,                  cmd_wait_anim,          ; 7
-        dw      cmd_in_scroll_down_init,        cmd_in_scroll_down_anim,        ; 8
+        dw      cmd_in_scroll_down_init,        cmd_in_scroll_down_anim,; 8
         dw      cmd_in_scroll_down_r_init,      cmd_in_scroll_down_r_anim,      ; 9
         dw      cmd_out_scroll_down_init,       cmd_out_scroll_down_anim,       ; 10
-        dw      cmd_char_spacing_init,          cmd_no_anim,                    ; 11
-        dw      cmd_shadow_palette_init,        cmd_no_anim,                    ; 12
-        dw      cmd_shadow_dir_init,            cmd_no_anim,                    ; 13
-        dw      cmd_sweep_up_init,              cmd_sweep_up_anim,              ; 14
+        dw      cmd_char_spacing_init,          cmd_no_anim,            ; 11
+        dw      cmd_shadow_palette_init,        cmd_no_anim,            ; 12
+        dw      cmd_shadow_dir_init,            cmd_no_anim,            ; 13
+        dw      cmd_in_sweep_up_init,           cmd_in_sweep_up_anim,   ; 14
+        dw      cmd_clean_render_buffer_init,   cmd_no_anim,            ; 15
+        dw      cmd_out_sweep_up_init,          cmd_out_sweep_up_anim,  ; 16
 
 
 ; since only one command can be run at the same time, this variable is shared
