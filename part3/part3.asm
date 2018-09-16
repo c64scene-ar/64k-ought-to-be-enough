@@ -37,37 +37,20 @@ start:
                                                 ; have at least 128K RAM, otherwise it won't let
                                                 ; us set video mode 9
 
-;        mov     ax,0x0089                       ;set video mode 9, don't clean screen
-;        int     0x10                            ;320x200 16 colors
-;
-;        mov     ax,0x0583                       ;set CPU/CRT pages
-;        mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
-;        int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
+        mov     ax,0x008a                       ;set video mode a, don't clean screen
+        int     0x10                            ;620x200 4 colors
 
+        mov     ax,0x0583                       ;set CPU/CRT pages
+        mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
+        int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
 
+        ; some preconditions that should be valid
+        ; throught the entire demo
         push    cs
         pop     ds
-
         mov     ax,VIDEO_SEG                    ;video segment
         mov     es,ax                           ;should be restored if modified
-
-        call    set_vid_160_100_16
-
-%if FAKE_GFX
-        jmp     l0
-gfx_pampa:
-        incbin 'part3/image_pampa.raw.lz4'
-%include 'common/lz4_8088.asm'
-
-l0:
-        push    cs
-        pop     ds
-        mov     si,gfx_pampa                    ;ds:si src
-        sub     di,di                           ;es:di dst
-        mov     cx,8192
-        call    lz4_decompress
-%endif
-
+        cld
 
         ;turning off the drive motor is needed to prevent
         ;it from being on the whole time.
@@ -80,8 +63,20 @@ l0:
         out     0xf2,al                         ;turn off floppy motor
         mov     ds,bp                           ;restore ds
 
-        push    cs
-        pop     ds
+        mov     cx,0
+.delay:
+        mul     dx
+        mul     dx
+        mul     dx
+        mul     dx
+        loop    .delay
+
+        call    set_vid_160_100_16
+
+        mov     si,graphic_lz4                  ;ds:si src
+        sub     di,di                           ;es:di dst
+        mov     cx,8192
+        call    lz4_decompress
 
         call    main_init
 
@@ -907,6 +902,8 @@ set_vid_160_100_16:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 pvm_song:
         incbin          'part3/uctumi-zamba.pvm'
+graphic_lz4:
+        incbin          'part3/image_pampa.raw.lz4'
 
 end_condition:
         db              0                       ;if 0, part3 ends
@@ -1512,4 +1509,5 @@ pre_render_buffer_seg:                          ;pre calculated seg
 %include 'common/utils.asm'
 %include 'common/music_player.asm'
 %include 'common/draw_line_160_100_16color.asm'
+%include 'common/lz4_8088.asm'
 

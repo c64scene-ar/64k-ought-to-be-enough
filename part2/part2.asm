@@ -14,7 +14,7 @@ org     0x100
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 1                              ;1=run on emulator
+%define EMULATOR 0                              ;1=run on emulator
 
 GFX_SEG         equ     0x0800                  ;graphics segment (32k offset)
 
@@ -312,34 +312,28 @@ scroll_text:
         db 'WELL... WE LIED. THAT VIDEO MODE IS DISABLED IN THE 64K-RAM PCJR. '
         db 'AND WHEN YOU THINK ABOUT IT, IT MAKES SENSE. '
         db 'THE VIDEO RAM AND THE CPU RAM ARE SHARED IN THE PCJR. '
-        db 'THAT CAUSES TWO VERY BAD THINGS:   '
+        db 'THAT IS VERY BAD:   '
         db 'FIRST: THERE IS NO VIDEO-RAM IN THE PCJR. '
-        db 'THE CPU RAM IS USED FOR THE VIDEO AS WELL. SO, IF YOU USE 16K-RAM VIDEO MODE, '
-        db 'YOU ONLY HAVE 48K-RAM LEFT FOR THE REST.'
+        db 'THE CPU RAM IS USED FOR THE VIDEO AS WELL. '
+        db 'EG: IF YOU USE A 16K-RAM VIDEO MODE, '
+        db 'YOU ONLY HAVE 48K-RAM LEFT FOR THE REST. '
         db '  '
         db 'AND THE SECOND THING IS: EVERYTIME THE VIDEO CARD ACCESSES THE RAM, '
-        db 'IT ADDS SOME WAIT-STATES, MAKING THE MACHINE UP TO 2.5 TIMES SLOWER. '
+        db 'IT ADDS WAIT-STATES, MAKING THE MACHINE UP TO 2.6 TIMES SLOWER. '
 
         db '    '
-        db 'THERE IS NO PC AS RAM-CONSTRAINED, AND SLOW AS THE 64K-RAM PCJR. '
+        db 'THERE IS NO PC AS SLOW AS THE 64K-RAM PCJR. '
         db 'AND THAT IS WHY WE LIKE IT. '
-        db '    '
-
-        db 'GOING BACK THE VIDEO MODES... '
-        db 'THE 320 X 200 WITH 16 COLORS VIDEO MODE TAKES 32K-RAM. SO ONLY 32K-RAM '
-        db 'IS LEFT FOR THE REST: INTERRUPT VECTOR TABLE, BIOS VARIABLES, '
-        db ' AND DOS. '
-        db 'AFTER THAT, YOU WILL ONLY HAVE ABOUT 10K RAM LEFT FOR YOUR PROGRAM.'
-        db '... AND THAT IS PRETTY MUCH WHY THE VIDEO MODE IS DISABLED. '
-
-        db '     '
-
-        db 'BUT AS YOU CAN SEE IN THIS PART, YOU CAN STILL USE THE 320 X 200 WITH 16 COLORS '
-        db 'VIDEO MODE... YOU JUST NEED TO BYPASS SOME BIOS CHECKS.'
 
         db '      '
-        db 'ONE WONDERS WHAT WAS THE MARKET FOR THE 64K-RAM PCJR.   '
+        db 'ONE WONDERS WHAT WAS THE TARGET AUDIENCE FOR THE 64K-RAM PCJR.   '
         db '              '
+
+        db 'GOING BACK THE VIDEO MODES, ENABLING THE 320 X 200 WITH 16 COLORS '
+        db 'IS POSSIBLE, EVEN USING BIOS CALLS. YOU JUST NEED TO CHANGE '
+        db 'MEMORY BIOS VARIABLE... '
+        db '              '
+
 SCROLL_TEXT_LEN equ $-scroll_text
 
 scroll_char_idx:                                ;pointer to the next char in text

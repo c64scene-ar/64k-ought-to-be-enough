@@ -31,6 +31,8 @@ cpu     8086
 ;
 ;asm
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; disabled "fast but big". Use only "small and slow" we are run out of space
+%if 1
 global lz4_decompress
 lz4_decompress:
         jmp     .decompinit
@@ -195,6 +197,7 @@ lz4_decompress:
 ;#
 ;
 ;asm
+%else
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 global lz4_decompress_small
 lz4_decompress_small:
@@ -267,3 +270,4 @@ lz4_decompress_small:
         pop     ds              ;restore compiler assumptions
 
         ret
+%endif
