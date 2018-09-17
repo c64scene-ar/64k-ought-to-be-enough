@@ -14,8 +14,7 @@ org     0x100
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 0                              ;1=run on emulator
-%define FAKE_GFX 0                              ;1=if gfx should get uncompressed and faked
+%define EMULATOR 1                              ;1=run on emulator
 
 VIDEO_SEG               equ     0xb800          ;graphics segment (32k offset)
 PRE_RENDER_BUFFER_SIZE  equ     80*40           ;40 rows for buffer
@@ -523,6 +522,53 @@ cmd_out_sweep_up_anim:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_fade_out
+cmd_fade_out_init:
+        mov     byte [var_command_out_cnt],40   ;bytes to scroll
+        mov     ax,80*100-2                     ;last row of video segment
+        mov     [var_command_di_offset],ax      ;destination offset
+        ret
+
+.byte $01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01
+.byte $0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d
+.byte $07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07
+.byte $03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03
+.byte $0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f
+.byte $05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05
+.byte $0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a
+.byte $0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e
+.byte $0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c
+.byte $08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08
+.byte $04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04
+.byte $02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02
+.byte $0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b
+.byte $09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09
+.byte $06,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06
+.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+; white (15) -> light green (10) -> yellow (14) -> cyan (11) -> light grey (7) ->
+; green (2) -> light red (12) -> light blue (9) -> grey 2 (8) -> orange/brown (6) ->
+; violet/magent (5) -> red (4) -> dark grey/cyan (3) -> brown (6) -> blue (1) -> black (0)
+cmd_fade_out_anim:
+        ; scroll up one row
+        dec     byte [var_command_out_cnt]
+        jnz     .l0
+        jmp     cmd_process_next
+
+.l0:
+        std                                     ;copy backwards
+        sub     ax,ax                           ;color black
+        mov     di,[var_command_di_offset]      ;es:di = dst
+        mov     cx,80/2                         ;copy 40 words
+        rep stosw                               ;do the store
+        cld                                     ;restore forward direction
+
+        mov     [var_command_di_offset],di      ;update source offset
+        ret
+
+fade_out_colors:
+db      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; cmd_pre_render
 cmd_pre_render_init:
         mov     bp,es                           ;save es for later
@@ -977,7 +1023,7 @@ commands_data:
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
         db      CMD_PRE_RENDER_MODE,3           ;3 traces per line
 
-%if 1
+%if 0
         ; credits =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=;
         db      CMD_WAIT,60
         db      CMD_TRANSLATE,20,20             ;set new x,y
@@ -1278,7 +1324,7 @@ commands_data:
         ; triad
         ;
         ; greetins: people #1
-%endif
+
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
         db      CMD_SCALE,2                     ;set new scale
         db      CMD_ROTATION,0                  ;set new rotation
@@ -1357,15 +1403,14 @@ commands_data:
         ; bye bye =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=;
         ; down: pungas de
 
+        db      CMD_SCALE,1                     ;set new scale
+        db      CMD_ROTATION,3                  ;set new rotation
+        db      CMD_CHAR_SPACING,16,0           ;spacing between chars
         db      CMD_PRE_RENDER_MODE,0           ;single trace
+        db      CMD_SHADOW_PALETTE,8,7,15       ;colors for shadow+foreground
 
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
-        db      CMD_SCALE,1                     ;set new scale
-        db      CMD_ROTATION,0                  ;set new rotation
-        db      CMD_CHAR_SPACING,16,0           ;spacing between chars
-
         db      CMD_TRANSLATE,19,9              ;set new x,y
-        db      CMD_SHADOW_PALETTE,8,7,15       ;colors for shadow+foreground
         db      CMD_PRE_RENDER, 'PUNGAS DE',0
 
         db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean render buffer
@@ -1377,10 +1422,6 @@ commands_data:
 
         ; down: villa martelli
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
-        db      CMD_SCALE,1                     ;set new scale
-        db      CMD_ROTATION,0                  ;set new rotation
-        db      CMD_CHAR_SPACING,16,0            ;spacing between chars
-
         db      CMD_TRANSLATE,30,9              ;set new x,y
         db      CMD_PRE_RENDER, 'MARTELLI',0
 
@@ -1392,17 +1433,12 @@ commands_data:
         ; up: pungas de
         db      CMD_WAIT,60
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
-        db      CMD_SCALE,1                     ;set new scale
-        db      CMD_ROTATION,0                  ;set new rotation
-        db      CMD_CHAR_SPACING,16,0           ;spacing between chars
 
         db      CMD_TRANSLATE,19,9              ;set new x,y
-        db      CMD_SHADOW_PALETTE,1,9,15       ;colors for shadow+foreground
         db      CMD_PRE_RENDER, 'PUNGAS DE',0
 
         db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean render buffer
 
-        db      CMD_SHADOW_PALETTE,2,10,15      ;colors for shadow+foreground
         db      CMD_TRANSLATE,49,29             ;set new x,y
         db      CMD_PRE_RENDER, 'VILLA',0
 
@@ -1410,21 +1446,38 @@ commands_data:
 
         ; down: villa martelli
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
-        db      CMD_SCALE,1                     ;set new scale
-        db      CMD_ROTATION,0                  ;set new rotation
-        db      CMD_CHAR_SPACING,16,0            ;spacing between chars
 
-        db      CMD_SHADOW_PALETTE,4,12,15      ;colors for shadow+foreground
         db      CMD_TRANSLATE,30,9              ;set new x,y
         db      CMD_PRE_RENDER, 'MARTELLI',0
 
         db      CMD_IN_SCROLL_UP
-
         db      CMD_OUT_SCROLL_UP
+        db      CMD_WAIT,120
+%endif
 
+        ; "64k RAM ought to be enough" =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+        ;
+        db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
+        db      CMD_SCALE,1                     ;set new scale
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_TRANSLATE,11,11             ;set new x,y
+        db      CMD_CHAR_SPACING,13,0           ;spacing between chars
+        db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
+        db      CMD_PRE_RENDER_MODE,3           ;enable shadow again
+        db      CMD_PRE_RENDER, '64K RAM OUGHT',0
 
-        db      CMD_WAIT,255
-        db      CMD_WAIT,255
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;dont clean render buffer
+        db      CMD_TRANSLATE,16,29             ;set new x,y
+        db      CMD_PRE_RENDER, 'TO BE ENOUGH',0
+
+        db      CMD_IN_SCROLL_DOWN_R
+        db      CMD_OUT_SCROLL_DOWN
+        db      CMD_WAIT,120
+        db      CMD_IN_SCROLL_UP
+
+        db      CMD_WAIT,120
+        db      CMD_FADE_OUT
+        db      CMD_WAIT,60
         ; end
         db      CMD_END
 
@@ -1447,6 +1500,7 @@ commands_entry_tbl:
         dw      cmd_clean_render_buffer_init,   cmd_no_anim,            ; 15
         dw      cmd_out_sweep_up_init,          cmd_out_sweep_up_anim,  ; 16
         dw      cmd_pre_render_mode_init,       cmd_no_anim,            ; 17
+        dw      cmd_fade_out_init,              cmd_fade_out_anim,      ; 18
 
 
 ; since only one command can be run at the same time, this variable is shared
