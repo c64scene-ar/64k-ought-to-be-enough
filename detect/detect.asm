@@ -63,14 +63,35 @@ main:
         ;       6 -> VGA
         ;       7 -> MCGA
         call    detect_card
-        call    print_msg
 
         cmp     al,2                            ;is this a PCjr?
         jz      .is_pcjr                        ;yes!
 
-        mov     dx,label_remove_diskette        ;not a PCjr
-        mov     ah,9                            ;print msg using DOS
-        int     0x21
+        mov     ax,0x0003                       ;80x25 video mode
+        int     0x10
+
+        sub     ax,ax
+        mov     ds,ax
+        mov     bx,0xb800                       ;video seg for color
+        mov     ax,[0x0463]                     ;BIOS CRT controller base address
+        cmp     ax,0x3b4                        ;Hercules?
+        jnz     .set_seg                        ; no, use previous value
+        mov     bx,0xb000                       ;hercules video segment
+.set_seg:
+        mov     es,bx                           ;set new video segment
+
+        push    cs
+        pop     ds                              ;restore ds
+
+        mov     cx,80*25                        ;copy 2000 bytes
+        mov     si,ascii_art
+        sub     di,di
+
+.loop:
+        lodsb                                   ;load ascii value
+        stosb                                   ;copy ascii value
+        inc     di                              ;skip attribute
+        loop    .loop
 
         sub     ax,ax
         int     0x16                            ;wait key and...
@@ -82,6 +103,7 @@ main:
 
 
 .is_pcjr:
+        call    print_msg
         call    detect_mem_128kb
         jnc     .not_128k
 
@@ -354,14 +376,6 @@ label_is_mcga:
 
            ;          1         2         3
            ;0123456789012345678901234567890123456789
-label_remove_diskette:
-        db 'Remove the diskette and insert it in an' ,13,10
-        db 'IBM PCjr, the best computer ever!'       ,13,10
-        db '$'
-
-
-           ;          1         2         3
-           ;0123456789012345678901234567890123456789
 label_above_128k:
         db 'This code is running above 0x10000.'     ,13,10
         db "That means that you didn't boot from"    ,13,10
@@ -393,3 +407,6 @@ label_model:
 
 old_pic_imr:
         db 0
+
+ascii_art:
+        incbin          'detect/arl-64k2.asc'
