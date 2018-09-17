@@ -103,7 +103,10 @@ main:
 
 
 .is_pcjr:
-        call    print_msg
+        mov     dx,label_is_pcjr
+        mov     ah,9
+        int     0x21
+
         call    detect_mem_128kb
         jnc     .not_128k
 
@@ -143,23 +146,6 @@ exit_with_warning:
 
         mov     ax,0x4c00                       ;ricarDOS: load next file, don't clear screen
         int     0x21                            ;DOS: exit
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; in:
-;       al = msg index to print
-print_msg:
-        push    ax                              ;save it
-
-        sub     ah,ah
-        shl     ax,1                            ;multiply by 2 (each address takes 2 bytes)
-        mov     bx,ax
-        mov     dx,[labels + bx]                ;get address from table
-        mov     ah,9
-        int     0x21                            ;DOS print msg
-
-        pop     ax                              ;restore ax
-        ret
-
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -314,64 +300,8 @@ detect_card:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; DATA
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-labels:
-        dw      label_is_mda
-        dw      label_is_cga
-        dw      label_is_pcjr
-        dw      label_is_tandy_1000
-        dw      label_is_tandy_sltl
-        dw      label_is_ega
-        dw      label_is_vga
-        dw      label_is_mcga
-
-           ;          1         2         3
-           ;0123456789012345678901234567890123456789
-label_is_mda:
-        db 'Hercules detected. If this is true, then',13,10
-        db 'you cannot possible see this message'    ,13,10
-        db 'since this message uses segment 0xb800'  ,13,10
-        db '(instead of 0xb000)'                     ,13,10
-        db 'Cheater!!!'                              ,13,10
-        db '$'
-label_is_cga:
-        db "My friend, this demo doesn't run in a"   ,13,10
-        db 'CGA machine.'                            ,13,10
-        db '$'
 label_is_pcjr:
         db 'IBM PCjr detected. Yay!'                 ,13,10
-        db '$'
-label_is_tandy_1000:
-        db 'Tandy 1000 detected. Do you know what'   ,13,10
-        db 'does it mean? That this demo is not'     ,13,10
-        db 'compatible with this machine.        :-(',13,10
-        db ''                                        ,13,10
-        db 'So sad, since the Tandy 1000 and the'    ,13,10
-        db 'PCjr are almost the same, and making'    ,13,10
-        db 'this demo compatible with the Tandy 1000',13,10
-        db "is easy. But unfortunately we didn't"    ,13,10
-        db 'have time to do it. But if you write us' ,13,10
-        db 'demanding support for the Tandy 1000 we' ,13,10
-        db 'might port it to it. Mention the secret' ,13,10
-        db 'code: "Tandy 1000 & PCjr are the best".' ,13,10
-        db '$'
-label_is_tandy_sltl:
-        db "Tandy 1000 SL/TL detected. We don't"     ,13,10
-        db 'support modern Tandys. Sorry.'           ,13,10
-        db '$'
-label_is_ega:
-        db 'EGA detected. WTF is an EGA?.'           ,13,10
-        db 'Not supported.'                          ,13,10
-        db '$'
-label_is_vga:
-        db 'Modern computer detected. Abort. Abort.' ,13,10
-        db '$'
-label_is_mcga:
-        db 'Are you really running this demo in an'  ,13,10
-        db 'IBM PS/2 model 25?'                      ,13,10
-        db 'I used to hate that computer ~25 years'  ,13,10
-        db 'ago. But now I am looking for one. If'   ,13,10
-        db 'want to donate one, I happily accept it.',13,10
-        db 'Thanks! :-)'                             ,13,10
         db '$'
 
            ;          1         2         3
