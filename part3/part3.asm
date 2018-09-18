@@ -14,7 +14,7 @@ org     0x100
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 0                              ;1=run on emulator
+%define EMULATOR 1                              ;1=run on emulator
 
 VIDEO_SEG               equ     0xb800          ;graphics segment (32k offset)
 PRE_RENDER_BUFFER_SIZE  equ     80*40           ;40 rows for buffer
@@ -1585,17 +1585,6 @@ pre_render_buffer_seg:                          ;pre calculated seg
         dw              0                       ;segment
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; includes
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-%include 'part3/elipse_table.asm'
-%include 'part3/svg_font.asm'
-%include 'part3/fadeout16.asm'
-%include 'common/utils.asm'
-%include 'common/music_player.asm'
-%include 'common/draw_line_160_100_16color.asm'
-%include 'common/lz4_8088.asm'
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; exit
 ; do clean up and exit
 ; exit routine should be at the very end since it will overwrite semgent 0x60
@@ -1604,6 +1593,7 @@ exit:
         call    music_cleanup
         call    irq_8_cleanup
 
+        int 3
         ; populate keyboard buffer with 'pvm rulez!' so easter egg
         ; can use it
         cld
@@ -1632,16 +1622,25 @@ exit:
 
         call    diag_unpack_sprites
 
-        ; we skip the control+break handler routine from bios
+        ; control break handler
+        push    ds
+        sub     ax,ax
+        mov     ds,ax                           ;ds = 0
+        mov     dx,0x31f8                       ;control break handler
+        mov     ax,0xf000                       ;f000:f831 -> handler
+        mov     word [ds:0x006c],dx             ;offset to int 0x1b
+        mov     word [ds:0x006e],ax             ;segment to new int 0x1b
+        pop     ds
 
+        ; clean data
         sub     di,di
         mov     cx,0x04db
         sub     al,al
         rep stosb                               ;clean 60:0000 -> 60:04da
 
+        ; setup some internal vars
         mov     byte [es:0x04c8],1              ;avoid box collision check
         mov     byte [es:0x04ca],3              ;foreground color: cyan
-
         push    es
         mov     ax,0x004c
         mov     es,ax                           ;es = 0x4c
@@ -1674,12 +1673,21 @@ exit:
 ; fakes the return address since that functions has a "ret near" and we need
 ; a "ret far"
 diag_unpack_sprites:
+
         push    cs
         mov     bp,.exit_ret
+        push    bp                                      ;cs:.exit_ret: ret address from
+                                                        ; retf from BIOS
+
+        mov     bp,0x0147                               ;retf address in 0xf000
         push    bp
-        mov     bp,0x0147                       ;ret far address in 0xf000
+
+        mov     bp,0xf000
         push    bp
-        jmp     0xf000:0x2529
+        mov     bp,0x2529
+        push    bp
+        retf                                            ;jump far to f000:2529
+
 .exit_ret:
         ret
 
@@ -1691,12 +1699,27 @@ diag_unpack_sprites:
 diag_init_video:
         push    cs
         mov     bp,.exit_ret
+        push    bp                                      ;cs:.exit_ret: ret address from
+                                                        ; retf from BIOS
+
+        mov     bp,0x0147                               ;retf address in 0xf000
         push    bp
-        mov     bp,0x0147                       ;ret far address in 0xf000
+
+        mov     bp,0xf000
         push    bp
-        jmp     0xf000:0x24ee
-.exit_ret:
-        ret
+        mov     bp,0x24ee
+        push    bp
+        retf                                            ;jump far to f000:24ee
 
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; includes
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+%include 'part3/elipse_table.asm'
+%include 'part3/svg_font.asm'
+%include 'part3/fadeout16.asm'
+%include 'common/utils.asm'
+%include 'common/music_player.asm'
+%include 'common/draw_line_160_100_16color.asm'
+%include 'common/lz4_8088.asm'
 
