@@ -103,15 +103,45 @@ main_loop:
         jz      main_loop                      ;no, so keep looping
 
 .exit:
-        call    music_cleanup
-        call    irq_8_cleanup
-
-        mov     ax,0x4c00                       ;ricarDOS: load next file
-        int     0x21                            ;DOS: exit to DOS
+        jmp     exit
 
 .pre_render_text:
         call    pre_render_text
         jmp     main_loop
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; exit
+; do clean up and exit
+exit:
+        call    music_cleanup
+        call    irq_8_cleanup
+        ; populate keyboard buffer with 'pvm rulez!' so easter egg
+        ; can use it
+        cld
+        sub     ax,ax
+        mov     es,ax                           ;es:di = destination
+        mov     di,0x041e                       ; beginning of keyboard buffer
+        mov     si,.scan_ascii_codes
+        mov     cx,10
+        rep movsw                               ;copy new buffer
+        mov     word [es:0x041a],0x001e         ;first char
+        mov     word [es:0x041c],0x001e+20      ;last char
+
+        mov     ax,0x4c00                       ;ricarDOS: load next file
+        int     0x21                            ;DOS: exit to DOS
+
+        ;scan/ascii codes used to populate the keyboard buffer
+.scan_ascii_codes:
+        dw      0x1950                          ;P
+        dw      0x2f56                          ;V
+        dw      0x324d                          ;M
+        dw      0x3920                          ;space
+        dw      0x1352                          ;R
+        dw      0x1655                          ;U
+        dw      0x264c                          ;L
+        dw      0x1245                          ;E
+        dw      0x2c5a                          ;Z
+        dw      0x0221                          ;!
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; main_init
@@ -524,30 +554,78 @@ cmd_out_sweep_up_anim:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; cmd_fade_out
 cmd_fade_out_init:
-        mov     byte [var_command_out_cnt],40   ;bytes to scroll
+        mov     byte [var_tmp_db_0],15          ;number of color transitions
         mov     ax,80*100-2                     ;last row of video segment
         mov     [var_command_di_offset],ax      ;destination offset
         ret
 
 cmd_fade_out_anim:
         ; scroll up one row
-        dec     byte [var_command_out_cnt]
-        jnz     .l0
+        dec     byte [var_tmp_db_0]
+        jns     .do
         jmp     cmd_process_next
 
-.l0:
-        std                                     ;copy backwards
-        sub     ax,ax                           ;color black
-        mov     di,[var_command_di_offset]      ;es:di = dst
-        mov     cx,80/2                         ;copy 40 words
-        rep stosw                               ;do the store
-        cld                                     ;restore forward direction
+.do:
+        sub     bh,bh
+        mov     bl,[var_tmp_db_0]               ;bx transition index
+        lea     si,[fadeout_palette_tbl+16+bx]  ;correct index, skipping black colors
 
-        mov     [var_command_di_offset],di      ;update source offset
+        mov     bx,1                            ;start with color 1. color 0 is
+                                                ; black, and we are not goig to change it
+.loop:  lodsb                                   ;al=new palette color for color #cx
+        cmp     al,[palette_fade_prev_val+bx]   ;different than previous color?
+        jz      .next_color
+
+        mov     [palette_fade_prev_val+bx],al   ;update new color
+        call    change_palette                  ;bl = color index, al = new color
+
+.next_color:
+        add     si,15                           ;next color palette. each entry takes 16 bytes
+        inc     bx                              ; so add add 15 since lodsb incs si by one
+        cmp     bx,16
+        jnz     .loop
         ret
 
-fade_out_colors:
-db      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; change_palette
+; changes one palette color in horizontal retrace
+; TODO: convert this function to macro, since it is only called from
+; cmd_fade_out_anim
+; IN
+;       bl = color index
+;       al = new color
+change_palette:
+        mov     bp,bx
+
+        mov     bh,al                           ;save color in bh
+
+        ; wait for horizontal retrace
+        mov     dx,0x03da
+.wait:
+        in      al,dx                           ;wait for horizontal retrace
+        ror     al,1
+        jc      .wait
+
+.retrace:
+        in      al,dx                           ;wait for horizontal retrace
+        ror     al,1
+        jnc     .retrace
+
+        ; set palette index + new color
+        mov     al,bl                           ;color index
+        or      al,0x10                         ;index needs to start at 0x10
+        out     dx,al                           ;dx=0x03da (register)
+
+        mov     al,bh                           ;set color
+        out     dx,al                           ;set new color (data)
+
+        sub     al,al                           ;al = 0 reset
+        out     dx,al                           ;reset
+
+        in      al,dx                           ;reset to register again
+
+        mov     bx,bp
+        ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; cmd_pre_render
@@ -1384,6 +1462,7 @@ commands_data:
 
         ; bye bye =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=;
         ; down: pungas de
+%endif
 
         db      CMD_SCALE,1                     ;set new scale
         db      CMD_ROTATION,3                  ;set new rotation
@@ -1435,7 +1514,6 @@ commands_data:
         db      CMD_IN_SCROLL_UP
         db      CMD_OUT_SCROLL_UP
         db      CMD_WAIT,120
-%endif
 
         ; "64k RAM ought to be enough" =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
         ;
@@ -1459,7 +1537,7 @@ commands_data:
 
         db      CMD_WAIT,120
         db      CMD_FADE_OUT
-        db      CMD_WAIT,60
+        db      CMD_WAIT,120
         ; end
         db      CMD_END
 
@@ -1522,6 +1600,9 @@ trigger_pre_render:
         db      0                               ;boolean. if 1, tells main thread
                                                 ; to pre-render text.
                                                 ; 0, whne pre-render finished
+palette_fade_prev_val:
+        db      0,1,2,3,4,5,6,7                 ;palette last known values
+        db      8,9,10,11,12,13,14,15
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; fake segment...
@@ -1542,6 +1623,7 @@ pre_render_buffer_seg:                          ;pre calculated seg
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %include 'part3/elipse_table.asm'
 %include 'part3/svg_font.asm'
+%include 'part3/fadeout16.asm'
 %include 'common/utils.asm'
 %include 'common/music_player.asm'
 %include 'common/draw_line_160_100_16color.asm'

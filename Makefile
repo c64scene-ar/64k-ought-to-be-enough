@@ -128,6 +128,7 @@ res:
 	python3 tools/parse_big_charset.py -o part2/charset_bigfont.bin res/part2_font_arleka-4colors.png
 	python3 tools/generate_elipse.py -o part3/elipse_table.asm -v 64
 	python3 tools/vector_editor.py -o part3/svg_font.asm
+	python3 tools/generate_fadeout_table.py -o part3/fadeout16.asm
 	@#python3 tools/convert_gfx_to_bios_format.py -g 10 -o src/flashparty.bin res/flashparty.data
 	@#python3 tools/convert_gfx_to_bios_format.py -g 4 -o res/p.raw res/p.data
 	@#python3 tools/convert_gfx_to_bios_format.py -g 4 -o res/v.raw res/v.data
