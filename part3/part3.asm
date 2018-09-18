@@ -529,25 +529,6 @@ cmd_fade_out_init:
         mov     [var_command_di_offset],ax      ;destination offset
         ret
 
-.byte $01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01
-.byte $0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d,$0d
-.byte $07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07
-.byte $03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03
-.byte $0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f
-.byte $05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05
-.byte $0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a
-.byte $0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e,$0e
-.byte $0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c,$0c
-.byte $08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08
-.byte $04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04
-.byte $02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02
-.byte $0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b,$0b
-.byte $09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09
-.byte $06,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06
-.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-; white (15) -> light green (10) -> yellow (14) -> cyan (11) -> light grey (7) ->
-; green (2) -> light red (12) -> light blue (9) -> grey 2 (8) -> orange/brown (6) ->
-; violet/magent (5) -> red (4) -> dark grey/cyan (3) -> brown (6) -> blue (1) -> black (0)
 cmd_fade_out_anim:
         ; scroll up one row
         dec     byte [var_command_out_cnt]
@@ -1008,6 +989,7 @@ CMD_IN_SWEEP_UP         equ     14
 CMD_CLEAN_RENDER_BUFFER equ     15
 CMD_OUT_SWEEP_UP        equ     16
 CMD_PRE_RENDER_MODE     equ     17
+CMD_FADE_OUT            equ     18
 
 ;CMD_OUT_SCROLL_LEFT     equ     9
 ;CMD_OUT_SCROLL_RIGHT    equ     10
