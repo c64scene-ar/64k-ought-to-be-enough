@@ -110,108 +110,6 @@ main_loop:
         jmp     main_loop
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; exit
-; do clean up and exit
-exit:
-        call    music_cleanup
-        call    irq_8_cleanup
-
-        ; populate keyboard buffer with 'pvm rulez!' so easter egg
-        ; can use it
-        cld
-        sub     ax,ax
-        mov     es,ax                           ;es:di = destination
-        mov     di,0x041e                       ; beginning of keyboard buffer
-        mov     si,.scan_ascii_codes
-        mov     cx,10
-        rep movsw                               ;copy new buffer
-        mov     word [es:0x041a],0x001e         ;first char
-        mov     word [es:0x041c],0x001e+20      ;last char
-
-        ; keyboard populated, now manually init "keyboard test" routine.
-        ; cannot jump directly to it because it will reset the keyboard,
-        ; so we manually initialize it, and jump just after it cleans the
-        ; keyboard buffer.
-        ;
-        ; Copied from PCjr BIOS 0xf000:0x2980, with changes to make it work
-        ; in the demo
-        mov     ax,0xf000
-        mov     ds,ax                           ;ds = bios segment
-        mov     ax,0x60
-        mov     es,ax                           ;es = diag segment
-        mov     byte [es:0x04df],1              ;keyboard "k" (0 means keyboard "j")
-        mov     byte [es:0x04e0],0xff
-
-        call    diag_unpack_sprites
-
-        ; we skip the control+break handler routine from bios
-
-        sub     di,di
-        mov     cx,0x04db
-        sub     al,al
-        rep stosb                               ;clean 60:0000 -> 60:04da
-
-        mov     byte [es:0x04c8],1              ;avoid box check
-        mov     byte [es:0x04ca],3              ;foreground color: cyan
-
-        push    es
-        mov     ax,0x004c
-        mov     es,ax                           ;es = 0x4c
-        mov     byte [es:0x0001],0              ;clear some kind of flag
-        pop     es
-        call    diag_init_video
-
-        jmp     0xf000:0x29e8                   ;jump to rest of "keyboard diag routine"
-
-;        mov     ax,0x4c00                       ;ricarDOS: load next file
-;        int     0x21                            ;DOS: exit to DOS
-
-        ;scan/ascii codes used to populate the keyboard buffer
-.scan_ascii_codes:
-        dw      0x1950                          ;P
-        dw      0x2f56                          ;V
-        dw      0x324d                          ;M
-        dw      0x3920                          ;space
-        dw      0x1352                          ;R
-        dw      0x1655                          ;U
-        dw      0x264c                          ;L
-        dw      0x1245                          ;E
-        dw      0x2c5a                          ;Z
-        dw      0x0221                          ;!
-
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; diag_unpack_sprites
-; calls diag_unpack_sprites from BIOS.
-; fakes the return address since that functions has a "ret near" and we need
-; a "ret far"
-diag_unpack_sprites:
-        push    cs
-        mov     bp,.exit_ret
-        push    bp
-        mov     bp,0x0147                       ;ret far address in 0xf000
-        push    bp
-        jmp     0xf000:0x2529
-.exit_ret:
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; diag_init_video
-; calls diag_unpack_sprites from BIOS.
-; fakes the return address since that functions has a "ret near" and we need
-; a "ret far"
-diag_init_video:
-        push    cs
-        mov     bp,.exit_ret
-        push    bp
-        mov     bp,0x0147                       ;ret far address in 0xf000
-        push    bp
-        jmp     0xf000:0x24ee
-.exit_ret:
-        ret
-
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; main_init
 ; add here initialization
 main_init:
@@ -1696,4 +1594,109 @@ pre_render_buffer_seg:                          ;pre calculated seg
 %include 'common/music_player.asm'
 %include 'common/draw_line_160_100_16color.asm'
 %include 'common/lz4_8088.asm'
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; exit
+; do clean up and exit
+; exit routine should be at the very end since it will overwrite semgent 0x60
+; and we don't want to overwrite ourselves
+exit:
+        call    music_cleanup
+        call    irq_8_cleanup
+
+        ; populate keyboard buffer with 'pvm rulez!' so easter egg
+        ; can use it
+        cld
+        sub     ax,ax
+        mov     es,ax                           ;es:di = destination
+        mov     di,0x041e                       ; beginning of keyboard buffer
+        mov     si,.scan_ascii_codes
+        mov     cx,10
+        rep movsw                               ;copy new buffer
+        mov     word [es:0x041a],0x001e         ;first char
+        mov     word [es:0x041c],0x001e+20      ;last char
+
+        ; once keyboard buffer is populated, now manually init "keyboard test" routine.
+        ; cannot jump directly to it because it will reset the keyboard,
+        ; so we manually initialize it, and jump just after it cleans the
+        ; keyboard buffer.
+        ;
+        ; Copied from PCjr BIOS 0xf000:0x2980, with changes to make it work
+        ; in the demo
+        mov     ax,0xf000
+        mov     ds,ax                           ;ds = bios segment
+        mov     ax,0x60
+        mov     es,ax                           ;es = diag segment
+        mov     byte [es:0x04df],1              ;keyboard "k" (0 means keyboard "j")
+        mov     byte [es:0x04e0],0xff
+
+        call    diag_unpack_sprites
+
+        ; we skip the control+break handler routine from bios
+
+        sub     di,di
+        mov     cx,0x04db
+        sub     al,al
+        rep stosb                               ;clean 60:0000 -> 60:04da
+
+        mov     byte [es:0x04c8],1              ;avoid box collision check
+        mov     byte [es:0x04ca],3              ;foreground color: cyan
+
+        push    es
+        mov     ax,0x004c
+        mov     es,ax                           ;es = 0x4c
+        mov     byte [es:0x0001],0              ;clear some kind of flag
+        pop     es
+        call    diag_init_video
+
+        jmp     0xf000:0x29e8                   ;jump to rest of "keyboard diag routine"
+
+;        mov     ax,0x4c00                       ;ricarDOS: load next file
+;        int     0x21                            ;DOS: exit to DOS
+
+        ;scan/ascii codes used to populate the keyboard buffer
+.scan_ascii_codes:
+        dw      0x1950                          ;P
+        dw      0x2f56                          ;V
+        dw      0x324d                          ;M
+        dw      0x3920                          ;space
+        dw      0x1352                          ;R
+        dw      0x1655                          ;U
+        dw      0x264c                          ;L
+        dw      0x1245                          ;E
+        dw      0x2c5a                          ;Z
+        dw      0x0221                          ;!
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; diag_unpack_sprites
+; calls diag_unpack_sprites from BIOS.
+; fakes the return address since that functions has a "ret near" and we need
+; a "ret far"
+diag_unpack_sprites:
+        push    cs
+        mov     bp,.exit_ret
+        push    bp
+        mov     bp,0x0147                       ;ret far address in 0xf000
+        push    bp
+        jmp     0xf000:0x2529
+.exit_ret:
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; diag_init_video
+; calls diag_unpack_sprites from BIOS.
+; fakes the return address since that functions has a "ret near" and we need
+; a "ret far"
+diag_init_video:
+        push    cs
+        mov     bp,.exit_ret
+        push    bp
+        mov     bp,0x0147                       ;ret far address in 0xf000
+        push    bp
+        jmp     0xf000:0x24ee
+.exit_ret:
+        ret
+
+
 
