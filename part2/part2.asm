@@ -28,7 +28,7 @@ CHARSET_CHAR_WIDTH      equ 24
 CHARSET_CHAR_HEIGHT     equ 32
 CHARSET_COLS_PER_CHAR   equ 6                   ;each char has 6 columns
 
-CHARSET_SPACE           equ charset + (192 * 3) ;space is defined in position 3
+CHARSET_SPACE           equ charset + (192 * 5) ;space is defined in position 5
                                                 ; and each char takes 192 bytes
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -124,8 +124,8 @@ start:
 %endif
         jnz     .exit
 
-        cmp     byte [end_condition],0          ;animation finished?
-        jz      .main_loop                      ;no, so keep looping
+        cmp     byte [anim_state],2             ;animation finished?
+        jnz     .main_loop                      ;no, so keep looping
 
 .exit:
         call    music_cleanup
@@ -149,9 +149,17 @@ irq_8_handler:
         push    bp
 
 
+        ; quick & dirty state machine
+        cmp     byte [anim_state],0             ;0? do scroll_anim
+        jnz     .fade_out_anim                  ;1? do fade_out_anim
         call    scroll_anim
-        call    music_play
+        jmp     .l0
 
+.fade_out_anim:
+        call    fade_out_anim                   ;after the scroll finishes, do fadeout
+
+.l0:
+        call    music_play
 
         mov     al,0x20                         ;send the EOI signal
         out     0x20,al                         ; to the IRQ controller
@@ -215,13 +223,13 @@ scroll_anim:
         jb      .is_digit
 
 .is_char:
-        sub     bl,0x32                         ;offset to 15. first char is 'A'
-                                                ; positions 0-14 reserved to digits, dot and space et al.
-                                                ; so use 0x41 - 15 = 0x32
+        sub     bl,0x30                         ;offset to 17. first char is 'A'
+                                                ; positions 0-16 reserved to digits, dot and space et al.
+                                                ; so use 0x41 - 17 = 0x30
         jmp     .process_alphanumeric
 
 .is_digit:                                      ;is number [0-9], dot or space
-        sub     bl,0x2c                         ; ',' is 0x2c and is the first char
+        sub     bl,0x2a                         ; '*' is 0x2a and is the first char
         ; fall-through                          ; and 'space' is placed in '/' position
 
 .process_alphanumeric:
@@ -288,7 +296,78 @@ scroll_anim:
 
 .end_scroll:
         ;mov     word [scroll_char_idx],ax       ;reset to 0
-        mov     byte [end_condition],1          ;trigger end condition, end
+        inc     byte [anim_state]                ;scroll end. go to next state
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; fade_out_anim
+fade_out_anim:
+        ; scroll up one row
+        dec     byte [fade_out_iter]
+        jns     .do
+        mov     byte [anim_state],2             ;trigger end of scene
+        ret
+
+.do:
+        sub     bh,bh
+        mov     bl,[fade_out_iter]               ;bx transition index
+        lea     si,[fadeout_palette_tbl+16+bx]  ;correct index, skipping black colors
+
+        mov     bx,1                            ;start with color 1. color 0 is
+                                                ; black, and we are not goig to change it
+.loop:  lodsb                                   ;al=new palette color for color #cx
+        cmp     al,[palette_fade_prev_val+bx]   ;different than previous color?
+        jz      .next_color
+
+        mov     [palette_fade_prev_val+bx],al   ;update new color
+        call    change_palette                  ;bl = color index, al = new color
+
+.next_color:
+        add     si,15                           ;next color palette. each entry takes 16 bytes
+        inc     bx                              ; so add add 15 since lodsb incs si by one
+        cmp     bx,16
+        jnz     .loop
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; change_palette
+; changes one palette color in horizontal retrace
+; TODO: convert this function to macro, since it is only called from
+; cmd_fade_out_anim
+; IN
+;       bl = color index
+;       al = new color
+change_palette:
+        mov     bp,bx
+
+        mov     bh,al                           ;save color in bh
+
+        ; wait for horizontal retrace
+        mov     dx,0x03da
+.wait:
+        in      al,dx                           ;wait for horizontal retrace
+        ror     al,1
+        jc      .wait
+
+.retrace:
+        in      al,dx                           ;wait for horizontal retrace
+        ror     al,1
+        jnc     .retrace
+
+        ; set palette index + new color
+        mov     al,bl                           ;color index
+        or      al,0x10                         ;index needs to start at 0x10
+        out     dx,al                           ;dx=0x03da (register)
+
+        mov     al,bh                           ;set color
+        out     dx,al                           ;set new color (data)
+
+        sub     al,al                           ;al = 0 reset
+        out     dx,al                           ;reset
+
+        in      al,dx                           ;reset to register again
+
+        mov     bx,bp
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -299,26 +378,23 @@ pvm_song:
 
 charset:
         incbin 'part2/charset_bigfont.bin'              ;letters A-Z
-charset_numbers:
-;        incbin 'part2/charset_bigfont_numbers.bin'      ;numbers 0-9
 
-end_condition:
-        db 0                                    ;1 if demo should end
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; scroll related
 scroll_text:
-        db '... WE SAID THAT THE GOOD THING OF THE PCJR WAS THAT IT '
-        db 'HAS A 320 X 200 WITH 16 COLORS VIDEO MODE.     '
+        db '... WE SAID THAT THE GOOD THING ABOUT THE PCJR WAS THAT IT '
+        db 'HAD A 320 X 200 WITH 16 COLORS VIDEO MODE.     '
         db 'WELL... WE LIED. THAT VIDEO MODE IS DISABLED IN THE 64K-RAM PCJR. '
+        db '*BUT IT IS EASY TO RE-ENABLE IT+ '
         db 'AND WHEN YOU THINK ABOUT IT, IT MAKES SENSE. '
         db 'THE VIDEO RAM AND THE CPU RAM ARE SHARED IN THE PCJR. '
-        db 'THAT IS VERY BAD:   '
-        db 'FIRST: THERE IS NO VIDEO-RAM IN THE PCJR. '
-        db 'THE CPU RAM IS USED FOR THE VIDEO AS WELL. '
-        db 'EG: IF YOU USE A 16K-RAM VIDEO MODE, '
+        db 'THAT IS VERY BAD: '
+        db 'THERE IS NO VIDEO-RAM IN THE PCJR. '
+        db 'THE CPU RAM IS SHARED WITH THE VIDEO CARD. '
+        db 'EXAMPLE: IF YOU USE A 16K-RAM VIDEO MODE, '
         db 'YOU ONLY HAVE 48K-RAM LEFT FOR THE REST. '
         db '  '
-        db 'AND THE SECOND THING IS: EVERYTIME THE VIDEO CARD ACCESSES THE RAM, '
+        db 'AND WHAT IS WORSE: EVERY TIME THE VIDEO CARD ACCESSES THE RAM, '
         db 'IT ADDS WAIT-STATES, MAKING THE MACHINE UP TO 2.6 TIMES SLOWER. '
 
         db '    '
@@ -329,10 +405,6 @@ scroll_text:
         db 'ONE WONDERS WHAT WAS THE TARGET AUDIENCE FOR THE 64K-RAM PCJR.   '
         db '              '
 
-        db 'GOING BACK THE VIDEO MODES, ENABLING THE 320 X 200 WITH 16 COLORS '
-        db 'IS POSSIBLE, EVEN USING BIOS CALLS. YOU JUST NEED TO CHANGE '
-        db 'MEMORY BIOS VARIABLE... '
-        db '              '
 
 SCROLL_TEXT_LEN equ $-scroll_text
 
@@ -368,10 +440,23 @@ scroll_force_spacer:
                                                 ; rendering a char.
 scroll_char_offset:                             ;Pointer to the char definition. Will get
         dw      0                               ; updated after each pass.
+
+fade_out_iter:
+        db      15                              ;number of iterations needed for the fadeout
+
+palette_fade_prev_val:
+        db      0,1,2,3,4,5,6,7                 ;palette last known values
+        db      8,9,10,11,12,13,14,15
+
+anim_state:
+        db      0                               ;0 - scroll
+                                                ;1 - fadeout
+                                                ;2 - end
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; includes
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %include 'common/utils.asm'
 %include 'common/music_player.asm'
+%include 'common/fadeout16.asm'
 ;%include 'common/zx7_8086.asm'
 

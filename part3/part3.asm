@@ -14,7 +14,7 @@ org     0x100
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 1                              ;1=run on emulator
+%define EMULATOR 0                              ;1=run on emulator
 
 VIDEO_SEG               equ     0xb800          ;graphics segment (32k offset)
 PRE_RENDER_BUFFER_SIZE  equ     80*40           ;40 rows for buffer
@@ -521,8 +521,6 @@ cmd_out_sweep_up_anim:
 ; cmd_fade_out
 cmd_fade_out_init:
         mov     byte [var_tmp_db_0],15          ;number of color transitions
-        mov     ax,80*100-2                     ;last row of video segment
-        mov     [var_command_di_offset],ax      ;destination offset
         ret
 
 cmd_fade_out_anim:
@@ -1049,7 +1047,7 @@ commands_data:
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
         db      CMD_PRE_RENDER_MODE,3           ;3 traces per line
 
-%if 0
+%if 1
         ; credits =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=;
         db      CMD_WAIT,60
         db      CMD_TRANSLATE,20,20             ;set new x,y
@@ -1431,7 +1429,7 @@ commands_data:
 %endif
 
         db      CMD_SCALE,1                     ;set new scale
-        db      CMD_ROTATION,3                  ;set new rotation
+        db      CMD_ROTATION,1                  ;set new rotation
         db      CMD_CHAR_SPACING,16,0           ;spacing between chars
         db      CMD_PRE_RENDER_MODE,0           ;single trace
         db      CMD_SHADOW_PALETTE,8,7,15       ;colors for shadow+foreground
@@ -1488,7 +1486,7 @@ commands_data:
         db      CMD_ROTATION,0                  ;set new rotation
         db      CMD_TRANSLATE,11,11             ;set new x,y
         db      CMD_CHAR_SPACING,13,0           ;spacing between chars
-        db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
+        db      CMD_SHADOW_PALETTE,1,9,15      ;colors for shadow+foreground
         db      CMD_PRE_RENDER_MODE,3           ;enable shadow again
         db      CMD_PRE_RENDER, '64K RAM OUGHT',0
 
@@ -1498,10 +1496,10 @@ commands_data:
 
         db      CMD_IN_SCROLL_DOWN_R
         db      CMD_OUT_SCROLL_DOWN
-        db      CMD_WAIT,120
+        db      CMD_WAIT,140
         db      CMD_IN_SCROLL_UP
 
-        db      CMD_WAIT,120
+        db      CMD_WAIT,200
         db      CMD_FADE_OUT
         db      CMD_WAIT,120
         ; end
@@ -1680,7 +1678,7 @@ diag_unpack_sprites:
                                                         ; retf from BIOS
 
         mov     bp,0x0147                               ;retf address in 0xf000
-        push    bp
+        push    bp                                      ;it contains a "retf"
 
         mov     bp,0xf000
         push    bp
@@ -1703,13 +1701,15 @@ diag_init_video:
                                                         ; retf from BIOS
 
         mov     bp,0x0147                               ;retf address in 0xf000
-        push    bp
+        push    bp                                      ;it contains a "retf"
 
-        mov     bp,0xf000
-        push    bp
-        mov     bp,0x24ee
+        mov     bp,0xf000a                              ;push seg: 0xf000
+        push    bp                                      ;
+        mov     bp,0x24ee                               ;push off: 0x24ee
         push    bp
         retf                                            ;jump far to f000:24ee
+.exit_ret:
+        ret
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -1717,7 +1717,7 @@ diag_init_video:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %include 'part3/elipse_table.asm'
 %include 'part3/svg_font.asm'
-%include 'part3/fadeout16.asm'
+%include 'common/fadeout16.asm'
 %include 'common/utils.asm'
 %include 'common/music_player.asm'
 %include 'common/draw_line_160_100_16color.asm'
