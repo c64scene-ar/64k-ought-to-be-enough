@@ -1426,7 +1426,6 @@ commands_data:
 
         ; bye bye =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=;
         ; down: pungas de
-%endif
 
         db      CMD_SCALE,1                     ;set new scale
         db      CMD_ROTATION,1                  ;set new rotation
@@ -1479,6 +1478,7 @@ commands_data:
         db      CMD_OUT_SCROLL_UP
         db      CMD_WAIT,120
 
+%endif
         ; "64k RAM ought to be enough" =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
         ;
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
@@ -1502,6 +1502,7 @@ commands_data:
         db      CMD_WAIT,200
         db      CMD_FADE_OUT
         db      CMD_WAIT,120
+
         ; end
         db      CMD_END
 
@@ -1591,12 +1592,16 @@ exit:
         call    music_cleanup
         call    irq_8_cleanup
 
-        int 3
+        ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+        ; easter egg starts here
+        ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+
+        cli
         ; populate keyboard buffer with 'pvm rulez!' so easter egg
         ; can use it
         cld
         sub     ax,ax
-        mov     es,ax                           ;es:di = destination
+        mov     es,ax                           ;es:di = destination. es=0
         mov     di,0x041e                       ; beginning of keyboard buffer
         mov     si,.scan_ascii_codes
         mov     cx,10
@@ -1613,7 +1618,7 @@ exit:
         ; in the demo
         mov     ax,0xf000
         mov     ds,ax                           ;ds = bios segment
-        mov     ax,0x60
+        mov     ax,0x0060
         mov     es,ax                           ;es = diag segment
         mov     byte [es:0x04df],1              ;keyboard "k" (0 means keyboard "j")
         mov     byte [es:0x04e0],0xff
@@ -1646,6 +1651,7 @@ exit:
         pop     es
         call    diag_init_video
 
+        sti
         jmp     0xf000:0x29e8                   ;jump to rest of "keyboard diag routine"
 
 ;        mov     ax,0x4c00                       ;ricarDOS: load next file
@@ -1671,22 +1677,20 @@ exit:
 ; fakes the return address since that functions has a "ret near" and we need
 ; a "ret far"
 diag_unpack_sprites:
-
-        push    cs
-        mov     bp,.exit_ret
-        push    bp                                      ;cs:.exit_ret: ret address from
-                                                        ; retf from BIOS
-
-        mov     bp,0x0147                               ;retf address in 0xf000
-        push    bp                                      ;it contains a "retf"
-
-        mov     bp,0xf000
-        push    bp
-        mov     bp,0x2529
-        push    bp
-        retf                                            ;jump far to f000:2529
-
-.exit_ret:
+        mov     di,0x04e6
+        mov     cx,1600
+        xor     ax,ax
+        rep stosw
+        mov     si,0x2734
+        mov     di,0x04e8
+        mov     cx,96
+l0:
+        push    cx
+        mov     cx,6
+        rep movsb
+        pop     cx
+        add     di,4
+        loop    l0
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -1695,20 +1699,30 @@ diag_unpack_sprites:
 ; fakes the return address since that functions has a "ret near" and we need
 ; a "ret far"
 diag_init_video:
-        push    cs
-        mov     bp,.exit_ret
-        push    bp                                      ;cs:.exit_ret: ret address from
-                                                        ; retf from BIOS
+        mov     bl,2
+        mov     bh,3
+        mov     al,0x83
+        mov     ah,5
+        int     0x10
+        call    clean_16k
 
-        mov     bp,0x0147                               ;retf address in 0xf000
-        push    bp                                      ;it contains a "retf"
+        mov     bl,3
+        mov     bh,2
+        mov     al,0x83
+        mov     ah,5
+        int     0x10
+        call    clean_16k
+        ret
 
-        mov     bp,0xf000a                              ;push seg: 0xf000
-        push    bp                                      ;
-        mov     bp,0x24ee                               ;push off: 0x24ee
-        push    bp
-        retf                                            ;jump far to f000:24ee
-.exit_ret:
+clean_16k:
+        push    es
+        mov     dx,0xb800
+        mov     es,dx
+        xor     di,di
+        mov     cx,0x2000
+        xor     ax,ax
+        rep stosw
+        pop     es
         ret
 
 
