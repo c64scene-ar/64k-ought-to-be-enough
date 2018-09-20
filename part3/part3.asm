@@ -58,6 +58,13 @@ start:
         mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
         int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
 
+        ; preconditions that should be valid... always
+        push    cs                              ;ds = cs
+        pop     ds
+        mov     ax,VIDEO_SEG                    ;es = 0xb800 (video segment)
+        mov     es,ax
+        cld
+
         ;turning off the drive motor is needed to prevent
         ;it from being on the whole time.
         mov     bp,ds                           ;save ds
@@ -69,35 +76,38 @@ start:
         out     0xf2,al                         ;turn off floppy motor
         mov     ds,bp                           ;restore ds
 
-        mov     cx,0
-.delay:
-        mul     dx
-        mul     dx
-        mul     dx
-        mul     dx
-        loop    .delay
+        call    main_init
 
-        ; preconditions that should be valid... always
-        push    cs                              ;ds = cs
-        pop     ds
-        mov     ax,VIDEO_SEG                    ;es = 0xb800 (video segment)
-        mov     es,ax
-        cld
+        ; fall through
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+        ; main loop - phase 0
+.keep_waiting:
+        cmp     byte [trigger_switch_to_160100],0       ;time to switch to 160x100 video mode?
+        jz      .keep_waiting                           ; no, keep waiting
+
+        ; disable timer
+        ; FIXME: instead of disabling the timer, I should
+        ; find out why it crashes... and/or switch video mode manually
+        call    irq_8_cleanup
+
+        ; display 2nd graphics
         call    set_vid_160_100_16
 
-        mov     si,graphic_lz4                  ;ds:si src
-        sub     di,di                           ;es:di dst
+        ; enable timer again, to prevent crashes
+        mov     ax,irq_8_handler                        ;irq 8 callback
+        mov     cx,148                                  ;horizontal raster line
+        call    irq_8_init
+
+        ; decompress "pampa" image
+        mov     si,graphic_lz4                          ;ds:si src
+        sub     di,di                                   ;es:di dst
         mov     cx,8192
         call    lz4_decompress
 
-        mov     ax,0
-        int     0x16                            ;wait key
-
-        call    main_init
-
-        ;fall through
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+        mov     byte [trigger_switch_to_160100],0       ;tell "other thread" that we
+                                                        ; are done with the switch to 160x100
+        ; main loop - phase 1
 main_loop:
 
 %if EMULATOR
@@ -637,6 +647,19 @@ cmd_pre_render_anim:
 .next_command:
         jmp     cmd_process_next
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_switch_to_160100
+cmd_switch_to_160100_init:
+        mov     byte [trigger_switch_to_160100],1       ;tell "main thread" to switch to new video mode
+        ret
+
+
+cmd_switch_to_160100_anim:
+        cmp     byte [trigger_switch_to_160100],0       ;already switch to 160x100 video mode?
+        jz      .next_command                   ;yes, call next command
+        ret
+.next_command:
+        jmp     cmd_process_next
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; cmd_rotation
@@ -1049,6 +1072,7 @@ CMD_CLEAN_RENDER_BUFFER equ     15
 CMD_OUT_SWEEP_UP        equ     16
 CMD_PRE_RENDER_MODE     equ     17
 CMD_FADE_OUT            equ     18
+CMD_SWITCH_TO_160100    equ     19
 
 ;CMD_OUT_SCROLL_LEFT     equ     9
 ;CMD_OUT_SCROLL_RIGHT    equ     10
@@ -1060,11 +1084,15 @@ commands_current_anim:  dw      0               ;address of current anim
 
 commands_data_idx:      dw      0               ;index in commands_data
 commands_data:
+        db      CMD_WAIT,240                    ;wait 4 seconds
+        db      CMD_WAIT,180                    ;wait 3 additional seconds
+
+        db      CMD_SWITCH_TO_160100            ;switch to 160x100 graphics mode
+
         db      CMD_SHADOW_DIR,0xff,0xff        ;shadow direction
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
         db      CMD_PRE_RENDER_MODE,3           ;3 traces per line
 
-%if 1
         ; credits =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=;
         db      CMD_WAIT,60
         db      CMD_TRANSLATE,20,20             ;set new x,y
@@ -1495,7 +1523,6 @@ commands_data:
         db      CMD_OUT_SCROLL_UP
         db      CMD_WAIT,120
 
-%endif
         ; "64k RAM ought to be enough" =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
         ;
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
@@ -1518,7 +1545,9 @@ commands_data:
 
         db      CMD_WAIT,200
         db      CMD_FADE_OUT
-        db      CMD_WAIT,120
+        db      CMD_WAIT,240                    ;wait 4 seconds
+        db      CMD_WAIT,120                    ;wait 2 more seconds...
+                                                ; and if no key is pressed, show easter egg
 
         ; end
         db      CMD_END
@@ -1543,6 +1572,7 @@ commands_entry_tbl:
         dw      cmd_out_sweep_up_init,          cmd_out_sweep_up_anim,  ; 16
         dw      cmd_pre_render_mode_init,       cmd_no_anim,            ; 17
         dw      cmd_fade_out_init,              cmd_fade_out_anim,      ; 18
+        dw      cmd_switch_to_160100_init,      cmd_switch_to_160100_anim       ;19
 
 
 ; since only one command can be run at the same time, this variable is shared
@@ -1577,6 +1607,10 @@ pre_render_mode:        db      3
 ; text that should be renderer. ends with 0
 text_to_pre_render:
         times   32      db      0
+
+trigger_switch_to_160100:
+        db      0                               ;booelan. if 1, tells main thread
+                                                ; to switch to 160x100 video mode
 
 trigger_pre_render:
         db      0                               ;boolean. if 1, tells main thread
