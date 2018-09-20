@@ -28,7 +28,7 @@ formats[10] = BIOSFormat(640, 200, 4, 4)       # 640 x 200 4 colors
 
 
 def parse_line_2(bitmap):
-    """converts 2 bytes into 1 byte"""
+    """converts 2 bytes into 1 byte. Used in 16-color modes"""
     ba = bytearray()
     for i in range(len(bitmap) // 2):
         hi = bitmap[i * 2 + 0] & 0xf
@@ -39,20 +39,39 @@ def parse_line_2(bitmap):
 
 
 def parse_line_4(bitmap):
-    """converts 4 bytes into 1 byte"""
+    """converts 4 bytes into 1 byte. Used in 4-color modes"""
     ba = bytearray()
     for i in range(len(bitmap) // 4):
-        b1 = bitmap[i * 4 + 0] & 0x3
-        b2 = bitmap[i * 4 + 1] & 0x3
-        b3 = bitmap[i * 4 + 2] & 0x3
-        b4 = bitmap[i * 4 + 3] & 0x3
+        b1 = bitmap[i * 4 + 0]
+        b2 = bitmap[i * 4 + 1]
+        b3 = bitmap[i * 4 + 2]
+        b4 = bitmap[i * 4 + 3]
+        if b1 > 3 or b2 > 3 or b3 > 3 or b4 > 3:
+            raise Exception('Invalid pixel value: %d,%d,%d,%d > 3' %
+                    (b1, b2, b3, b4))
         byte = (b1 << 6) | (b2 << 4) | (b3 << 2) | b4
         ba.append(byte)
     return ba
 
+def parse_line_4_ext(bitmap):
+    """converts 4 bytes into 1 byte. Used in 4-color modes"""
+    ba = bytearray()
+    for i in range(len(bitmap) // 8):
+        even_byte = 0
+        odd_byte = 0
+        for p in range(8):
+            b = bitmap[i * 8 + p]
+            assert(b < 4)
+            even_byte |= ((b & 0b01) << (7-p))
+            odd_byte |= (((b & 0b10) >> 1) << (7-p))
+        assert(even_byte < 256)
+        assert(odd_byte < 256)
+        ba.append(even_byte)
+        ba.append(odd_byte)
+    return ba
 
 def parse_line_8(bitmap):
-    """converts 8 bytes into 1 byte"""
+    """converts 8 bytes into 1 byte. Used in 2-color modes"""
     ba = bytearray()
     for i in range(len(bitmap) // 8):
         b1 = bitmap[i * 8 + 0] & 0x1
@@ -69,11 +88,15 @@ def parse_line_8(bitmap):
     return ba
 
 
-def parse_line(array, colors):
+def parse_line(array, gfx_format):
+    colors = gfx_format.colors
     if colors == 16:
         return parse_line_2(array)
-    if colors == 4:
+    if colors == 4 and gfx_format.width != 640:
         return parse_line_4(array)
+    if colors == 4 and gfx_format.width == 640:
+        # 640 x 200 @ 4 colors use different byte enconding
+        return parse_line_4_ext(array)
     if colors == 2:
         return parse_line_8(array)
     return None
@@ -120,7 +143,7 @@ def run(image_file, gfx_format, output_fd):
         else:
             for y in range(height):
                 line = array[width * y : width * (y+1)]
-                lines.append(parse_line(line, gfx_format.colors))
+                lines.append(parse_line(line, gfx_format))
 
             write_to_file(lines, output_fd, gfx_format)
 

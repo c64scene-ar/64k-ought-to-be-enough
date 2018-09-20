@@ -28,6 +28,7 @@ class Parser:
 
     def run(self):
         """Execute the conversor."""
+        logging.info('Appending %s into %s' % (self._gfx_file, self._com_file))
         with open(self._com_file, 'rb') as com_fd, \
                 open(self._gfx_file, 'rb') as gfx_fd:
             com_data = com_fd.read()
@@ -60,11 +61,12 @@ $ %(prog)s charset.bin -o new_charset.bin
     parser.add_argument('filename', metavar='<filename>',
             help='file with the gfx')
     parser.add_argument('-c', '--com-file', metavar='<filename>',
-            help='.com file. Default: stdout')
+            help='.com file.', required=True)
     parser.add_argument('-o', '--output-file', metavar='<filename>',
-            help='output file. Default: stdout')
+            help='output file.', required=True)
     parser.add_argument('-s', '--max-size', metavar='N', type=int,
-            help='max size for .com. Possible values: 32, 48, 56, etc.')
+            help='max size for .com. Possible values: 32, 48, 56, etc.',
+            required=True)
 
     args = parser.parse_args()
     return args

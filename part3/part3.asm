@@ -14,7 +14,7 @@ org     0x100
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 0                              ;1=run on emulator
+%define EMULATOR 1                              ;1=run on emulator
 
 VIDEO_SEG               equ     0xb800          ;graphics segment (32k offset)
 PRE_RENDER_BUFFER_SIZE  equ     80*40           ;40 rows for buffer
@@ -35,21 +35,28 @@ start:
         mov     word [0x0415],128               ;make BIOS set_video_modo believe that we
                                                 ; have at least 128K RAM, otherwise it won't let
                                                 ; us set video mode 9
-
         mov     ax,0x008a                       ;set video mode a, don't clean screen
         int     0x10                            ;620x200 4 colors
+
+        mov     bl,0
+        mov     al,0
+        call    change_palette
+
+        mov     bl,1
+        mov     al,14
+        call    change_palette
+
+        mov     bl,2
+        mov     al,12
+        call    change_palette
+
+        mov     bl,3
+        mov     al,10
+        call    change_palette
 
         mov     ax,0x0583                       ;set CPU/CRT pages
         mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
         int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
-
-        ; some preconditions that should be valid
-        ; throught the entire demo
-        push    cs
-        pop     ds
-        mov     ax,VIDEO_SEG                    ;video segment
-        mov     es,ax                           ;should be restored if modified
-        cld
 
         ;turning off the drive motor is needed to prevent
         ;it from being on the whole time.
@@ -70,12 +77,22 @@ start:
         mul     dx
         loop    .delay
 
+        ; preconditions that should be valid... always
+        push    cs                              ;ds = cs
+        pop     ds
+        mov     ax,VIDEO_SEG                    ;es = 0xb800 (video segment)
+        mov     es,ax
+        cld
+
         call    set_vid_160_100_16
 
         mov     si,graphic_lz4                  ;ds:si src
         sub     di,di                           ;es:di dst
         mov     cx,8192
         call    lz4_decompress
+
+        mov     ax,0
+        int     0x16                            ;wait key
 
         call    main_init
 
@@ -1673,9 +1690,8 @@ exit:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; diag_unpack_sprites
-; calls diag_unpack_sprites from BIOS.
-; fakes the return address since that functions has a "ret near" and we need
-; a "ret far"
+; mimics more or less what is in the BIOS... tried calling BIOS with faking
+; ret/retf bug something failed. didn't have time to debug. this seems to work
 diag_unpack_sprites:
         mov     di,0x04e6
         mov     cx,1600
@@ -1695,9 +1711,8 @@ l0:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; diag_init_video
-; calls diag_unpack_sprites from BIOS.
-; fakes the return address since that functions has a "ret near" and we need
-; a "ret far"
+; mimics more or less what is in the BIOS... tried calling BIOS with faking
+; ret/retf bug something failed. didn't have time to debug. this seems to work
 diag_init_video:
         mov     bl,2
         mov     bh,3
