@@ -55,7 +55,7 @@ part3:
 	nasm -Ox -Wall part3/part3.asm -fbin -o bin/part3.com
 
 part3a: part3
-	@python3 tools/append_gfx_to_com.py part3/image_pampa.raw -c bin/part3.com -o bin/part3gfx.com -s 56
+	@python3 tools/append_gfx_to_com.py part3/image_pampa.raw -c bin/part3.com -o bin/part3gfx.com -s 48
 
 test_part3: part3a
 	@echo "Running..."
@@ -123,8 +123,12 @@ res:
 	python3 tools/generate_elipse.py -o part3/elipse_table.asm -v 64
 	python3 tools/vector_editor.py -o part3/svg_font.asm
 	python3 tools/generate_fadeout_table.py -o common/fadeout16.asm
+	@echo "Splitting graphic..."
+	@dd if=res/image_moon.raw of=res/image_moon_half_a.raw count=1 bs=16384
+	@dd if=res/image_moon.raw of=res/image_moon_half_b.raw count=1 skip=1 bs=16384
 	@echo "Compressing graphics..."
-	@lz4 -9 -f res/image_moon.raw part3/image_moon.raw.lz4
+	@lz4 -9 -f res/image_moon_half_a.raw part3/image_moon_half_a.raw.lz4
+	@lz4 -9 -f res/image_moon_half_b.raw part3/image_moon_half_b.raw.lz4
 	@lz4 -9 -f res/image_still_there.raw part3/image_still_there.raw.lz4
 	@echo "Done"
 

@@ -14,7 +14,7 @@ org     0x100
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 1                              ;1=run on emulator
+%define EMULATOR 0                              ;1=run on emulator
 
 VIDEO_SEG               equ     0xb800          ;graphics segment (32k offset)
 PRE_RENDER_BUFFER_SIZE  equ     80*40           ;40 rows for buffer
@@ -22,7 +22,8 @@ PRE_RENDER_BUFFER_SIZE  equ     80*40           ;40 rows for buffer
 MAIN_THREAD_ACTION_DONE         equ     0
 MAIN_THREAD_ACTION_PRE_RENDER   equ     1
 MAIN_THREAD_ACTION_IMAGE_MOON   equ     2
-MAIN_THREAD_ACTION_IAMGE_XXX    equ     3
+MAIN_THREAD_ACTION_IMAGE_THERE  equ     3
+MAIN_THREAD_ACTION_CLEAR_SCREEN equ     4
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 section .text
@@ -39,11 +40,12 @@ start:
         mov     word [0x0415],128               ;make BIOS set_video_modo believe that we
                                                 ; have at least 128K RAM, otherwise it won't let
 
+        mov     ax,0x0583                       ;set CPU/CRT pages
+        mov     bx,0x0303                       ;use page 3 for video memory/map 0xb800
+        int     0x10                            ;page 3 means: starts at 0xc000 (48k)
+
         call    set_vid_160_100_16
 
-        mov     ax,0x0583                       ;set CPU/CRT pages
-        mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
-        int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
 
         ; preconditions that should be valid... always
         push    cs                              ;ds = cs
@@ -67,6 +69,7 @@ start:
 
         ; fall through
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 main_loop:
 
 %if EMULATOR
@@ -93,21 +96,50 @@ main_loop:
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 main_thread_process_action:
-        int 3
         mov     al,[trigger_main_thread_action]         ;we know it is not 0
         dec     al
         jz      action_pre_render_text
         dec     al
         jz      action_image_moon
         dec     al
-        jz      action_image_xxx
+        jz      action_image_still_there
+        dec     al
+        jz      action_clear_screen
 
         ; should not happen
         int 3
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+action_clear_screen:
+        mov     ax,0x0800
+        mov     es,ax
+        
+        sub     di,di                                   ;es:di = 0800:0000
+        sub     ax,ax
+        mov     cx,16*1024                              ;16k words (32k bytes)
+        rep stosw                                       ;clear 32k of screen
+
+        mov     ax,0xb800
+        mov     es,ax
+
+        mov     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_DONE     ;tell "other thread" that we
+        jmp     main_loop                               ; are done
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 action_image_moon:
-        int 3
+        ; disable timer
+        ; FIXME: instead of disabling the timer, I should
+        ; find out why it crashes... and/or switch video mode manually
+        call    irq_8_cleanup
+
+        mov     ax,0x008a                       ;set 640x200 @ 4 colors
+        int     0x10                            ;don't clear screen
+
+        mov     ax,0x0583                       ;set CPU/CRT pages
+        mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
+        int     0x10                            ;page 2 means: starts at 0x8000 (32k)
+
+
         ; all colors to black
         mov     bl,0
         mov     al,0
@@ -125,25 +157,29 @@ action_image_moon:
         mov     al,0
         call    change_palette
 
-        ; disable timer
-        ; FIXME: instead of disabling the timer, I should
-        ; find out why it crashes... and/or switch video mode manually
-        call    irq_8_cleanup
-
-        mov     ax,0x008a
-        int     0x10
 
         ; enable timer again, to prevent crashes
         mov     ax,irq_8_handler                        ;irq 8 callback
         mov     cx,148                                  ;horizontal raster line
         call    irq_8_init
 
-
-        ; decompress "pampa" image
-        mov     si,image_moon_lz4                       ;ds:si src
-        sub     di,di                                   ;es:di dst
-        mov     cx,32*1024
+        ; decompress "moon" image in cs:8000 (32k segment starts there)
+        mov     si,image_moon_half_b_lz4                ;ds:si src
+        mov     ax,0x0c00
+        mov     es,ax
+        sub     di,di
+        mov     cx,16*1024
         call    lz4_decompress
+
+        mov     si,image_moon_half_a_lz4                ;ds:si src
+        mov     ax,0x0800                               ;es:di dst: 0x0800:0000
+        mov     es,ax
+        sub     di,di
+        mov     cx,16*1024
+        call    lz4_decompress
+
+        mov     ax,0xb800
+        mov     es,ax                                   ;restore es
 
         ; use palette for image
         mov     bl,0
@@ -166,14 +202,19 @@ action_image_moon:
         jmp     main_loop                               ; are done with the switch to 160x100
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-action_image_xxx:
+action_image_still_there:
         ; disable timer
         ; FIXME: instead of disabling the timer, I should
         ; find out why it crashes... and/or switch video mode manually
         call    irq_8_cleanup
 
-        mov     ax,0x0086
-        int     0x10
+        mov     ax,0x0086                       ;set 640x200 @ 2 colors
+        int     0x10                            ;don't clear screen
+
+        mov     ax,0x0583                       ;set CPU/CRT pages
+        mov     bx,0x0303                       ;use page 3 for video memory/map 0xb800
+        int     0x10                            ;page 3 means: starts at 0xc000 (48k offset)
+
 
         ; enable timer again, to prevent crashes
         mov     ax,irq_8_handler                        ;irq 8 callback
@@ -181,7 +222,7 @@ action_image_xxx:
         call    irq_8_init
 
         ; decompress image
-        mov     si,image_still_there_lz4                       ;ds:si src
+        mov     si,image_still_there_lz4                ;ds:si src
         sub     di,di                                   ;es:di dst
         mov     cx,16*1024
         call    lz4_decompress
@@ -615,6 +656,18 @@ cmd_fade_out_anim:
         mov     bl,[var_tmp_db_0]               ;bx transition index
         lea     si,[fadeout_palette_tbl+16+bx]  ;correct index, skipping black colors
 
+        ; wait for horizontal retrace
+        mov     dx,0x03da
+.wait:
+        in      al,dx                           ;wait for horizontal retrace
+        test    al,8                            ; to finish
+        jnz     .wait
+
+.retrace:
+        in      al,dx                           ;wait for horizontal retrace
+        test    al,8                            ; to finish
+        jz     .retrace
+
         mov     bx,1                            ;start with color 1. color 0 is
                                                 ; black, and we are not goig to change it
 .loop:  lodsb                                   ;al=new palette color for color #cx
@@ -694,7 +747,7 @@ cmd_pre_render_init:
         ret
 
 
-cmd_pre_render_anim:
+cmd_main_thread_anim:
         cmp     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_DONE     ;pre-render finished?
         jz      .next_command                   ;yes, call next command
         ret
@@ -710,13 +763,12 @@ cmd_show_image_init:
         mov     [commands_data_idx],si          ;update index
         ret
 
-
-cmd_show_image_anim:
-        cmp     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_DONE       ;already switch to 160x100 video mode?
-        jz      .next_command                   ;yes, call next command
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_show_image
+cmd_clear_screen_init:
+        ; tell "main thread" to switch to new video mode
+        mov     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_CLEAR_SCREEN
         ret
-.next_command:
-        jmp     cmd_process_next
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; cmd_rotation
@@ -1047,7 +1099,7 @@ get_coords_for_point:
 ; Trixter's 160x100 @ 16 color video mode
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 set_vid_160_100_16:
-        mov     ax,0x0008                       ;160x200x16 mode
+        mov     ax,0x0088                       ;160x200x16 mode
         int     0x10
         mov     ax,0x0580                       ;grab CRT/CPU page registers
         int     0x10
@@ -1064,15 +1116,21 @@ set_vid_160_100_16:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; includes
+; Includes - A
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-%include 'part3/elipse_table.asm'
-%include 'part3/svg_font.asm'
 %include 'common/fadeout16.asm'
 %include 'common/utils.asm'
 %include 'common/music_player.asm'
-%include 'common/draw_line_160_100_16color.asm'
 %include 'common/lz4_8088.asm'
+%include 'common/draw_line_160_100_16color.asm'
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+;DATA - section A
+; trying to make "exit" as far away from 60:00 as possible, but not
+; that far away
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+pvm_song:
+        incbin          'part3/uctumi-zamba.pvm'
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; exit
@@ -1214,14 +1272,9 @@ clean_16k:
         pop     es
         ret
 
-
-
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-;DATA
+;DATA - section B
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-pvm_song:
-        incbin          'part3/uctumi-zamba.pvm'
-
 end_condition:
         db              0                       ;if 0, part3 ends
 
@@ -1281,6 +1334,7 @@ CMD_OUT_SWEEP_UP        equ     16
 CMD_PRE_RENDER_MODE     equ     17
 CMD_FADE_OUT            equ     18
 CMD_SHOW_IMAGE          equ     19
+CMD_CLEAR_SCREEN        equ     20
 
 ;CMD_OUT_SCROLL_LEFT     equ     9
 ;CMD_OUT_SCROLL_RIGHT    equ     10
@@ -1292,10 +1346,10 @@ commands_current_anim:  dw      0               ;address of current anim
 
 commands_data_idx:      dw      0               ;index in commands_data
 commands_data:
-%if 0
         db      CMD_SHADOW_DIR,0xff,0xff        ;shadow direction
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
         db      CMD_PRE_RENDER_MODE,3           ;3 traces per line
+%if 0
 
         ; credits =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=;
         db      CMD_WAIT,60
@@ -1489,7 +1543,7 @@ commands_data:
 
         db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean buffer
         db      CMD_SCALE,1                     ;set new scale
-        db      CMD_TRANSLATE,66,28             ;set new x,y
+        db      CMD_TRANSLATE,65,28             ;set new x,y
         db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
         db      CMD_CHAR_SPACING,16,0           ;spacing between chars
         db      CMD_PRE_RENDER, 'RIQ',0
@@ -1727,39 +1781,64 @@ commands_data:
         db      CMD_OUT_SCROLL_UP
         db      CMD_WAIT,120
 
+%endif
         ; "64k RAM ought to be enough" =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
         ;
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
         db      CMD_SCALE,1                     ;set new scale
+
         db      CMD_ROTATION,0                  ;set new rotation
-        db      CMD_TRANSLATE,11,11             ;set new x,y
         db      CMD_CHAR_SPACING,13,0           ;spacing between chars
+        db      CMD_TRANSLATE,7,10             ;set new x,y
         db      CMD_SHADOW_PALETTE,1,9,15      ;colors for shadow+foreground
         db      CMD_PRE_RENDER_MODE,3           ;enable shadow again
-        db      CMD_PRE_RENDER, '64K RAM OUGHT',0
+        db      CMD_PRE_RENDER, '64K RAM',0
 
         db      CMD_CLEAN_RENDER_BUFFER,0       ;dont clean render buffer
-        db      CMD_TRANSLATE,16,29             ;set new x,y
-        db      CMD_PRE_RENDER, 'TO BE ENOUGH',0
+        db      CMD_TRANSLATE,101,10             ;set new x,y
+        db      CMD_ROTATION,1                  ;set new rotation
+        db      CMD_SHADOW_PALETTE,2,10,15      ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'OUGHT',0
+
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;dont clean render buffer
+        db      CMD_ROTATION,255                ;set new rotation
+        db      CMD_TRANSLATE,14,29             ;set new x,y
+        db      CMD_SHADOW_PALETTE,3,11,15      ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'TO',0
+
+        db      CMD_ROTATION,0                  ;set new rotation
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;dont clean render buffer
+        db      CMD_SHADOW_PALETTE,4,12,15      ;colors for shadow+foreground
+        db      CMD_TRANSLATE,49,30             ;set new x,y
+        db      CMD_PRE_RENDER, 'BE',0
+
+        db      CMD_ROTATION,1                  ;set new rotation
+        db      CMD_CLEAN_RENDER_BUFFER,0       ;dont clean render buffer
+        db      CMD_SHADOW_PALETTE,5,13,15      ;colors for shadow+foreground
+        db      CMD_TRANSLATE,84,29             ;set new x,y
+        db      CMD_PRE_RENDER, 'ENOUGH',0
 
         db      CMD_IN_SCROLL_DOWN_R
         db      CMD_OUT_SCROLL_DOWN
         db      CMD_WAIT,140
         db      CMD_IN_SCROLL_UP
-%endif
 
-        db      CMD_WAIT,200
+        db      CMD_WAIT,240
         db      CMD_FADE_OUT
         db      CMD_WAIT,240                    ;wait 4 seconds
                                                 ; and if no key is pressed, show easter egg
-
         db      CMD_SHOW_IMAGE,2                ;display moon image
         db      CMD_WAIT,240                    ;wait 4 seconds
-        db      CMD_WAIT,180                    ;wait 3 additional seconds
+        db      CMD_WAIT,240                    ;wait 8 additional seconds
 
-        db      CMD_FADE_OUT
+        db      CMD_CLEAR_SCREEN
+
+        db      CMD_WAIT,240                    ;wait 3 additional seconds
+        db      CMD_WAIT,240                    ;wait 3 additional seconds
         db      CMD_SHOW_IMAGE,3                ;display moon image
         db      CMD_WAIT,240                    ;wait 4 seconds
+        db      CMD_WAIT,180                    ;wait 3 additional seconds
+        db      CMD_CLEAR_SCREEN
         db      CMD_WAIT,180                    ;wait 3 additional seconds
 
         ; end
@@ -1769,7 +1848,7 @@ commands_entry_tbl:
         dw      cmd_end_init,                   cmd_no_anim,            ; 0
         dw      cmd_in_scroll_up_init,          cmd_in_scroll_up_anim,  ; 1
         dw      cmd_out_scroll_up_init,         cmd_out_scroll_up_anim, ; 2
-        dw      cmd_pre_render_init,            cmd_pre_render_anim,    ; 3
+        dw      cmd_pre_render_init,            cmd_main_thread_anim,   ; 3
         dw      cmd_rotation_init,              cmd_no_anim,            ; 4
         dw      cmd_scale_init,                 cmd_no_anim,            ; 5
         dw      cmd_translate_init,             cmd_no_anim,            ; 6
@@ -1785,7 +1864,8 @@ commands_entry_tbl:
         dw      cmd_out_sweep_up_init,          cmd_out_sweep_up_anim,  ; 16
         dw      cmd_pre_render_mode_init,       cmd_no_anim,            ; 17
         dw      cmd_fade_out_init,              cmd_fade_out_anim,      ; 18
-        dw      cmd_show_image_init,            cmd_show_image_anim     ; 19
+        dw      cmd_show_image_init,            cmd_main_thread_anim    ; 19
+        dw      cmd_clear_screen_init,          cmd_main_thread_anim    ; 20
 
 
 ; since only one command can be run at the same time, this variable is shared
@@ -1833,6 +1913,28 @@ palette_fade_prev_val:
         db      8,9,10,11,12,13,14,15
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; Compressed images
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+image_still_there_lz4:
+        incbin          'part3/image_still_there.raw.lz4'
+
+; last one, so it can overwritte itself
+image_moon_half_a_lz4:
+        incbin          'part3/image_moon_half_a.raw.lz4'
+
+image_moon_half_b_lz4:
+        incbin          'part3/image_moon_half_b.raw.lz4'
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; Includes - B
+; no problem if they get overwritten
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+%include 'part3/elipse_table.asm'
+%include 'part3/svg_font.asm'
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; Everything below this part can/will be overwritten by "moon" graphics
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; fake segment...
 ; space used to pre-render the letters, and then with a "in" effect is placed
 ; in the video memory
@@ -1845,12 +1947,4 @@ pre_render_buffer_off:                          ;pre calculated offset
         dw              0                       ;offset
 pre_render_buffer_seg:                          ;pre calculated seg
         dw              0                       ;segment
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-image_still_there_lz4:
-        incbin          'part3/image_still_there.raw.lz4'
-
-; last one, so it can overwritte itself
-image_moon_lz4:
-        incbin          'part3/image_moon.raw.lz4'
 
