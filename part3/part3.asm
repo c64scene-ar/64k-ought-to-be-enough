@@ -1358,7 +1358,7 @@ commands_data:
         db      CMD_SHADOW_DIR,0xff,0xff        ;shadow direction
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
         db      CMD_PRE_RENDER_MODE,3           ;3 traces per line
-%if 0
+%if 1
 
         ; credits =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=;
         db      CMD_WAIT,60
@@ -1713,23 +1713,28 @@ commands_data:
         db      CMD_IN_SCROLL_UP,
         db      CMD_WAIT,240
 
+%endif
         ; greetins: people #3
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
         db      CMD_SCALE,2                     ;set new scale
         db      CMD_ROTATION,0                  ;set new rotation
-        db      CMD_CHAR_SPACING,8,0            ;spacing between chars
+        db      CMD_CHAR_SPACING,7,0            ;spacing between chars
 
         db      CMD_TRANSLATE,5,12              ;set new x,y
         db      CMD_SHADOW_PALETTE,0,12,15      ;colors for shadow+foreground
-        db      CMD_PRE_RENDER, 'TRIAD;',0
+        db      CMD_PRE_RENDER, 'TRIAD,',0
 
         db      CMD_CLEAN_RENDER_BUFFER,0       ;don't clean render buffer
+        db      CMD_TRANSLATE,50,12             ;set new x,y
+        db      CMD_SHADOW_PALETTE,0,3,15       ;colors for shadow+foreground
+        db      CMD_PRE_RENDER, 'MONZAMESS;',0
 
-        db      CMD_TRANSLATE,56,12             ;set new x,y
+        db      CMD_TRANSLATE,126,12             ;set new x,y
         db      CMD_SHADOW_PALETTE,0,9,15       ;colors for shadow+foreground
-        db      CMD_PRE_RENDER, 'AND THE REST OF',0
-        db      CMD_TRANSLATE,12,29             ;set new x,y
-        db      CMD_PRE_RENDER, 'THE C64 & PCJR SCENE',0
+        db      CMD_PRE_RENDER, 'AND TO',0
+
+        db      CMD_TRANSLATE,8,29             ;set new x,y
+        db      CMD_PRE_RENDER, 'THE C64 & PCJR DEMOSCENE',0
 
         db      CMD_IN_SCROLL_UP,
         db      CMD_WAIT,240
@@ -1790,7 +1795,6 @@ commands_data:
         db      CMD_OUT_SCROLL_UP
         db      CMD_WAIT,120
 
-%endif
         ; "64k RAM ought to be enough" =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
         ;
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
