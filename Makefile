@@ -94,12 +94,12 @@ boot: fat_image
 test_boot: boot
 	dosbox-x -conf conf/dosbox-x_pcjr.conf
 
-dist: x
+dist: boot
 	@echo "Generating distribution .zip"
-	-rm intro.zip
-	-rm intro/intro.com
-	cp bin/intro.com intro/
-	zip intro.zip -r intro
+	-rm 64kought.zip
+	-rm 64kought/64kought.360
+	cp bin/demo_pvm.360 64kought/64kought.360
+	zip 64kought.zip -r 64kought
 
 res:
 	@echo "Generating resources..."
