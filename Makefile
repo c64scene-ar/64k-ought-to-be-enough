@@ -55,7 +55,7 @@ part3:
 	nasm -Ox -Wall part3/part3.asm -fbin -o bin/part3.com
 
 part3a: part3
-	@python3 tools/append_gfx_to_com.py part3/image_moon.raw -c bin/part3.com -o bin/part3gfx.com -s 32
+	@python3 tools/append_gfx_to_com.py part3/image_pampa.raw -c bin/part3.com -o bin/part3gfx.com -s 56
 
 test_part3: part3a
 	@echo "Running..."
@@ -115,15 +115,17 @@ res:
 	python3 tools/parse_55_segment_font.py -o part1/segment55_table.asm
 	python3 tools/parse_ibm_charset.py -m 4 res/tandy_1000_hx_charset-charset.bin -o part1/charset_0x20_0x60.bin
 	python3 tools/convert_gfx_to_bios_format.py -g 9 -o part2/alakran-cara.raw "res/alakran-cara.png"
-	python3 tools/convert_gfx_to_bios_format.py -g 88 -o res/image_pampa.raw "res/part3_pampa.png"
-	python3 tools/convert_gfx_to_bios_format.py -g 10 -o part3/image_moon.raw "res/part3_moon.png"
+	python3 tools/convert_gfx_to_bios_format.py -g 88 -o part3/image_pampa.raw "res/part3_pampa.png"
+	python3 tools/convert_gfx_to_bios_format.py -g 10 -o res/image_moon.raw "res/part3_moon.png"
+	python3 tools/convert_gfx_to_bios_format.py -g 6 -o res/image_still_there.raw "res/part3_still_there.png"
 	python3 tools/convert_gfx_to_bios_format.py -g 8 -o part1/image_320_200.raw res/part1_image.png
 	python3 tools/parse_big_charset.py -o part2/charset_bigfont.bin res/part2_font_arleka-4colors.png
 	python3 tools/generate_elipse.py -o part3/elipse_table.asm -v 64
 	python3 tools/vector_editor.py -o part3/svg_font.asm
 	python3 tools/generate_fadeout_table.py -o common/fadeout16.asm
 	@echo "Compressing graphics..."
-	@lz4 -9 -f res/image_pampa.raw part3/image_pampa.raw.lz4
+	@lz4 -9 -f res/image_moon.raw part3/image_moon.raw.lz4
+	@lz4 -9 -f res/image_still_there.raw part3/image_still_there.raw.lz4
 	@echo "Done"
 
 dis:

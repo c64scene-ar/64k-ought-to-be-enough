@@ -14,11 +14,15 @@ org     0x100
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 0                              ;1=run on emulator
+%define EMULATOR 1                              ;1=run on emulator
 
 VIDEO_SEG               equ     0xb800          ;graphics segment (32k offset)
 PRE_RENDER_BUFFER_SIZE  equ     80*40           ;40 rows for buffer
 
+MAIN_THREAD_ACTION_DONE         equ     0
+MAIN_THREAD_ACTION_PRE_RENDER   equ     1
+MAIN_THREAD_ACTION_IMAGE_MOON   equ     2
+MAIN_THREAD_ACTION_IAMGE_XXX    equ     3
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 section .text
@@ -34,25 +38,8 @@ start:
         mov     ds,ax                           ;ds = 0
         mov     word [0x0415],128               ;make BIOS set_video_modo believe that we
                                                 ; have at least 128K RAM, otherwise it won't let
-                                                ; us set video mode 9
-        mov     ax,0x008a                       ;set video mode a, don't clean screen
-        int     0x10                            ;620x200 4 colors
 
-        mov     bl,0
-        mov     al,0
-        call    change_palette
-
-        mov     bl,1
-        mov     al,14
-        call    change_palette
-
-        mov     bl,2
-        mov     al,12
-        call    change_palette
-
-        mov     bl,3
-        mov     al,10
-        call    change_palette
+        call    set_vid_160_100_16
 
         mov     ax,0x0583                       ;set CPU/CRT pages
         mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
@@ -80,34 +67,6 @@ start:
 
         ; fall through
 
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-        ; main loop - phase 0
-.keep_waiting:
-        cmp     byte [trigger_switch_to_160100],0       ;time to switch to 160x100 video mode?
-        jz      .keep_waiting                           ; no, keep waiting
-
-        ; disable timer
-        ; FIXME: instead of disabling the timer, I should
-        ; find out why it crashes... and/or switch video mode manually
-        call    irq_8_cleanup
-
-        ; display 2nd graphics
-        call    set_vid_160_100_16
-
-        ; enable timer again, to prevent crashes
-        mov     ax,irq_8_handler                        ;irq 8 callback
-        mov     cx,148                                  ;horizontal raster line
-        call    irq_8_init
-
-        ; decompress "pampa" image
-        mov     si,graphic_lz4                          ;ds:si src
-        sub     di,di                                   ;es:di dst
-        mov     cx,8192
-        call    lz4_decompress
-
-        mov     byte [trigger_switch_to_160100],0       ;tell "other thread" that we
-                                                        ; are done with the switch to 160x100
-        ; main loop - phase 1
 main_loop:
 
 %if EMULATOR
@@ -123,8 +82,8 @@ main_loop:
 %endif
         jnz     .exit
 
-        cmp     byte [trigger_pre_render],0     ;should we pre-render text?
-        jnz     .pre_render_text
+        cmp     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_DONE     ;should we pre-render text?
+        jnz     main_thread_process_action
 
         cmp     byte [end_condition],0          ;animation finished?
         jz      main_loop                      ;no, so keep looping
@@ -132,39 +91,108 @@ main_loop:
 .exit:
         jmp     exit
 
-.pre_render_text:
-        call    pre_render_text
-        jmp     main_loop
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+main_thread_process_action:
+        int 3
+        mov     al,[trigger_main_thread_action]         ;we know it is not 0
+        dec     al
+        jz      action_pre_render_text
+        dec     al
+        jz      action_image_moon
+        dec     al
+        jz      action_image_xxx
+
+        ; should not happen
+        int 3
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; main_init
-; add here initialization
-main_init:
-        ; init vars
-        ;convert cs:pre_render_buffer into a segment
-        mov     ax,cs                                   ;new seg = cs + (offset >> 4)
-        mov     bx,pre_render_buffer                    ;offset, which is already 16-byte aligned
-        mov     cl,4
-        shr     bx,cl                                   ;divided 16
-        add     ax,bx                                   ;converted to segment
-        mov     [pre_render_buffer_seg],ax              ;store segment for pre_render_buffer
+action_image_moon:
+        int 3
+        ; all colors to black
+        mov     bl,0
+        mov     al,0
+        call    change_palette
 
-        ; init music
-        mov     ax,pvm_song                             ;start music offset
-        call    music_init
+        mov     bl,1
+        mov     al,0
+        call    change_palette
 
-        ; init "command" related stuff
-        call    cmd_init                                ;initialize commands
+        mov     bl,2
+        mov     al,0
+        call    change_palette
 
-        ; init timer handler
-        ; should be the last one to get initialized
+        mov     bl,3
+        mov     al,0
+        call    change_palette
+
+        ; disable timer
+        ; FIXME: instead of disabling the timer, I should
+        ; find out why it crashes... and/or switch video mode manually
+        call    irq_8_cleanup
+
+        mov     ax,0x008a
+        int     0x10
+
+        ; enable timer again, to prevent crashes
         mov     ax,irq_8_handler                        ;irq 8 callback
         mov     cx,148                                  ;horizontal raster line
-        jmp     irq_8_init
+        call    irq_8_init
+
+
+        ; decompress "pampa" image
+        mov     si,image_moon_lz4                       ;ds:si src
+        sub     di,di                                   ;es:di dst
+        mov     cx,32*1024
+        call    lz4_decompress
+
+        ; use palette for image
+        mov     bl,0
+        mov     al,0
+        call    change_palette
+
+        mov     bl,1
+        mov     al,14
+        call    change_palette
+
+        mov     bl,2
+        mov     al,12
+        call    change_palette
+
+        mov     bl,3
+        mov     al,10
+        call    change_palette
+
+        mov     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_DONE     ;tell "other thread" that we
+        jmp     main_loop                               ; are done with the switch to 160x100
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; pre_render_text
-pre_render_text:
+action_image_xxx:
+        ; disable timer
+        ; FIXME: instead of disabling the timer, I should
+        ; find out why it crashes... and/or switch video mode manually
+        call    irq_8_cleanup
+
+        mov     ax,0x0086
+        int     0x10
+
+        ; enable timer again, to prevent crashes
+        mov     ax,irq_8_handler                        ;irq 8 callback
+        mov     cx,148                                  ;horizontal raster line
+        call    irq_8_init
+
+        ; decompress image
+        mov     si,image_still_there_lz4                       ;ds:si src
+        sub     di,di                                   ;es:di dst
+        mov     cx,16*1024
+        call    lz4_decompress
+
+        mov     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_DONE     ;tell "other thread" that we
+        jmp     main_loop                               ; are done with the switch to 160x100
+
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+action_pre_render_text:
 
         les     di,[pre_render_buffer_seg_off]          ;es:di: dst buffer
 
@@ -228,8 +256,34 @@ pre_render_text:
         mov     ax,VIDEO_SEG
         mov     es,ax                                   ;restore es
 
-        mov     byte [trigger_pre_render],0             ;say pre-render finished
-        ret
+        mov     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_DONE     ;tell "other thread" that we
+        jmp     main_loop
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; main_init
+; add here initialization
+main_init:
+        ; init vars
+        ;convert cs:pre_render_buffer into a segment
+        mov     ax,cs                                   ;new seg = cs + (offset >> 4)
+        mov     bx,pre_render_buffer                    ;offset, which is already 16-byte aligned
+        mov     cl,4
+        shr     bx,cl                                   ;divided 16
+        add     ax,bx                                   ;converted to segment
+        mov     [pre_render_buffer_seg],ax              ;store segment for pre_render_buffer
+
+        ; init music
+        mov     ax,pvm_song                             ;start music offset
+        call    music_init
+
+        ; init "command" related stuff
+        call    cmd_init                                ;initialize commands
+
+        ; init timer handler
+        ; should be the last one to get initialized
+        mov     ax,irq_8_handler                        ;irq 8 callback
+        mov     cx,148                                  ;horizontal raster line
+        jmp     irq_8_init
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -636,26 +690,29 @@ cmd_pre_render_init:
         mov     es,bp                           ;restore es
         mov     [commands_data_idx],si          ;update index
 
-        mov     byte [trigger_pre_render],1     ;tell "main thread" to pre-render text
+        mov     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_PRE_RENDER     ;tell "main thread" to pre-render text
         ret
 
 
 cmd_pre_render_anim:
-        cmp     byte [trigger_pre_render],0     ;pre-render finished?
+        cmp     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_DONE     ;pre-render finished?
         jz      .next_command                   ;yes, call next command
         ret
 .next_command:
         jmp     cmd_process_next
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; cmd_switch_to_160100
-cmd_switch_to_160100_init:
-        mov     byte [trigger_switch_to_160100],1       ;tell "main thread" to switch to new video mode
+; cmd_show_image
+cmd_show_image_init:
+        mov     si,[commands_data_idx]
+        lodsb                                   ;al = new scale
+        mov     byte [trigger_main_thread_action],al       ;tell "main thread" to switch to new video mode
+        mov     [commands_data_idx],si          ;update index
         ret
 
 
-cmd_switch_to_160100_anim:
-        cmp     byte [trigger_switch_to_160100],0       ;already switch to 160x100 video mode?
+cmd_show_image_anim:
+        cmp     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_DONE       ;already switch to 160x100 video mode?
         jz      .next_command                   ;yes, call next command
         ret
 .next_command:
@@ -1007,12 +1064,163 @@ set_vid_160_100_16:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; includes
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+%include 'part3/elipse_table.asm'
+%include 'part3/svg_font.asm'
+%include 'common/fadeout16.asm'
+%include 'common/utils.asm'
+%include 'common/music_player.asm'
+%include 'common/draw_line_160_100_16color.asm'
+%include 'common/lz4_8088.asm'
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; exit
+; do clean up and exit
+; exit routine should be at the very end since it will overwrite semgent 0x60
+; and we don't want to overwrite ourselves
+exit:
+        call    music_cleanup
+        call    irq_8_cleanup
+
+        ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+        ; easter egg starts here
+        ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+
+        cli
+        ; populate keyboard buffer with 'pvm rulez!' so easter egg
+        ; can use it
+        cld
+        sub     ax,ax
+        mov     es,ax                           ;es:di = destination. es=0
+        mov     di,0x041e                       ; beginning of keyboard buffer
+        mov     si,.scan_ascii_codes
+        mov     cx,10
+        rep movsw                               ;copy new buffer
+        mov     word [es:0x041a],0x001e         ;first char
+        mov     word [es:0x041c],0x001e+20      ;last char
+
+        ; once keyboard buffer is populated, now manually init "keyboard test" routine.
+        ; cannot jump directly to it because it will reset the keyboard,
+        ; so we manually initialize it, and jump just after it cleans the
+        ; keyboard buffer.
+        ;
+        ; Copied from PCjr BIOS 0xf000:0x2980, with changes to make it work
+        ; in the demo
+        mov     ax,0xf000
+        mov     ds,ax                           ;ds = bios segment
+        mov     ax,0x0060
+        mov     es,ax                           ;es = diag segment
+        mov     byte [es:0x04df],1              ;keyboard "k" (0 means keyboard "j")
+        mov     byte [es:0x04e0],0xff
+
+        call    diag_unpack_sprites
+
+        ; control break handler
+        push    ds
+        sub     ax,ax
+        mov     ds,ax                           ;ds = 0
+        mov     dx,0x31f8                       ;control break handler
+        mov     ax,0xf000                       ;f000:f831 -> handler
+        mov     word [ds:0x006c],dx             ;offset to int 0x1b
+        mov     word [ds:0x006e],ax             ;segment to new int 0x1b
+        pop     ds
+
+        ; clean data
+        sub     di,di
+        mov     cx,0x04db
+        sub     al,al
+        rep stosb                               ;clean 60:0000 -> 60:04da
+
+        ; setup some internal vars
+        mov     byte [es:0x04c8],1              ;avoid box collision check
+        mov     byte [es:0x04ca],3              ;foreground color: cyan
+        push    es
+        mov     ax,0x004c
+        mov     es,ax                           ;es = 0x4c
+        mov     byte [es:0x0001],0              ;clear some kind of flag
+        pop     es
+        call    diag_init_video
+
+        sti
+        jmp     0xf000:0x29e8                   ;jump to rest of "keyboard diag routine"
+
+;        mov     ax,0x4c00                       ;ricarDOS: load next file
+;        int     0x21                            ;DOS: exit to DOS
+
+        ;scan/ascii codes used to populate the keyboard buffer
+.scan_ascii_codes:
+        dw      0x1950                          ;P
+        dw      0x2f56                          ;V
+        dw      0x324d                          ;M
+        dw      0x3920                          ;space
+        dw      0x1352                          ;R
+        dw      0x1655                          ;U
+        dw      0x264c                          ;L
+        dw      0x1245                          ;E
+        dw      0x2c5a                          ;Z
+        dw      0x0221                          ;!
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; diag_unpack_sprites
+; mimics more or less what is in the BIOS... tried calling BIOS with faking
+; ret/retf bug something failed. didn't have time to debug. this seems to work
+diag_unpack_sprites:
+        mov     di,0x04e6
+        mov     cx,1600
+        xor     ax,ax
+        rep stosw
+        mov     si,0x2734
+        mov     di,0x04e8
+        mov     cx,96
+l0:
+        push    cx
+        mov     cx,6
+        rep movsb
+        pop     cx
+        add     di,4
+        loop    l0
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; diag_init_video
+; mimics more or less what is in the BIOS... tried calling BIOS with faking
+; ret/retf bug something failed. didn't have time to debug. this seems to work
+diag_init_video:
+        mov     bl,2
+        mov     bh,3
+        mov     al,0x83
+        mov     ah,5
+        int     0x10
+        call    clean_16k
+
+        mov     bl,3
+        mov     bh,2
+        mov     al,0x83
+        mov     ah,5
+        int     0x10
+        call    clean_16k
+        ret
+
+clean_16k:
+        push    es
+        mov     dx,0xb800
+        mov     es,dx
+        xor     di,di
+        mov     cx,0x2000
+        xor     ax,ax
+        rep stosw
+        pop     es
+        ret
+
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ;DATA
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 pvm_song:
         incbin          'part3/uctumi-zamba.pvm'
-graphic_lz4:
-        incbin          'part3/image_pampa.raw.lz4'
 
 end_condition:
         db              0                       ;if 0, part3 ends
@@ -1072,7 +1280,7 @@ CMD_CLEAN_RENDER_BUFFER equ     15
 CMD_OUT_SWEEP_UP        equ     16
 CMD_PRE_RENDER_MODE     equ     17
 CMD_FADE_OUT            equ     18
-CMD_SWITCH_TO_160100    equ     19
+CMD_SHOW_IMAGE          equ     19
 
 ;CMD_OUT_SCROLL_LEFT     equ     9
 ;CMD_OUT_SCROLL_RIGHT    equ     10
@@ -1084,11 +1292,7 @@ commands_current_anim:  dw      0               ;address of current anim
 
 commands_data_idx:      dw      0               ;index in commands_data
 commands_data:
-        db      CMD_WAIT,240                    ;wait 4 seconds
-        db      CMD_WAIT,180                    ;wait 3 additional seconds
-
-        db      CMD_SWITCH_TO_160100            ;switch to 160x100 graphics mode
-
+%if 0
         db      CMD_SHADOW_DIR,0xff,0xff        ;shadow direction
         db      CMD_CLEAN_RENDER_BUFFER,1       ;clean render buffer
         db      CMD_PRE_RENDER_MODE,3           ;3 traces per line
@@ -1542,12 +1746,21 @@ commands_data:
         db      CMD_OUT_SCROLL_DOWN
         db      CMD_WAIT,140
         db      CMD_IN_SCROLL_UP
+%endif
 
         db      CMD_WAIT,200
         db      CMD_FADE_OUT
         db      CMD_WAIT,240                    ;wait 4 seconds
-        db      CMD_WAIT,120                    ;wait 2 more seconds...
                                                 ; and if no key is pressed, show easter egg
+
+        db      CMD_SHOW_IMAGE,2                ;display moon image
+        db      CMD_WAIT,240                    ;wait 4 seconds
+        db      CMD_WAIT,180                    ;wait 3 additional seconds
+
+        db      CMD_FADE_OUT
+        db      CMD_SHOW_IMAGE,3                ;display moon image
+        db      CMD_WAIT,240                    ;wait 4 seconds
+        db      CMD_WAIT,180                    ;wait 3 additional seconds
 
         ; end
         db      CMD_END
@@ -1572,7 +1785,7 @@ commands_entry_tbl:
         dw      cmd_out_sweep_up_init,          cmd_out_sweep_up_anim,  ; 16
         dw      cmd_pre_render_mode_init,       cmd_no_anim,            ; 17
         dw      cmd_fade_out_init,              cmd_fade_out_anim,      ; 18
-        dw      cmd_switch_to_160100_init,      cmd_switch_to_160100_anim       ;19
+        dw      cmd_show_image_init,            cmd_show_image_anim     ; 19
 
 
 ; since only one command can be run at the same time, this variable is shared
@@ -1608,14 +1821,13 @@ pre_render_mode:        db      3
 text_to_pre_render:
         times   32      db      0
 
-trigger_switch_to_160100:
-        db      0                               ;booelan. if 1, tells main thread
-                                                ; to switch to 160x100 video mode
+trigger_main_thread_action:
+        db      0                               ;actions for the main thread
+                                                ; 0 = nothing
+                                                ; 1 = pre render graphic
+                                                ; 2 = switch to 640x200 @ 4 color
+                                                ; 3 = switch to 640x200 @ 2 color
 
-trigger_pre_render:
-        db      0                               ;boolean. if 1, tells main thread
-                                                ; to pre-render text.
-                                                ; 0, whne pre-render finished
 palette_fade_prev_val:
         db      0,1,2,3,4,5,6,7                 ;palette last known values
         db      8,9,10,11,12,13,14,15
@@ -1635,154 +1847,10 @@ pre_render_buffer_seg:                          ;pre calculated seg
         dw              0                       ;segment
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; exit
-; do clean up and exit
-; exit routine should be at the very end since it will overwrite semgent 0x60
-; and we don't want to overwrite ourselves
-exit:
-        call    music_cleanup
-        call    irq_8_cleanup
+image_still_there_lz4:
+        incbin          'part3/image_still_there.raw.lz4'
 
-        ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-        ; easter egg starts here
-        ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-
-        cli
-        ; populate keyboard buffer with 'pvm rulez!' so easter egg
-        ; can use it
-        cld
-        sub     ax,ax
-        mov     es,ax                           ;es:di = destination. es=0
-        mov     di,0x041e                       ; beginning of keyboard buffer
-        mov     si,.scan_ascii_codes
-        mov     cx,10
-        rep movsw                               ;copy new buffer
-        mov     word [es:0x041a],0x001e         ;first char
-        mov     word [es:0x041c],0x001e+20      ;last char
-
-        ; once keyboard buffer is populated, now manually init "keyboard test" routine.
-        ; cannot jump directly to it because it will reset the keyboard,
-        ; so we manually initialize it, and jump just after it cleans the
-        ; keyboard buffer.
-        ;
-        ; Copied from PCjr BIOS 0xf000:0x2980, with changes to make it work
-        ; in the demo
-        mov     ax,0xf000
-        mov     ds,ax                           ;ds = bios segment
-        mov     ax,0x0060
-        mov     es,ax                           ;es = diag segment
-        mov     byte [es:0x04df],1              ;keyboard "k" (0 means keyboard "j")
-        mov     byte [es:0x04e0],0xff
-
-        call    diag_unpack_sprites
-
-        ; control break handler
-        push    ds
-        sub     ax,ax
-        mov     ds,ax                           ;ds = 0
-        mov     dx,0x31f8                       ;control break handler
-        mov     ax,0xf000                       ;f000:f831 -> handler
-        mov     word [ds:0x006c],dx             ;offset to int 0x1b
-        mov     word [ds:0x006e],ax             ;segment to new int 0x1b
-        pop     ds
-
-        ; clean data
-        sub     di,di
-        mov     cx,0x04db
-        sub     al,al
-        rep stosb                               ;clean 60:0000 -> 60:04da
-
-        ; setup some internal vars
-        mov     byte [es:0x04c8],1              ;avoid box collision check
-        mov     byte [es:0x04ca],3              ;foreground color: cyan
-        push    es
-        mov     ax,0x004c
-        mov     es,ax                           ;es = 0x4c
-        mov     byte [es:0x0001],0              ;clear some kind of flag
-        pop     es
-        call    diag_init_video
-
-        sti
-        jmp     0xf000:0x29e8                   ;jump to rest of "keyboard diag routine"
-
-;        mov     ax,0x4c00                       ;ricarDOS: load next file
-;        int     0x21                            ;DOS: exit to DOS
-
-        ;scan/ascii codes used to populate the keyboard buffer
-.scan_ascii_codes:
-        dw      0x1950                          ;P
-        dw      0x2f56                          ;V
-        dw      0x324d                          ;M
-        dw      0x3920                          ;space
-        dw      0x1352                          ;R
-        dw      0x1655                          ;U
-        dw      0x264c                          ;L
-        dw      0x1245                          ;E
-        dw      0x2c5a                          ;Z
-        dw      0x0221                          ;!
-
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; diag_unpack_sprites
-; mimics more or less what is in the BIOS... tried calling BIOS with faking
-; ret/retf bug something failed. didn't have time to debug. this seems to work
-diag_unpack_sprites:
-        mov     di,0x04e6
-        mov     cx,1600
-        xor     ax,ax
-        rep stosw
-        mov     si,0x2734
-        mov     di,0x04e8
-        mov     cx,96
-l0:
-        push    cx
-        mov     cx,6
-        rep movsb
-        pop     cx
-        add     di,4
-        loop    l0
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; diag_init_video
-; mimics more or less what is in the BIOS... tried calling BIOS with faking
-; ret/retf bug something failed. didn't have time to debug. this seems to work
-diag_init_video:
-        mov     bl,2
-        mov     bh,3
-        mov     al,0x83
-        mov     ah,5
-        int     0x10
-        call    clean_16k
-
-        mov     bl,3
-        mov     bh,2
-        mov     al,0x83
-        mov     ah,5
-        int     0x10
-        call    clean_16k
-        ret
-
-clean_16k:
-        push    es
-        mov     dx,0xb800
-        mov     es,dx
-        xor     di,di
-        mov     cx,0x2000
-        xor     ax,ax
-        rep stosw
-        pop     es
-        ret
-
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; includes
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-%include 'part3/elipse_table.asm'
-%include 'part3/svg_font.asm'
-%include 'common/fadeout16.asm'
-%include 'common/utils.asm'
-%include 'common/music_player.asm'
-%include 'common/draw_line_160_100_16color.asm'
-%include 'common/lz4_8088.asm'
+; last one, so it can overwritte itself
+image_moon_lz4:
+        incbin          'part3/image_moon.raw.lz4'
 

@@ -156,9 +156,9 @@ ricardos_load_file:
                                         ; 512 (0x20 * 16) (sector size) + 0x100 (.com offset)
 
 .reboot:
-        jmp     0xf000:0x2022           ;no more parts to load, jump to PCjr-only keyboard test
+        ;jmp     0xf000:0x2022           ;no more parts to load, jump to PCjr-only keyboard test
         ;jmp     0xf000:0x2000           ;no more parts to load, jump to PCjr-only "mini welcome"
-        ;jmp     0xf000:0xfff0           ;no more parts to load, reset computer
+        jmp     0xf000:0xfff0           ;no more parts to load, reset computer
         ;int     0x19                    ;no more parts to load, reboot from floppy
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
