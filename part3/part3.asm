@@ -23,7 +23,8 @@ MAIN_THREAD_ACTION_DONE         equ     0
 MAIN_THREAD_ACTION_PRE_RENDER   equ     1
 MAIN_THREAD_ACTION_IMAGE_MOON   equ     2
 MAIN_THREAD_ACTION_IMAGE_THERE  equ     3
-MAIN_THREAD_ACTION_CLEAR_SCREEN equ     4
+MAIN_THREAD_ACTION_CLEAR_SCREEN32 equ     4
+MAIN_THREAD_ACTION_CLEAR_SCREEN16 equ     5
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 section .text
@@ -46,13 +47,21 @@ start:
 
         call    set_vid_160_100_16
 
-
-        ; preconditions that should be valid... always
-        push    cs                              ;ds = cs
-        pop     ds
-        mov     ax,VIDEO_SEG                    ;es = 0xb800 (video segment)
-        mov     es,ax
         cld
+        push    cs
+        pop     ds                              ;restore ds
+        mov     ax,0xb800
+        mov     es,ax                           ;restore es
+
+        ; HACK
+        ; last minute hack... for some reason I cannot load it from
+        ; already loaded memory... it takes only 500~ bytes... I still
+        ; have plenty of room in this part... so no problem
+        mov     si,image_pampa_lz4
+        sub     di,di
+        mov     cx,8192
+        call    lz4_decompress
+
 
         ;turning off the drive motor is needed to prevent
         ;it from being on the whole time.
@@ -104,13 +113,15 @@ main_thread_process_action:
         dec     al
         jz      action_image_still_there
         dec     al
-        jz      action_clear_screen
+        jz      action_clear_screen32
+        dec     al
+        jz      action_clear_screen16
 
         ; should not happen
         int 3
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-action_clear_screen:
+action_clear_screen32:
         mov     ax,0x0800
         mov     es,ax
         
@@ -121,6 +132,16 @@ action_clear_screen:
 
         mov     ax,0xb800
         mov     es,ax
+
+        mov     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_DONE     ;tell "other thread" that we
+        jmp     main_loop                               ; are done
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+action_clear_screen16:
+        sub     di,di                                   ;es:di = b800:0000
+        sub     ax,ax
+        mov     cx,8*1024                               ;8k words (6666661k bytes)
+        rep stosw                                       ;clear 16k of screen
 
         mov     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_DONE     ;tell "other thread" that we
         jmp     main_loop                               ; are done
@@ -656,17 +677,7 @@ cmd_fade_out_anim:
         mov     bl,[var_tmp_db_0]               ;bx transition index
         lea     si,[fadeout_palette_tbl+16+bx]  ;correct index, skipping black colors
 
-        ; wait for horizontal retrace
-        mov     dx,0x03da
-.wait:
-        in      al,dx                           ;wait for horizontal retrace
-        test    al,8                            ; to finish
-        jnz     .wait
-
-.retrace:
-        in      al,dx                           ;wait for horizontal retrace
-        test    al,8                            ; to finish
-        jz     .retrace
+        call    wait_vertical_retrace
 
         mov     bx,1                            ;start with color 1. color 0 is
                                                 ; black, and we are not goig to change it
@@ -697,17 +708,7 @@ change_palette:
 
         mov     bh,al                           ;save color in bh
 
-        ; wait for horizontal retrace
-        mov     dx,0x03da
-.wait:
-        in      al,dx                           ;wait for horizontal retrace
-        ror     al,1
-        jc      .wait
-
-.retrace:
-        in      al,dx                           ;wait for horizontal retrace
-        ror     al,1
-        jnc     .retrace
+        call    wait_horiz_retrace
 
         ; set palette index + new color
         mov     al,bl                           ;color index
@@ -764,10 +765,17 @@ cmd_show_image_init:
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; cmd_show_image
-cmd_clear_screen_init:
+; cmd_clear_screen32
+cmd_clear_screen32_init:
         ; tell "main thread" to switch to new video mode
-        mov     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_CLEAR_SCREEN
+        mov     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_CLEAR_SCREEN32
+        ret
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+; cmd_clear_screen16
+cmd_clear_screen16_init:
+        ; tell "main thread" to switch to new video mode
+        mov     byte [trigger_main_thread_action],MAIN_THREAD_ACTION_CLEAR_SCREEN16
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -1334,7 +1342,8 @@ CMD_OUT_SWEEP_UP        equ     16
 CMD_PRE_RENDER_MODE     equ     17
 CMD_FADE_OUT            equ     18
 CMD_SHOW_IMAGE          equ     19
-CMD_CLEAR_SCREEN        equ     20
+CMD_CLEAR_SCREEN32      equ     20
+CMD_CLEAR_SCREEN16      equ     21
 
 ;CMD_OUT_SCROLL_LEFT     equ     9
 ;CMD_OUT_SCROLL_RIGHT    equ     10
@@ -1825,20 +1834,21 @@ commands_data:
 
         db      CMD_WAIT,240
         db      CMD_FADE_OUT
+        db      CMD_CLEAR_SCREEN16
         db      CMD_WAIT,240                    ;wait 4 seconds
                                                 ; and if no key is pressed, show easter egg
         db      CMD_SHOW_IMAGE,2                ;display moon image
         db      CMD_WAIT,240                    ;wait 4 seconds
         db      CMD_WAIT,240                    ;wait 8 additional seconds
 
-        db      CMD_CLEAR_SCREEN
+        db      CMD_CLEAR_SCREEN32
 
         db      CMD_WAIT,240                    ;wait 3 additional seconds
         db      CMD_WAIT,240                    ;wait 3 additional seconds
         db      CMD_SHOW_IMAGE,3                ;display moon image
         db      CMD_WAIT,240                    ;wait 4 seconds
         db      CMD_WAIT,180                    ;wait 3 additional seconds
-        db      CMD_CLEAR_SCREEN
+        db      CMD_CLEAR_SCREEN16
         db      CMD_WAIT,180                    ;wait 3 additional seconds
 
         ; end
@@ -1865,7 +1875,8 @@ commands_entry_tbl:
         dw      cmd_pre_render_mode_init,       cmd_no_anim,            ; 17
         dw      cmd_fade_out_init,              cmd_fade_out_anim,      ; 18
         dw      cmd_show_image_init,            cmd_main_thread_anim    ; 19
-        dw      cmd_clear_screen_init,          cmd_main_thread_anim    ; 20
+        dw      cmd_clear_screen32_init,        cmd_main_thread_anim    ; 20
+        dw      cmd_clear_screen16_init,        cmd_main_thread_anim    ; 21
 
 
 ; since only one command can be run at the same time, this variable is shared
@@ -1924,6 +1935,9 @@ image_moon_half_a_lz4:
 
 image_moon_half_b_lz4:
         incbin          'part3/image_moon_half_b.raw.lz4'
+
+image_pampa_lz4:
+        incbin          'part3/image_pampa.raw.lz4'
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; Includes - B

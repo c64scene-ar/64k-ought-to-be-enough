@@ -55,7 +55,7 @@ part3:
 	nasm -Ox -Wall part3/part3.asm -fbin -o bin/part3.com
 
 part3a: part3
-	@python3 tools/append_gfx_to_com.py part3/image_pampa.raw -c bin/part3.com -o bin/part3gfx.com -s 48
+	@python3 tools/append_gfx_to_com.py part3/image_pampa.raw -c bin/part3.com -o bin/part3gfx.com -s 56
 
 test_part3: part3a
 	@echo "Running..."
@@ -130,6 +130,7 @@ res:
 	@lz4 -9 -f res/image_moon_half_a.raw part3/image_moon_half_a.raw.lz4
 	@lz4 -9 -f res/image_moon_half_b.raw part3/image_moon_half_b.raw.lz4
 	@lz4 -9 -f res/image_still_there.raw part3/image_still_there.raw.lz4
+	@lz4 -9 -f part3/image_pampa.raw part3/image_pampa.raw.lz4
 	@echo "Done"
 
 dis:
