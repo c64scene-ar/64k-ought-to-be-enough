@@ -14,7 +14,7 @@ org     0x100
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 1                              ;1=run on emulator
+%define EMULATOR 0                              ;1=run on emulator
 
 GFX_SEG         equ     0xb800                  ;0x1800 for PCJr with 32k video ram
                                                 ;0xb800 for 16k modes
@@ -41,6 +41,10 @@ start:
         call    intro_init
         call    intro_main_loop
         call    intro_cleanup
+
+	; set video mode used in next part
+        mov     ax,0x0089                       ;320x200x16 mode
+        int     0x10 				;don't clean screen
 
         mov     ax,0x4c01                       ;ricarDOS: load next file. Don't print anything, just load file.
         int     0x21                            ;DOS: exit

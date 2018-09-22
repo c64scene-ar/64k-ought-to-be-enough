@@ -55,7 +55,7 @@ part3:
 	nasm -Ox -Wall part3/part3.asm -fbin -o bin/part3.com
 
 part3a: part3
-	@python3 tools/append_gfx_to_com.py part3/image_pampa.raw -c bin/part3.com -o bin/part3gfx.com -s 56
+	@python3 tools/append_gfx_to_com.py part3/image_zero.raw -c bin/part3.com -o bin/part3gfx.com -s 56
 
 test_part3: part3a
 	@echo "Running..."

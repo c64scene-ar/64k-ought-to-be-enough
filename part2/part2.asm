@@ -14,7 +14,7 @@ org     0x100
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 1                              ;1=run on emulator
+%define EMULATOR 0                              ;1=run on emulator
 
 GFX_SEG         equ     0x0800                  ;graphics segment (32k offset)
 
@@ -94,8 +94,12 @@ start:
         mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
         int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
 
+	;preconditions... should be valid always
+	cld
         push    cs
         pop     ds 				;ds = cs
+	mov 	ax,0xb800
+	mov 	es,ax
 
 	mov 	byte [anim_state],0 		;make sure starts with "scroll" and not "fade"
 
@@ -125,15 +129,36 @@ start:
         cmp     byte [anim_state],2             ;animation finished?
         jnz     .main_loop                      ;no, so keep looping
 
+
 	; fall-through
+
 .exit:
+	call 	clean_screen_32
         call    music_cleanup
         call    irq_8_cleanup
+
+	; set video mode used in next part
+        mov     ax,0x0088                       ;160x200x16 mode
+        int     0x10 				;don't clear screen
 
         mov     ax,0x4c00                       ;ricarDOS: load next file
         int     0x21                            ;DOS: exit to DOS
 
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
+clean_screen_32:
+        mov     ax,0x0800
+        mov     es,ax
+        
+        sub     di,di                                   ;es:di = 0800:0000
+        sub     ax,ax
+        mov     cx,16*1024                              ;16k words (32k bytes)
+        rep stosw                                       ;clear 32k of screen
+
+        mov     ax,0xb800
+        mov     es,ax
+	ret
+	
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 irq_8_handler:
         pushf
@@ -307,15 +332,7 @@ scroll_anim:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; fade_out_anim
 fade_out_anim:
-	mov 	cx,0x4000 			;32k bytes (16k words)
-	sub 	ax,ax 				;black color
-	mov 	es,ax 				;es = 0
-	mov 	di,0x8000 			;es:di 0:8000
-	rep stosw 				;clear 32k of screen
-	
-	mov 	ax,0xb800 			;restore es to video seg
-	mov 	ax,es
-	mov 	byte [anim_state],2 		;signal end of fade
+	mov 	byte [anim_state],2 			;signal end of fade
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
