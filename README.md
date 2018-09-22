@@ -22,6 +22,9 @@ Prerequisites:
 make res
 
 # test the disk image
+# a Linux machine is needed for this step (Mac does not work)
+# Uses `sudo` to mount/create a FAT image.
+# Don't panic if it asks for your password.
 make boot
 
 # test the disk
@@ -30,4 +33,3 @@ make test_boot
 # from dosbox-x console run:
 c:> boot -l a
 ```
-
