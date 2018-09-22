@@ -86,7 +86,7 @@ start:
         mov     al,0x80
         out     0xf2,al                         ;turn off floppy motor
 
-	; set video mode
+        ; set video mode
         mov     ax,0x0089                       ;set video mode 9, don't clean screen
         int     0x10                            ;320x200 16 colors
 
@@ -94,14 +94,14 @@ start:
         mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
         int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
 
-	;preconditions... should be valid always
-	cld
+        ;preconditions... should be valid always
+        cld
         push    cs
-        pop     ds 				;ds = cs
-	mov 	ax,0xb800
-	mov 	es,ax
+        pop     ds              ;ds = cs
+        mov     ax,0xb800
+        mov     es,ax
 
-	mov 	byte [anim_state],0 		;make sure starts with "scroll" and not "fade"
+        mov     byte [anim_state],0         ;make sure starts with "scroll" and not "fade"
 
         mov     ax,pvm_song                     ;start music offset
         call    music_init
@@ -118,8 +118,8 @@ start:
         mov     ds,ax                           ;ds = zero page
         mov     ax,[0x041a]                     ;keyboard buffer head
         cmp     ax,[0x041c]                     ;keyboard buffer tail
-	push 	cs
-	pop 	ds 				;restore ds
+        push    cs
+        pop     ds              ;restore ds
 %else
         in      al,0x62                         ;on real hardware, test keystroke missed?
         and     al,1                            ; so that we can disable IRQ9
@@ -130,16 +130,16 @@ start:
         jnz     .main_loop                      ;no, so keep looping
 
 
-	; fall-through
+        ; fall-through
 
 .exit:
-	call 	clean_screen_32
+        call    clean_screen_32
         call    music_cleanup
         call    irq_8_cleanup
 
-	; set video mode used in next part
+        ; set video mode used in next part
         mov     ax,0x0088                       ;160x200x16 mode
-        int     0x10 				;don't clear screen
+        int     0x10                ;don't clear screen
 
         mov     ax,0x4c00                       ;ricarDOS: load next file
         int     0x21                            ;DOS: exit to DOS
@@ -149,7 +149,7 @@ start:
 clean_screen_32:
         mov     ax,0x0800
         mov     es,ax
-        
+
         sub     di,di                                   ;es:di = 0800:0000
         sub     ax,ax
         mov     cx,16*1024                              ;16k words (32k bytes)
@@ -157,8 +157,8 @@ clean_screen_32:
 
         mov     ax,0xb800
         mov     es,ax
-	ret
-	
+        ret
+
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 irq_8_handler:
         pushf
@@ -172,10 +172,10 @@ irq_8_handler:
         push    ax
         push    bp
 
-	push 	cs 				;should always be true
-	pop 	ds
-	mov 	ax,0xb800
-	mov 	es,ax
+        push    cs              ;should always be true
+        pop     ds
+        mov     ax,0xb800
+        mov     es,ax
 
         ; quick & dirty state machine
         cmp     byte [anim_state],0             ;0? do scroll_anim
@@ -186,7 +186,7 @@ irq_8_handler:
 
 .fade_out_anim:
         call    fade_out_anim                   ;after the scroll finishes, do fadeout
-	; fall-through
+        ; fall-through
 
 .next:
         call    music_play
@@ -332,7 +332,7 @@ scroll_anim:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; fade_out_anim
 fade_out_anim:
-	mov 	byte [anim_state],2 			;signal end of fade
+        mov     byte [anim_state],2             ;signal end of fade
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;

@@ -42,9 +42,9 @@ start:
         call    intro_main_loop
         call    intro_cleanup
 
-	; set video mode used in next part
+        ; set video mode used in next part
         mov     ax,0x0089                       ;320x200x16 mode
-        int     0x10 				;don't clean screen
+        int     0x10                            ;don't clean screen
 
         mov     ax,0x4c01                       ;ricarDOS: load next file. Don't print anything, just load file.
         int     0x21                            ;DOS: exit

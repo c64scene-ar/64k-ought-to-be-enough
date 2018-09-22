@@ -124,7 +124,7 @@ main_thread_process_action:
 action_clear_screen32:
         mov     ax,0x0800
         mov     es,ax
-        
+
         sub     di,di                                   ;es:di = 0800:0000
         sub     ax,ax
         mov     cx,16*1024                              ;16k words (32k bytes)
@@ -363,8 +363,8 @@ irq_8_handler:
 
         push    cs
         pop     ds
-	mov 	ax,VIDEO_SEG 			;should always be true
-	mov 	es,ax
+        mov     ax,VIDEO_SEG            ;should always be true
+        mov     es,ax
 
 %if DEBUG
         call    inc_d020

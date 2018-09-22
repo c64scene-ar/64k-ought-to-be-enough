@@ -1,10 +1,16 @@
-# 64k ought to be enough
-A demo for the IBM PCjr
+# 64k RAM ought to be enough
+
+A demo for the IBM PCjr by [Pungas de Villa Martelli](http://pungas.space)
+
+
+## Requirements
+
+An IBM PCjr with at least 64k RAM.
 
 
 ## Compile et al.
 
-Pre-requisites:
+Prerequisites:
 
 * Install [nasm](https://www.nasm.us/)
 * Install [lz4](https://www.dropbox.com/sh/mwa5geyxgl9m24k/AACtCCyO5W1_3-1bI8YxPHLca)
@@ -15,9 +21,6 @@ Pre-requisites:
 # compile the resources
 make res
 
-# make the disk image
-make disk_image
-
 # test the disk image
 make boot
 
@@ -27,5 +30,4 @@ make test_boot
 # from dosbox-x console run:
 c:> boot -l a
 ```
-
 
