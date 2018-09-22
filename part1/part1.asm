@@ -14,7 +14,7 @@ org     0x100
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 0                              ;1=run on emulator
+%define EMULATOR 1                              ;1=run on emulator
 
 GFX_SEG         equ     0xb800                  ;0x1800 for PCJr with 32k video ram
                                                 ;0xb800 for 16k modes
@@ -867,7 +867,7 @@ TEXT_CMD_DELAY equ 6
         db TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
 
            ;0123456789012345678901234567890123456789',
-        db ' EVEN THE COMMODORE 64 HAS MORE MEMORY! '
+        db '  EVEN THE C64 HAS MORE USABLE MEMORY! '
         db TEXT_CMD_DELAY,TEXT_CMD_CLEAR_LINE
         db TEXT_CMD_CHANGE_PALETTE,0
 

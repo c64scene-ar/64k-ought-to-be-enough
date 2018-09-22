@@ -14,7 +14,7 @@ org     0x100
 ; MACROS
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %define DEBUG 0                                 ;0=diabled, 1=enabled
-%define EMULATOR 0                              ;1=run on emulator
+%define EMULATOR 1                              ;1=run on emulator
 
 GFX_SEG         equ     0x0800                  ;graphics segment (32k offset)
 
@@ -79,6 +79,14 @@ start:
                                                 ; have at least 128K RAM, otherwise it won't let
                                                 ; us set video mode 9
 
+        ;turning off the drive motor is needed to prevent
+        ;it from being on the whole time.
+        mov     byte [0x0440],0                 ;motor count to zero
+        and     byte [0x043f],0xf0              ;turn off motor running bits
+        mov     al,0x80
+        out     0xf2,al                         ;turn off floppy motor
+
+	; set video mode
         mov     ax,0x0089                       ;set video mode 9, don't clean screen
         int     0x10                            ;320x200 16 colors
 
@@ -86,20 +94,10 @@ start:
         mov     bx,0x0202                       ;use page 2 for video memory/map 0xb800
         int     0x10                            ;page 2 means: starts at 0x0800 (32k offset)
 
-
-        ;turning off the drive motor is needed to prevent
-        ;it from being on the whole time.
-        mov     bp,ds                           ;save ds
-        sub     ax,ax
-        mov     ds,ax                           ;ds = 0 (zero page)
-        mov     byte [0x0440],0                 ;motor count to zero
-        and     byte [0x043f],0xf0              ;turn off motor running bits
-        mov     al,0x80
-        out     0xf2,al                         ;turn off floppy motor
-        mov     ds,bp                           ;restore ds
-
         push    cs
-        pop     ds
+        pop     ds 				;ds = cs
+
+	mov 	byte [anim_state],0 		;make sure starts with "scroll" and not "fade"
 
         mov     ax,pvm_song                     ;start music offset
         call    music_init
@@ -112,12 +110,12 @@ start:
 .main_loop:
 
 %if EMULATOR
-        push    ds
         sub     ax,ax
         mov     ds,ax                           ;ds = zero page
         mov     ax,[0x041a]                     ;keyboard buffer head
         cmp     ax,[0x041c]                     ;keyboard buffer tail
-        pop     ds
+	push 	cs
+	pop 	ds 				;restore ds
 %else
         in      al,0x62                         ;on real hardware, test keystroke missed?
         and     al,1                            ; so that we can disable IRQ9
@@ -127,6 +125,7 @@ start:
         cmp     byte [anim_state],2             ;animation finished?
         jnz     .main_loop                      ;no, so keep looping
 
+	; fall-through
 .exit:
         call    music_cleanup
         call    irq_8_cleanup
@@ -148,17 +147,23 @@ irq_8_handler:
         push    ax
         push    bp
 
+	push 	cs 				;should always be true
+	pop 	ds
+	mov 	ax,0xb800
+	mov 	es,ax
 
         ; quick & dirty state machine
         cmp     byte [anim_state],0             ;0? do scroll_anim
         jnz     .fade_out_anim                  ;1? do fade_out_anim
+
         call    scroll_anim
-        jmp     .l0
+        jmp     .next
 
 .fade_out_anim:
         call    fade_out_anim                   ;after the scroll finishes, do fadeout
+	; fall-through
 
-.l0:
+.next:
         call    music_play
 
         mov     al,0x20                         ;send the EOI signal
@@ -302,72 +307,15 @@ scroll_anim:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 ; fade_out_anim
 fade_out_anim:
-        ; scroll up one row
-        dec     byte [fade_out_iter]
-        jns     .do
-        mov     byte [anim_state],2             ;trigger end of scene
-        ret
-
-.do:
-        sub     bh,bh
-        mov     bl,[fade_out_iter]               ;bx transition index
-        lea     si,[fadeout_palette_tbl+16+bx]  ;correct index, skipping black colors
-
-        mov     bx,1                            ;start with color 1. color 0 is
-                                                ; black, and we are not goig to change it
-.loop:  lodsb                                   ;al=new palette color for color #cx
-        cmp     al,[palette_fade_prev_val+bx]   ;different than previous color?
-        jz      .next_color
-
-        mov     [palette_fade_prev_val+bx],al   ;update new color
-        call    change_palette                  ;bl = color index, al = new color
-
-.next_color:
-        add     si,15                           ;next color palette. each entry takes 16 bytes
-        inc     bx                              ; so add add 15 since lodsb incs si by one
-        cmp     bx,16
-        jnz     .loop
-        ret
-
-;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
-; change_palette
-; changes one palette color in horizontal retrace
-; TODO: convert this function to macro, since it is only called from
-; cmd_fade_out_anim
-; IN
-;       bl = color index
-;       al = new color
-change_palette:
-        mov     bp,bx
-
-        mov     bh,al                           ;save color in bh
-
-        ; wait for horizontal retrace
-        mov     dx,0x03da
-.wait:
-        in      al,dx                           ;wait for horizontal retrace
-        ror     al,1
-        jc      .wait
-
-.retrace:
-        in      al,dx                           ;wait for horizontal retrace
-        ror     al,1
-        jnc     .retrace
-
-        ; set palette index + new color
-        mov     al,bl                           ;color index
-        or      al,0x10                         ;index needs to start at 0x10
-        out     dx,al                           ;dx=0x03da (register)
-
-        mov     al,bh                           ;set color
-        out     dx,al                           ;set new color (data)
-
-        sub     al,al                           ;al = 0 reset
-        out     dx,al                           ;reset
-
-        in      al,dx                           ;reset to register again
-
-        mov     bx,bp
+	mov 	cx,0x4000 			;32k bytes (16k words)
+	sub 	ax,ax 				;black color
+	mov 	es,ax 				;es = 0
+	mov 	di,0x8000 			;es:di 0:8000
+	rep stosw 				;clear 32k of screen
+	
+	mov 	ax,0xb800 			;restore es to video seg
+	mov 	ax,es
+	mov 	byte [anim_state],2 		;signal end of fade
         ret
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
@@ -389,7 +337,6 @@ scroll_text:
         db 'THE VIDEO RAM AND THE CPU RAM ARE SHARED IN THE PCJR. '
         db 'THAT IS VERY BAD: '
         db 'THERE IS NO VIDEO-RAM IN THE PCJR. '
-        db 'THE CPU RAM IS SHARED WITH THE VIDEO CARD. '
         db 'EXAMPLE: IF YOU USE A 16K-RAM VIDEO MODE, '
         db 'YOU ONLY HAVE 48K-RAM LEFT FOR THE REST. '
         db '  '
@@ -400,8 +347,6 @@ scroll_text:
         db 'THERE IS NO PC AS SLOW AS THE 64K-RAM PCJR. '
         db 'AND THAT IS WHY WE LIKE IT. '
 
-        db '      '
-        db 'ONE WONDERS WHAT WAS THE TARGET AUDIENCE FOR THE 64K-RAM PCJR.   '
         db '              '
 
 
@@ -440,13 +385,6 @@ scroll_force_spacer:
 scroll_char_offset:                             ;Pointer to the char definition. Will get
         dw      0                               ; updated after each pass.
 
-fade_out_iter:
-        db      15                              ;number of iterations needed for the fadeout
-
-palette_fade_prev_val:
-        db      0,1,2,3,4,5,6,7                 ;palette last known values
-        db      8,9,10,11,12,13,14,15
-
 anim_state:
         db      0                               ;0 - scroll
                                                 ;1 - fadeout
@@ -456,6 +394,5 @@ anim_state:
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-;
 %include 'common/utils.asm'
 %include 'common/music_player.asm'
-%include 'common/fadeout16.asm'
 ;%include 'common/zx7_8086.asm'
 
