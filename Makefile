@@ -96,10 +96,10 @@ test_boot: boot
 
 dist: boot
 	@echo "Generating distribution .zip"
-	-rm 64kought.zip
+	-rm bin/64kought.zip
 	-rm 64kought/64kought.360
 	cp bin/demo_pvm.360 64kought/64kought.360
-	zip 64kought.zip -r 64kought
+	zip bin/64kought.zip -r 64kought
 
 res:
 	@echo "Generating resources..."
