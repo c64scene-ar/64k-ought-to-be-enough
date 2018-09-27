@@ -43,7 +43,7 @@ The demo is divided in the boot loader and demo 3 parts
 
 ## Boot loader
 
-![Boot loader](https://lh3.googleusercontent.com/CAMqnjSjk-8f_gX2LvfrUq4QMQm8wgKtd-1Vhcmza4OcEiNYvKb7LJWMKNjcpUcaTUWXRfl8e6oz3bJcRXHTBdIjzTrELpX9eBGzYVSC9Rj4PsjbJqKBh0TfAoRnT-8JBFnNprd7xUs)
+![Boot loader](https://lh3.googleusercontent.com/CAMqnjSjk-8f_gX2LvfrUq4QMQm8wgKtd-1Vhcmza4OcEiNYvKb7LJWMKNjcpUcaTUWXRfl8e6oz3bJcRXHTBdIjzTrELpX9eBGzYVSC9Rj4PsjbJqKBh0TfAoRnT-8JBFnNprd7xUs=-no)
 
 The demo is intended to work with a 64K RAM (or more) PCjr. Booting from
 its own boot loader is needed to save precious memory. DOS alone takes ~20K of
@@ -79,8 +79,8 @@ Memory map:
 
 ## Part I
 
-![Graphic](https://lh3.googleusercontent.com/AH1WrMv0WApGS6kK-9smYMGuEC8j8bcCwq1PWWMF69NmHBdM_L3KQGq5trnZN-1MLxKO2bKWIuM7MLH3eAn5wfx1r2Fj0b33pX3V1Z_RB3YXiEPH7eM_YBQqoU7dsXDA66UWdcy804E)
-![Big fonts](https://lh3.googleusercontent.com/lYLBVf8knEDl1izdoXc6zT2FEXv0P-2fCUQTBKw0NLal27L1j38zqyQ0XAPuabI54jN2SxnJP036vYILKvssxL9OLiQcxQN7GEbdIK0DMAmBoX__XoK9bMJbdv4R_jMrIgiavXfGMIk)
+![Graphic](https://lh3.googleusercontent.com/AH1WrMv0WApGS6kK-9smYMGuEC8j8bcCwq1PWWMF69NmHBdM_L3KQGq5trnZN-1MLxKO2bKWIuM7MLH3eAn5wfx1r2Fj0b33pX3V1Z_RB3YXiEPH7eM_YBQqoU7dsXDA66UWdcy804E=-no)
+![Big fonts](https://lh3.googleusercontent.com/lYLBVf8knEDl1izdoXc6zT2FEXv0P-2fCUQTBKw0NLal27L1j38zqyQ0XAPuabI54jN2SxnJP036vYILKvssxL9OLiQcxQN7GEbdIK0DMAmBoX__XoK9bMJbdv4R_jMrIgiavXfGMIk=-no)
 
 ### Big Fonts
 
@@ -90,7 +90,7 @@ rectangle to draw each font is divided in 55 segments. Think of the typical
 can render pretty nice fonts. Specially if they are designed by Andrew
 Glassner.
 
-![55 segments](https://lh3.googleusercontent.com/79ypCtlpOuPHhS3RdXH1V_nHrbzYv9vFna60h_ribbU595KMMsaMokmi2jG7UVKSy3D874n2YMW0s7vQ3f-R8gOvO7q88p1PVZ38bUkgLNR9u9l8Nh1ipv4Se1GWlHi704TKYAAGjnY)
+![55 segments](https://lh3.googleusercontent.com/79ypCtlpOuPHhS3RdXH1V_nHrbzYv9vFna60h_ribbU595KMMsaMokmi2jG7UVKSy3D874n2YMW0s7vQ3f-R8gOvO7q88p1PVZ38bUkgLNR9u9l8Nh1ipv4Se1GWlHi704TKYAAGjnY=-no)
 
 So we have 110 (55 + 55) primitives:
 
@@ -117,7 +117,7 @@ table_b:
 Notice that `A` and `B` have many segments in common. If letter `B` should be
 drawn right after letter `A`, then only the "diff" between `A` and `B` needs
 to be drawn.
-![A xor B](https://lh3.googleusercontent.com/24yydo-E1AXNej4CzcHp8BDR_Z77aFOhKJcu7G8Tto8lyQm20FWnjOqtpPxIhXQeMj5JrzAtaHU6JX8SQh27vJ3OEnx_g0CJR03OC8kI-RomtGYWK_ZJmB9gx0J8ehbHAjEU21B-qbs)
+![A xor B](https://lh3.googleusercontent.com/24yydo-E1AXNej4CzcHp8BDR_Z77aFOhKJcu7G8Tto8lyQm20FWnjOqtpPxIhXQeMj5JrzAtaHU6JX8SQh27vJ3OEnx_g0CJR03OC8kI-RomtGYWK_ZJmB9gx0J8ehbHAjEU21B-qbs=-no)
 
 And the diff between `A` and `B` is just a simple `xor` between A's bitset and
 B's bitset.
@@ -183,7 +183,7 @@ the video card expects it. And it will be displayed automatically.
 
 ## Part II
 
-![Graphic](https://lh3.googleusercontent.com/4MW-iYFbMdc8y9M7Wqch8yMpWoV2M41gA-tZ2XtcQrkZgkdxxcm6YvBjFJjb9jKdktfIkMgsyONW98yjQpZ81lImrjYTJBBhkfhq1drlSg5OPeA_BXItkNvx_JTx25_K7IYxC0YBHHw)
+![Graphic](https://lh3.googleusercontent.com/4MW-iYFbMdc8y9M7Wqch8yMpWoV2M41gA-tZ2XtcQrkZgkdxxcm6YvBjFJjb9jKdktfIkMgsyONW98yjQpZ81lImrjYTJBBhkfhq1drlSg5OPeA_BXItkNvx_JTx25_K7IYxC0YBHHw=-no)
 
 From a technical point of view, nothing interesting really happens in Part II.
 It is just a simple horizontal scroll that consumes almost all the CPU cycles.
@@ -211,9 +211,9 @@ hardware limitation (it shouldn't be, in theory), or not. We'll try to fix this
 soon.
 
 ## Part III
-![Vector fonts](https://lh3.googleusercontent.com/9hLe7o1xVss9McgIRoO9QCcPOCjmw1UrtaW2yxCzHHrc2rRJU3pLvOAE_wwqbyQy19W7hKbyxwHeRGFW6S9Y2mDeAvUjqxGVKOoKstwlSYZQUu8CZwFSwOPsadSiHeSeHaFxp8G59kA)
-![Moon](https://lh3.googleusercontent.com/i3b4XkNM_YgJOdkMtB-FUg1bsgnJIDe0gY0rD3pEPIdu_QhmHI-QgSR-9p0TFn3jbjWMqeEy2lOwiaXjKvqoM-8j_sqXCYScRfBe_aTfo2Khu1v5WgbqkVI7S9j0XjOHXytdIOEUQQI)
-![Still there](https://lh3.googleusercontent.com/NGYFNnYBO6G8Lg6QOfYERmV6WKaZ-VcwJafIuHMcV1bXkkGeBvJqoP4Pc5QnNWCF-Byi63_yxadzSmHywlW2oXk6c-_s6qBhjFN0vBbkBaZs6HhKhFDseyiQJiPg0IAi09Qcizg_E-g)
+![Vector fonts](https://lh3.googleusercontent.com/9hLe7o1xVss9McgIRoO9QCcPOCjmw1UrtaW2yxCzHHrc2rRJU3pLvOAE_wwqbyQy19W7hKbyxwHeRGFW6S9Y2mDeAvUjqxGVKOoKstwlSYZQUu8CZwFSwOPsadSiHeSeHaFxp8G59kA=-no)
+![Moon](https://lh3.googleusercontent.com/i3b4XkNM_YgJOdkMtB-FUg1bsgnJIDe0gY0rD3pEPIdu_QhmHI-QgSR-9p0TFn3jbjWMqeEy2lOwiaXjKvqoM-8j_sqXCYScRfBe_aTfo2Khu1v5WgbqkVI7S9j0XjOHXytdIOEUQQI=-no)
+![Still there](https://lh3.googleusercontent.com/NGYFNnYBO6G8Lg6QOfYERmV6WKaZ-VcwJafIuHMcV1bXkkGeBvJqoP4Pc5QnNWCF-Byi63_yxadzSmHywlW2oXk6c-_s6qBhjFN0vBbkBaZs6HhKhFDseyiQJiPg0IAi09Qcizg_E-g=-no)
 
 *[Note: Originally, we wanted to add some 3d effects in Part III. But after doing
 some performance tests with basic 2D polygons, we decided it was not worth it.
@@ -251,7 +251,7 @@ effect). And that is basically it.
 
 ## Easter Egg
 
-![Easter Egg](https://lh3.googleusercontent.com/zQdb6LGUoqZPppQeiL0y99YER7aoGiy4Q_RWfhtoyMuxADTadncsruPckS3oVOmkAdhnwMcrfJDGzRTpRWiU6lrkvtDS0IvUpTnBPSNAgYKHsUT1crA7j-nciMm6VPQkEFMUBTuJAyI)
+![Easter Egg](https://lh3.googleusercontent.com/zQdb6LGUoqZPppQeiL0y99YER7aoGiy4Q_RWfhtoyMuxADTadncsruPckS3oVOmkAdhnwMcrfJDGzRTpRWiU6lrkvtDS0IvUpTnBPSNAgYKHsUT1crA7j-nciMm6VPQkEFMUBTuJAyI=-no)
 
 The final part is pure PCjr BIOS code.
 
