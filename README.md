@@ -46,7 +46,7 @@ The demo is divided in the boot loader and demo 3 parts
 
 ![Boot loader](https://lh3.googleusercontent.com/CAMqnjSjk-8f_gX2LvfrUq4QMQm8wgKtd-1Vhcmza4OcEiNYvKb7LJWMKNjcpUcaTUWXRfl8e6oz3bJcRXHTBdIjzTrELpX9eBGzYVSC9Rj4PsjbJqKBh0TfAoRnT-8JBFnNprd7xUs)
 
-The demo is intented to work with a 64K RAM (or more) PCjr. Booting from
+The demo is intended to work with a 64K RAM (or more) PCjr. Booting from
 its own boot loader is needed to save precious memory. DOS alone takes ~20K of
 RAM. That is 30% of the total memory. You don't want to waste that memory.
 
@@ -58,7 +58,7 @@ The boot loader is pretty simple:
 * Installs `ricarDOS`, a mini "DOS" that hooks the `0x21` interrupt handler with:
   * `ah` == `0x4c`:
      * in ricarDOS it terminates current scene and loads the next one.
-     * in real DOS it terminates the currect DOS program.
+     * in real DOS it terminates the current DOS program.
   * `ah` == `0x09`:
      * prints a `$`-terminated string
 
@@ -85,7 +85,7 @@ Memory map:
 
 ### Big Fonts
 
-The big fonts are based on [Andrew Glasser's Notebook][0]. Basically the
+The big fonts are based on [Andrew Glassner's Notebook][0]. Basically the
 rectangle to draw each font is divided in 55 segments. Think of the typical
 8-segment display, but instead of 8, it has 55 segments. With 55 segments you
 can render pretty nice fonts. Specially if they are designed by Andrew
@@ -93,10 +93,10 @@ Glassner.
 
 ![55 segments](https://lh3.googleusercontent.com/79ypCtlpOuPHhS3RdXH1V_nHrbzYv9vFna60h_ribbU595KMMsaMokmi2jG7UVKSy3D874n2YMW0s7vQ3f-R8gOvO7q88p1PVZ38bUkgLNR9u9l8Nh1ipv4Se1GWlHi704TKYAAGjnY)
 
-So I created 110 (55 + 55) primitives:
+So we have 110 (55 + 55) primitives:
 
-  * 55 primities to turn on each segment
-  * and 55 primities to turn them off
+  * 55 primitives to turn on each segment
+  * and 55 primitives to turn them off
 
 Each letter consists of a 64-bit bitset containing the 55 segments.
 
@@ -140,8 +140,8 @@ And that's it.
 
 *Misc:*
 
-* I used [Aresluna editor][1] to get the definition of each letter.
-* I used custom a script to automatically generate all the 110 primitives and
+* [Aresluna editor][1] was used to get the definition of each letter.
+* We used a custom script to automatically generate all the 110 primitives and
   bitsets.
 
 ### Graphic Loading
@@ -152,8 +152,8 @@ for it. So, from the 64000 bytes reserved for the scene,
 And the code to render the big fonts takes ~47000 bytes, with only a few hundred
 bytes free.
 
-In order to add an additional 16K graphics, what I did was was to append it
-after the Big Font code (with some padding).
+In order to add an additional 16K graphics, the new graphic was appended after
+the Big Font code (with some padding).
 
 ```
 part1.com format
@@ -186,7 +186,7 @@ the video card expects it. And it will be displayed automatically.
 
 ![Graphic](https://lh3.googleusercontent.com/4MW-iYFbMdc8y9M7Wqch8yMpWoV2M41gA-tZ2XtcQrkZgkdxxcm6YvBjFJjb9jKdktfIkMgsyONW98yjQpZ81lImrjYTJBBhkfhq1drlSg5OPeA_BXItkNvx_JTx25_K7IYxC0YBHHw)
 
-From a technical point of view, nothing intresting really happens in Part II.
+From a technical point of view, nothing interesting really happens in Part II.
 It is just a simple horizontal scroll that consumes almost all the CPU cycles.
 
 _[Note: Additional effects were planned for this part, but we didn't have the
@@ -196,19 +196,20 @@ It uses a 320x200 @ 16 colors video mode. In order to enable this video mode
 in a 64k-only PCjr you have to do:
 
 ```asm
-    sub     ax,ax
-    mov     ds,ax                           ;ds = 0
-    mov     word [0x0415],128               ;make BIOS set_video_modo believe that we
-                                            ; have at least 128K RAM, otherwise it won't let
-                                            ; us set video mode 9
+sub     ax,ax
+mov     ds,ax                       ;ds = 0
+mov     word [0x0415],128           ;make BIOS set_video_modo believe that we
+                                    ; have at least 128K RAM, otherwise it won't let
+                                    ; us set video mode 9
 ```
 
 *Bug*: the graphic won't look that good on 64k-only PCjr. We tested this idea
 about 2 months before the deadline with a random graphic, and it looked
-Okish. So we though it was possible to use 32k video modes on the 64k-only PCjr.
-But one day before the release we noticed that the graphic didn't look good.
-And unfortunately we couldn't fix it yet. Not sure whether this is a hardware
-limitation (it shouldn't be, in theory), or not. We'll try to fix this soon.
+Ok. So we though it was possible to use 32k video modes on the 64k-only PCjr.
+But one day before the release we noticed that the graphic didn't look that
+good. And unfortunately we couldn't fix it yet. Not sure whether this is a
+hardware limitation (it shouldn't be, in theory), or not. We'll try to fix this
+soon.
 
 ## Part III
 ![Vector fonts](https://lh3.googleusercontent.com/9hLe7o1xVss9McgIRoO9QCcPOCjmw1UrtaW2yxCzHHrc2rRJU3pLvOAE_wwqbyQy19W7hKbyxwHeRGFW6S9Y2mDeAvUjqxGVKOoKstwlSYZQUu8CZwFSwOPsadSiHeSeHaFxp8G59kA)
@@ -218,7 +219,7 @@ limitation (it shouldn't be, in theory), or not. We'll try to fix this soon.
 *[Note: Originally, we wanted to add some 3d effects in Part III. But after doing
 some performance tests with basic 2D polygons, we decided it was not worth it.
 The PCjr was too slow for what we wanted to do. We reused part of that code for
-the Vector Fonts]*
+the Vector Fonts.]*
 
 
 ### Vector fonts
@@ -239,8 +240,9 @@ Part III.
 
 ### Render buffer
 
-Mode 160x100 @ 16 colors ([Trixter's variation][5])is being used for the vector font part. And the bottom
-40 rows are reserved for the fonts. That's a total of 3200 bytes (160*40/2).
+Mode 160x100 @ 16 colors ([Trixter's variation][5]) is being used for the
+vector font part. And the bottom 40 rows are reserved for the fonts. That's a
+total of 3200 bytes (160*40/2).
 
 We are using an additional 3200-bytes buffer (a render buffer) where the text
 is pre-rendered. Then the render buffer is copied row by row, one at the time, 
