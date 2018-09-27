@@ -11,11 +11,10 @@ It was presented at [Flashparty 2018][3] and [won the Demo][4] category.
 
 An IBM PCjr with at least 64k RAM.
 
-## Source code
+## Download:
 
-Download it from here:
-
-* [https://gitlab.com/ricardoquesada/pcjr-flashparty-2018][6]
+* Source code: [https://gitlab.com/ricardoquesada/pcjr-flashparty-2018][6]
+* Binary: [pvm-64ko.zip](http://pungas.space/pvm-64ko.zip) (does not run on emulators)
 
 
 ## Compile
