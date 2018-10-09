@@ -1,4 +1,5 @@
 # 64K RAM Ought to be Enough
+_(Updated 2018-10-08)_
 
 [![64K Ought to be Enough](https://img.youtube.com/vi/uakDpJns9LA/0.jpg)](https://www.youtube.com/watch?v=uakDpJns9LA)
 
@@ -70,7 +71,7 @@ The memory is organized like this:
 ```
 Memory map:
  0      - 0x01ff: 512 bytes used for the vector table for the first 0x80 interrupts
- 0x0200 - 0x03ff: 512 bytes used to store the boot sector
+ 0x0200 - 0x03ff: 512 bytes used to store ricarDOS
  0x0400 - 0x04ff: 256 bytes. BIOS variables
  0x0500 - 0x05ff: 256 bytes. stack. used globally for all the demo parts
  0x0600 - 0xffff: 64000 bytes free to be used for the demo (including video)
@@ -130,7 +131,7 @@ B: 0b1010010011101111,0b0111111011111100,0b1111110001111111,0b0000000001111011
    0b0100000000000000,0b1000000110111001,0b0111001110000000,0b0000000001111000
 ```
 
-`0` are skipped (it means that the segemnts are the same), while `1` are
+`0` are skipped (it means that the segments are the same), while `1` are
 processed. The segment is turned on or off accordingly. For `A xor B` only 18
 segments needs to be updated (instead of 55!).
 
@@ -191,8 +192,9 @@ It is just a simple horizontal scroll that consumes almost all the CPU cycles.
 _[Note: Additional effects were planned for this part, but we didn't have the
 time]_
 
-It uses a 320x200 @ 16 colors video mode. In order to enable this video mode
-in a 64k-only PCjr you have to do:
+It uses a 320x200 @ 16 colors video mode. In order to "enable" this video mode
+in a 64k-only PCjr you have to do, but see "Embarrassing bug" section for more
+info.
 
 ```asm
 sub     ax,ax
@@ -201,14 +203,6 @@ mov     word [0x0415],128           ;make BIOS set_video_modo believe that we
                                     ; have at least 128K RAM, otherwise it won't let
                                     ; us set video mode 9
 ```
-
-*Bug*: the graphic won't look that good on 64k-only PCjr. We tested this idea
-about 2 months before the deadline with a random graphic, and it looked
-Ok. So we though it was possible to use 32k video modes on the 64k-only PCjr.
-But one day before the release we noticed that the graphic didn't look that
-good. And unfortunately we couldn't fix it yet. Not sure whether this is a
-hardware limitation (it shouldn't be, in theory), or not. We'll try to fix this
-soon.
 
 ## Part III
 ![Vector fonts](https://lh3.googleusercontent.com/9hLe7o1xVss9McgIRoO9QCcPOCjmw1UrtaW2yxCzHHrc2rRJU3pLvOAE_wwqbyQy19W7hKbyxwHeRGFW6S9Y2mDeAvUjqxGVKOoKstwlSYZQUu8CZwFSwOPsadSiHeSeHaFxp8G59kA=-no)
@@ -274,6 +268,60 @@ repetition.
 * Part II: 320x200 @ 16
 * Part III: 160x100 @ 16, 640x200 @ 4, 640x200 @ 2
 
+## Embarrassing bug
+
+The demo is all about the 64k-RAM PCjr. The embarrassing part is that some
+graphics don't look Ok with the 64k-RAM PCjr. The high-density video modes
+(80x25 text, 320x200 @ 16 colors and 640x200 @ 4 colors) are disabled in the
+64K-RAM PCjr for a good reason: the PCjr can't display them, at least, in
+theory.
+
+Two months before the deadline, we did a test on a 64k-RAM PCjr, and the
+320x200 @ 16 colors video mode looked correct... only because we tested with
+a single color graphic. We painted the screen with one color, and it looked
+fine.
+
+But one day before the deadline, while we were testing a release-candidate on
+the 64k-RAM PCjr, we noticed that some graphics weren't looking Ok. We
+panicked. We couldn't believe what were seeing. We tried to understand what was
+happening, but we failed and couldn't fix the bug.
+
+![Looks OKish from far away](https://lh3.googleusercontent.com/BbuNMeyPTVp4OrqNaLOomwVlUw6rLjHDSxzSTirFAfLsYmGa5MgUUPRvpq-EboKAQs1KSJHqsLRNxLQSCD7dPnjf9ATH4uYnoNFdgwAPiIeaIaBxydVHTRuhT3lrUlcnPpbnVApAD20=-no)
+![but looks jagged from a closer look](https://lh3.googleusercontent.com/y9RSurJKPTpeIxcmX7WqxxnJr5PWDMZz4W-BR9jw371Zf4do3diFlzqmqfpnXcUC-WffXpQzKu9W3Ba2Vh99u9AVY42FTWWbbKCNeJLXbvABSCR8AraMFjyBPtbUvm1TG3FTfoGAedg=-no)
+
+So we shipped the demo with this embarrassing bug. A few days after the party,
+and after discussing it [in the PCjr forum][7], we realized that the 64k-RAM
+PCjr has the following limitations:
+
+
+>>> The system board 64K RAM is mapped at the bottom of the 1Mb address space.
+The system board 64Kb RAM is mapped to the next 64K bytes of address space if
+the the 64Kb Memory and Display Expansion option is not installed.
+
+>>> When inserted, the memory expansion option uses the ODD memory space, while
+the system memory space is decoded as the EVEN memory. Thus, when used as video
+memory, the memory expansion option has the video attributes while the on-board
+system memory has the video characters. This arrangement provides a higher
+bandwidth of video characters.
+
+>>> In addition to the eight memory modules, the expansion card has logic to do
+EVEN/ODD address decoding, video data multiplexing and Card Present wrap.
+
+
+And that explains why the 640x200@4 graphic looked as a monochrome bitmap and
+the 320x200@16 looked *jagged*. (See "[PCjr Technical Reference][8]" Section 2-55)
+
+![Monochrome when in 64K RAM only](https://lh3.googleusercontent.com/gAwOHkkjrfOGeoiCKItDsYUxj6LV_puAqNreLwDhPr_7LY-XCVxb9G8mnJTOmAsUY3N3XDOKIl8nooV1GGR1qCHI_r4KyLznjUvE6C7vblTRbX-GeYwOECdznilZcyShnMFUKOzUKWA=-no)
+
+We tried to disable the "even/odd" decoder by setting "Mode Control 1"'s
+High-Bandwidth register to 0. But that brings other issues. We still don't know
+whether or not it is feasible to display a high-density graphic in the 64K-RAM
+PCjr. Although everything seems to indicate that it is not feasible.
+
+The not-so-bad news is that the 128K-RAM PCjr (the most popular model), is as
+slow as the 64k-RAM version but runs the demo correctly. No glitches in the
+graphics.In fact, if we had targeted the 128k-RAM version, probably we could
+have fit everything in a single executable + our boot loader.
 
 ---
 [0]: https://www.glassner.com/portfolio/andrew-glassners-notebook/
@@ -283,3 +331,5 @@ repetition.
 [4]: http://flashparty.dx.am/index.php?option=com_content&view=article&id=37:results-fp-2018&catid=2&lang=en&Itemid=134
 [5]: https://www.brutman.com/forums/viewtopic.php?f=6&t=668&start=10
 [6]: https://gitlab.com/ricardoquesada/pcjr-flashparty-2018
+[7]: https://www.brutman.com/forums/viewtopic.php?f=3&t=758&sid=2cf3911aaf269aa1588aa053886a2769#p5675
+[8]: https://archive.org/details/IBMPCJrTechnicalReference_201705/page/n1
