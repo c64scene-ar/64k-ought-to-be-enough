@@ -294,17 +294,17 @@ and after discussing it [in the PCjr forum][7], we realized that the 64k-RAM
 PCjr has the following limitations:
 
 
->>> The system board 64K RAM is mapped at the bottom of the 1Mb address space.
+> The system board 64K RAM is mapped at the bottom of the 1Mb address space.
 The system board 64Kb RAM is mapped to the next 64K bytes of address space if
 the the 64Kb Memory and Display Expansion option is not installed.
 
->>> When inserted, the memory expansion option uses the ODD memory space, while
+> When inserted, the memory expansion option uses the ODD memory space, while
 the system memory space is decoded as the EVEN memory. Thus, when used as video
 memory, the memory expansion option has the video attributes while the on-board
 system memory has the video characters. This arrangement provides a higher
 bandwidth of video characters.
 
->>> In addition to the eight memory modules, the expansion card has logic to do
+> In addition to the eight memory modules, the expansion card has logic to do
 EVEN/ODD address decoding, video data multiplexing and Card Present wrap.
 
 
